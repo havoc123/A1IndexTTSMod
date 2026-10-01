@@ -1,0 +1,53 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- BepInEx 6 IL2CPP hosts plugins on .NET 6; the local .NET 10 SDK compiles this TFM. -->
+    <TargetFramework>net6.0</TargetFramework>
+    <AssemblyName>A1IndexTTSMod</AssemblyName>
+    <RootNamespace>A1IndexTTSMod</RootNamespace>
+    <Version>0.5.8</Version>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <BepInExDir Condition="'$(BepInExDir)' == ''">$(MSBuildThisFileDirectory)..\..\BepInEx</BepInExDir>
+  </PropertyGroup>
+
+  <Target Name="ValidateBepInExReferences" BeforeTargets="ResolveReferences">
+    <Error Condition="!Exists('$(BepInExDir)\core\BepInEx.Core.dll')"
+           Text="BepInEx.Core.dll not found under '$(BepInExDir)\core'. Install the pinned loader first or pass -p:BepInExDir=..." />
+    <Error Condition="!Exists('$(BepInExDir)\core\BepInEx.Unity.IL2CPP.dll')"
+           Text="BepInEx.Unity.IL2CPP.dll not found under '$(BepInExDir)\core'. Install the pinned loader first or pass -p:BepInExDir=..." />
+  </Target>
+
+  <ItemGroup>
+    <PackageReference Include="NAudio.Wasapi" Version="2.3.0" />
+    <Reference Include="BepInEx.Core">
+      <HintPath>$(BepInExDir)\core\BepInEx.Core.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="BepInEx.Unity.IL2CPP">
+      <HintPath>$(BepInExDir)\core\BepInEx.Unity.IL2CPP.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="0Harmony">
+      <HintPath>$(BepInExDir)\core\0Harmony.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="A1Ainpc.Runtime">
+      <HintPath>$(BepInExDir)\interop\A1Ainpc.Runtime.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Il2Cppmscorlib">
+      <HintPath>$(BepInExDir)\interop\Il2Cppmscorlib.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Il2CppInterop.Runtime">
+      <HintPath>$(BepInExDir)\core\Il2CppInterop.Runtime.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+</Project>
