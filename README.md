@@ -6,7 +6,7 @@
 
 ## 下载与安装
 
-从 [Releases](https://github.com/havoc123/A1IndexTTSMod/releases) 下载 `A1IndexTTSMod-v0.5.8-win64.zip`。发行包包含插件、audio.cpp Windows CUDA 运行时、**1169 份 NPC WAV 参考音**、默认男/女参考音与 ID 表；不包含游戏、BepInEx 基础加载器或约 3.5 GB 的 IndexTTS 模型。首次安装需要分别安装 BepInEx 6 IL2CPP 和下载 Q8 GGUF。完整步骤、目录图、校验与卸载方法见 [INSTALL.md](INSTALL.md)。
+从 [Releases](https://github.com/havoc123/A1IndexTTSMod/releases) 下载 `A1IndexTTSMod-v0.5.8-r3-win64.zip`。发行包包含插件、audio.cpp Windows CUDA 运行时、**1169 份 NPC WAV 参考音**、默认男/女参考音与 ID 表；不包含游戏、BepInEx 基础加载器或约 3.5 GB 的 IndexTTS 模型；已包含路径无关的 Doorstop 启动器及首次运行缓存。首次安装需要分别安装 BepInEx 6 IL2CPP 和下载 Q8 GGUF。完整步骤、目录图、校验与卸载方法见 [INSTALL.md](INSTALL.md)。
 
 当前版本针对 Windows x64、Unity IL2CPP 游戏构建 `0acccbcdb9a14aa3a528bd4d850c3202`、BepInEx `6.0.0-be.788` 和 NVIDIA CUDA 版 audio.cpp 测试。首次载入模型和预热需要等待；显存、驱动和性能会随显卡及模型精度变化。`f16`、`orig` 可在配置中选择，但需自行下载同名模型文件。
 
