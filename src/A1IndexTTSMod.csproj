@@ -4,7 +4,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <AssemblyName>A1IndexTTSMod</AssemblyName>
     <RootNamespace>A1IndexTTSMod</RootNamespace>
-    <Version>0.5.8</Version>
+    <Version>0.5.9</Version>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>

@@ -35,8 +35,10 @@ public sealed class Plugin : BasePlugin
                 Config.Bind("Stage3Mvp", "TimeoutSeconds", 180, "Maximum wait for one synthesis request."),
                 Config.Bind("Stage3Mvp", "AutoStartAudioCpp", true, "Start a visible project audio.cpp window and close it when this game exits."),
                 Config.Bind("Stage3Mvp", "AudioCppPrecision", "q8_0", "Auto-start model precision: q8_0, f16, or orig (model file must already exist)."));
+            Probe.SetSpeechLog(Log);
             _harmony = new Harmony(PluginInfo.Guid);
             Patch("Game", "Game.Model.NpcModel", "AddNpcChatMessage", "OnNpcDisplay");
+            Patch("Game", "Game.NpcPersuadePanel", "OnReceivePersuadeResponse", "OnPersuadeResponse");
             if (diagnostics.Value)
             {
                 Patch("Game", "Game.Model.NpcModel", "SendChatMessage", "OnPlayerInput", prefix:true);
@@ -73,6 +75,9 @@ internal static class Probe
     private static long _lastRequestSeq;
     private static string _runDir = "";
     private static BepInEx.Logging.ManualLogSource? _log;
+    private static BepInEx.Logging.ManualLogSource? _speechLog;
+
+    public static void SetSpeechLog(BepInEx.Logging.ManualLogSource log) => _speechLog = log;
 
     public static void Start(BepInEx.Logging.ManualLogSource log, ConfigEntry<bool> full, ConfigEntry<int> maxChars, ConfigEntry<string> dir)
     {
@@ -102,6 +107,40 @@ internal static class Probe
                 SpeechMvp.OnNpcReply(NpcId(__instance), text, reply.Emotion);
         });
     }
+
+    public static void OnPersuadeResponse(object __instance, object[] __args)
+    {
+        try
+        {
+            var message = __args.FirstOrDefault(a => a?.GetType().FullName == "Game.Model.ChatMessage");
+            if (message == null) return;
+            var messageType = message.GetType();
+            var text = messageType.GetProperty("MessageText")?.GetValue(message) as string;
+            if (string.IsNullOrWhiteSpace(text)) return;
+            var raw = messageType.GetProperty("NpcRawOutput")?.GetValue(message) as string;
+            var marker = messageType.GetProperty("SystemMarker")?.GetValue(message) as string;
+            // Player submissions can carry the NPC's sender ID in this callback.
+            // A structured NPC payload is the reliable discriminator here.
+            var reply = ExtractNpcReply(raw ?? "");
+            if (!string.IsNullOrEmpty(marker) || string.IsNullOrWhiteSpace(reply?.Content)) return;
+            var panelType = __instance.GetType();
+            var npc = panelType.GetProperty("_subscribedNpc", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)?.GetValue(__instance);
+            var npcKey = NpcId(npc);
+            if (!npcKey.StartsWith("npc:", StringComparison.Ordinal))
+            {
+                var configId = panelType.GetProperty("_npcId", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)?.GetValue(__instance);
+                var configValue = configId?.GetType().GetProperty("Value")?.GetValue(configId);
+                if (configValue is int id && id > 0) npcKey = "npc:" + id;
+            }
+            _speechLog?.LogInfo($"Stage3 persuade NPC response npc={npcKey} chars={text.Length} rawChars={raw?.Length ?? 0}");
+            SpeechMvp.OnNpcReply(npcKey, text, reply.Emotion ?? "normal");
+        }
+        catch (Exception e)
+        {
+            _speechLog?.LogWarning("Stage3 persuade response observer error: " + e.GetType().Name);
+        }
+    }
+
     public static void OnRequest(object[] __args)
     {
         Safe(() =>
@@ -287,5 +326,5 @@ internal static class PluginInfo
 {
     public const string Guid = "org.a1indextts.mod";
     public const string Name = "A1 IndexTTS Mod";
-    public const string Version = "0.5.8";
+    public const string Version = "0.5.9";
 }
