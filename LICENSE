@@ -19,8 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
-Scope: this MIT license covers the original source code, scripts, and project
-documentation only. It does not relicense game content, NPC identity data,
-reference WAV files, third-party binaries, or model weights. See
-THIRD_PARTY_NOTICES.md for those components.
