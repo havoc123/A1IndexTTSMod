@@ -6,7 +6,9 @@
 
 需要 BepInEx 6 Unity IL2CPP Windows x64 加载器。已为其他 MOD 安装并能正常加载的用户可保留现有版本；本项目验证版本是 `6.0.0-be.788+5b766a3`。新装用户从 [BepInEx 官方构建下载](https://builds.bepinex.dev/projects/bepinex_be/788/BepInEx-Unity.IL2CPP-win-x64-6.0.0-be.788%2B5b766a3.zip)，将其压缩包内容放在游戏根目录，即 `WorldApart.exe` 所在位置。该官方 ZIP 的 SHA-256 是 `f4cc496bd098a0df4164b81e3737297707f13a47c2478dba2f60eefab784817a`。
 
-不要把 BepInEx 解压进 `A1IndexTTSMod` 子目录。首次运行游戏后应生成 `BepInEx/LogOutput.log` 和 `BepInEx/interop`；若加载器尚未正常工作，MOD DLL 不会加载。
+不要把 BepInEx 解压进 `A1IndexTTSMod` 子目录。**本游戏还需要加载器兼容补丁**：从同一 [GitHub Release](https://github.com/havoc123/A1IndexTTSMod/releases/tag/v0.5.8) 下载 `A1IndexTTSMod-v0.5.8-doorstop-compat-win64.zip`。先退出游戏，将补丁中的 `winhttp.dll` 和 `third_party` 解压到 `WorldApart.exe` 所在目录，覆盖 BepInEx 官方包中的 `winhttp.dll`。补丁附带修改后的 UnityDoorstop 源码、构建脚本及 LGPL-2.1 许可。该游戏验证通过的 `winhttp.dll` SHA-256 为 `a2bfe64fd9ae63354ebb5e79be36e7ea29be9021ff6941e82487212a67fd1b6b`。
+
+首次运行游戏后应生成 `BepInEx/LogOutput.log` 和 `BepInEx/interop`；若加载器尚未正常工作，MOD DLL 不会加载。
 
 ## 2. 安装 MOD 包
 
