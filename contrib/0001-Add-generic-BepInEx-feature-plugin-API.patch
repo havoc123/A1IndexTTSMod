@@ -1,0 +1,437 @@
+From cd57e55945bc1f38382680e0c2f800d80497171e Mon Sep 17 00:00:00 2001
+From: havoc123 <zhenyu368@gmail.com>
+Date: Wed, 7 Oct 2026 19:42:45 +0800
+Subject: [PATCH] Add generic BepInEx feature plugin API
+
+---
+ README.md                                     |  4 +
+ docs/BepInEx-Feature-Plugin-API.md            | 22 +++++
+ src/bepinex_plugin/FeaturePluginRegistry.cs   | 99 +++++++++++++++++++
+ src/bepinex_plugin/LocalModManager.csproj     |  8 +-
+ src/bepinex_plugin/Plugin.cs                  | 91 +++++++++++++++--
+ .../abstractions/IManagedFeaturePlugin.cs     | 15 +++
+ .../LocalModManager.Abstractions.csproj       | 11 +++
+ 7 files changed, 240 insertions(+), 10 deletions(-)
+ create mode 100644 docs/BepInEx-Feature-Plugin-API.md
+ create mode 100644 src/bepinex_plugin/FeaturePluginRegistry.cs
+ create mode 100644 src/bepinex_plugin/abstractions/IManagedFeaturePlugin.cs
+ create mode 100644 src/bepinex_plugin/abstractions/LocalModManager.Abstractions.csproj
+
+diff --git a/README.md b/README.md
+index c18fb7f..b904934 100644
+--- a/README.md
++++ b/README.md
+@@ -57,3 +57,7 @@
+ - 已完成：BepInEx 注入稳定、游戏内 MOD 管理页（原生样式、包/分组两级、滚动修复）、性能无损（p95 偏差 0.00%）、F9 写入四件套实测通过。
+ - 进行中：空间传送到达未确认；剧情跳跃未闭环（TryStartQuestProc 返回 False，备选 FlowRuntimeManager.StartInWorld）。
+ - 规划：视频替换 AssetOverlay 优先路线、MOD 页自开关 bug 单独立项。
++
++## BepInEx 功能插件接口
++
++`src/bepinex_plugin/abstractions/` 定义与原生 `mod.json` 包相互独立的功能插件控制接口。基础包需将 `LocalModManager.Abstractions.dll` 与 `LocalModManager.dll` 放入 `BepInEx/plugins/`。接口和安装方式见 [BepInEx-Feature-Plugin-API.md](docs/BepInEx-Feature-Plugin-API.md)。Steam 启动仍使用单一 Doorstop/BepInEx 链；此 DLL 不替代或新增注入器。
+diff --git a/docs/BepInEx-Feature-Plugin-API.md b/docs/BepInEx-Feature-Plugin-API.md
+new file mode 100644
+index 0000000..e0d5fd5
+--- /dev/null
++++ b/docs/BepInEx-Feature-Plugin-API.md
+@@ -0,0 +1,22 @@
++# BepInEx feature plugin API
++
++The settings page has two independent sections: native `mod.json` packages and BepInEx feature plugins. The manager discovers only plugins that implement `LocalModManager.Abstractions.IManagedFeaturePlugin`; it does not infer a switch for arbitrary DLLs and does not write plugin configuration.
++
++## Contract
++
++`src/bepinex_plugin/abstractions/LocalModManager.Abstractions.csproj` builds `LocalModManager.Abstractions.dll` for .NET 6. Install that DLL once in `BepInEx/plugins/`, beside the manager plugin. Feature plugins reference the assembly but do not embed its types. The IndexTTS standalone package also ships the same dependency, so IndexTTS loads without the manager.
++
++Implement the interface on the BepInEx plugin instance:
++
++- `FeatureId`: stable unique ID, preferably the plugin GUID.
++- `DisplayName`, `Description`, `FeatureVersion`: UI metadata.
++- `DesiredEnabled`: persisted user intent.
++- `State`: `Stopped`, `Starting`, `Running`, `Stopping`, or `Failed`.
++- `StatusMessage`: current readiness or failure detail.
++- `SetEnabled(bool)`: accept quickly and perform slow work asynchronously. Calls should be idempotent. The implementation owns persistence and cleanup.
++
++Assemblies remain loaded. Disabling a feature must stop its feature activity and owned processes without attempting to unload the BepInEx plugin assembly. The manager refreshes metadata/state while its settings page is visible and tolerates the feature plugin loading before or after the manager.
++
++## IndexTTS reference implementation
++
++The first implementation is in the A1 IndexTTS repository under `src/managed-feature-api/` and `src/Plugin.cs`. Its `Stage3Mvp.Enabled` config remains the source of desired state, so standalone operation keeps working. The interface source is intentionally kept byte-for-byte aligned in both repositories; changes to the API should be versioned and delivered to the IndexTTS author at the same time.
+diff --git a/src/bepinex_plugin/FeaturePluginRegistry.cs b/src/bepinex_plugin/FeaturePluginRegistry.cs
+new file mode 100644
+index 0000000..92cde1a
+--- /dev/null
++++ b/src/bepinex_plugin/FeaturePluginRegistry.cs
+@@ -0,0 +1,99 @@
++using System;
++using System.Collections;
++using System.Collections.Generic;
++using System.Reflection;
++using BepInEx;
++using LocalModManager.Abstractions;
++
++namespace LocalModManager
++{
++    internal sealed class ManagedFeature
++    {
++        internal string OwnerGuid;
++        internal IManagedFeaturePlugin Feature;
++    }
++
++    internal static class FeaturePluginRegistry
++    {
++        private static readonly List<ManagedFeature> Items = new List<ManagedFeature>();
++        internal static IReadOnlyList<ManagedFeature> Current { get { return Items; } }
++
++        internal static void Refresh()
++        {
++            Items.Clear();
++            try
++            {
++                Type chainloader = null;
++                foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
++                {
++                    chainloader = assembly.GetType("BepInEx.Unity.IL2CPP.IL2CPPChainloader");
++                    if (chainloader != null) break;
++                }
++                object infos = null;
++                if (chainloader != null)
++                {
++                    object instance = null;
++                    var singleton = chainloader.GetProperty("Instance", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
++                    if (singleton != null) instance = singleton.GetValue(null, null);
++                    if (instance == null)
++                    {
++                        var instanceField = chainloader.GetField("Instance", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
++                        if (instanceField != null) instance = instanceField.GetValue(null);
++                    }
++                    infos = Read(instance, "Plugins");
++                }
++                if (infos == null)
++                {
++                    foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
++                    {
++                        var fallback = assembly.GetType("BepInEx.Bootstrap.Chainloader");
++                        if (fallback == null) continue;
++                        var prop = fallback.GetProperty("PluginInfos", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
++                        if (prop != null) infos = prop.GetValue(null, null);
++                        if (infos == null)
++                        {
++                            var field = fallback.GetField("PluginInfos", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
++                            if (field != null) infos = field.GetValue(null);
++                        }
++                        break;
++                    }
++                }
++                var entries = infos as IEnumerable;
++                if (entries == null) return;
++                foreach (var entry in entries)
++                {
++                    object info = entry;
++                    object value = Read(entry, "Value");
++                    if (value != null) info = value;
++                    if (info == null) continue;
++                    var feature = Read(info, "Instance") as IManagedFeaturePlugin;
++                    if (feature == null || String.IsNullOrWhiteSpace(feature.FeatureId)) continue;
++                    object metadata = Read(info, "Metadata");
++                    Items.Add(new ManagedFeature { OwnerGuid = Convert.ToString(Read(metadata, "GUID")) ?? "", Feature = feature });
++                }
++            }
++            catch (Exception e) { Plugin.Logger.LogWarning("[FEATURES] discovery failed: " + e.GetType().Name + ": " + e.Message); }
++        }
++
++        private static object Read(object instance, string name)
++        {
++            if (instance == null) return null;
++            var type = instance.GetType();
++            var prop = type.GetProperty(name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
++            if (prop != null) return prop.GetValue(instance, null);
++            var field = type.GetField(name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
++            return field == null ? null : field.GetValue(instance);
++        }
++
++        internal static bool SetEnabled(string id, bool enabled)
++        {
++            foreach (var item in Items)
++            {
++                if (item.Feature.FeatureId != id) continue;
++                try { item.Feature.SetEnabled(enabled); return true; }
++                catch (Exception e) { Plugin.Logger.LogWarning("[FEATURES] " + id + " request failed: " + e.GetType().Name + ": " + e.Message); return false; }
++            }
++            return false;
++        }
++    }
++}
+diff --git a/src/bepinex_plugin/LocalModManager.csproj b/src/bepinex_plugin/LocalModManager.csproj
+index 31e3a45..6432fb8 100644
+--- a/src/bepinex_plugin/LocalModManager.csproj
++++ b/src/bepinex_plugin/LocalModManager.csproj
+@@ -8,16 +8,15 @@
+     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+     <EnableDefaultCompileItems>true</EnableDefaultCompileItems>
++    <DefaultItemExcludes>$(DefaultItemExcludes);abstractions\**\*.cs</DefaultItemExcludes>
+     <!-- P0: no debug metadata, so the assembly carries no build-machine path that
+          would make `grep -ri kimi BepInEx\plugins\` match. Flip to `portable` when
+          you need line numbers in stack traces during development. -->
+     <DebugType>none</DebugType>
+   </PropertyGroup>
+-
+   <PropertyGroup>
+     <G Condition="'$(G)' == ''">C:\Program Files (x86)\Steam\steamapps\common\WorldApart</G>
+   </PropertyGroup>
+-
+   <ItemGroup>
+     <Reference Include="BepInEx.Core">
+       <HintPath>$(G)\BepInEx\core\BepInEx.Core.dll</HintPath>
+@@ -119,4 +118,9 @@
+       <Private>false</Private>
+     </Reference>
+   </ItemGroup>
++  <ItemGroup>
++    <ProjectReference Include="abstractions\LocalModManager.Abstractions.csproj">
++      <Private>true</Private>
++    </ProjectReference>
++  </ItemGroup>
+ </Project>
+diff --git a/src/bepinex_plugin/Plugin.cs b/src/bepinex_plugin/Plugin.cs
+index e21ff86..b028daa 100644
+--- a/src/bepinex_plugin/Plugin.cs
++++ b/src/bepinex_plugin/Plugin.cs
+@@ -1,5 +1,6 @@
+ using System;
+ using System.Collections.Generic;
++using LocalModManager.Abstractions;
+ using System.IO;
+ using System.Text;
+ using BepInEx;
+@@ -970,6 +971,7 @@ namespace LocalModManager
+             internal int Npc;
+             internal bool On;
+             internal bool IsPackage;   // master switch for the whole package
++            internal string FeatureId;
+             internal int Kind;         // 1 = package header, 2 = unit row
+             internal string PkgOf;     // unit row -> owning package ModId
+             internal RectTransform RootRt;
+@@ -1471,6 +1473,8 @@ namespace LocalModManager
+                     if (Time.unscaledTime >= _refreshAt)
+                     {
+                         _refreshAt = Time.unscaledTime + 1f;
++                        FeaturePluginRegistry.Refresh();
++                        AddMissingFeatureRows();
+                         RefreshRows();
+                     }
+                 }
+@@ -1509,7 +1513,7 @@ namespace LocalModManager
+                     var row = _rows[i];
+                     if (row == null || row.RootRt == null) continue;
+                     if (!row.RootRt.gameObject.activeSelf) continue;
+-                    float rowH = row.Kind == 1 ? _pkgRowH : _rowHeight;
++                    float rowH = row.Kind == 1 ? _pkgRowH : row.Kind == 4 ? FeatureRowHeight : _rowHeight;
+                     float indent = row.Kind == 2 ? 40f : 0f;
+                     var rt = row.RootRt;
+                     rt.anchorMin = new Vector2(0f, 1f);
+@@ -1942,6 +1946,8 @@ namespace LocalModManager
+             // ---- rows: stacked vertically from the template row's slot ----
+             _rowHeight = rowTemplate.rect.height > 10f ? rowTemplate.rect.height : 60f;
+             _nextRowY = rowTemplate.anchoredPosition.y;
++            FeaturePluginRegistry.Refresh();
++            _featureHeaderAdded = false;
+ 
+             var mb = ManagerBehaviour.Instance;
+             if (mb == null) Plugin.Logger.LogWarning("[MODPAGE] ManagerBehaviour not up yet");
+@@ -1950,7 +1956,7 @@ namespace LocalModManager
+             _rowRoots.Clear();
+             if (mb != null)
+             {
+-                foreach (var p in mb.CurrentSnapshot())
++                foreach (var p in ManagerBehaviour.CurrentSnapshot(mb))
+                 {
+                     if (p == null) continue;
+                     AddTitleRow(p.ModId, p.Title, p.RootDir, p.Author, p.Version);
+@@ -1965,6 +1971,8 @@ namespace LocalModManager
+                 }
+             }
+ 
++            AddMissingFeatureRows();
++
+             // The scrollbar is built LAST on purpose: it must be the topmost child of
+             // the page, otherwise the opaque Bg / HeaderBg (both created earlier) draw
+             // over its top band - which cut the handle in half and hid the up arrow.
+@@ -2143,6 +2151,46 @@ namespace LocalModManager
+             return label;
+         }
+ 
++        private static bool _featureHeaderAdded;
++        private static float FeatureRowHeight { get { return Mathf.Max(_rowHeight * 1.6f, 96f); } }
++
++        private static void AddMissingFeatureRows()
++        {
++            bool added = false;
++            foreach (var item in FeaturePluginRegistry.Current)
++            {
++                bool exists = false;
++                foreach (var existingRow in _rows) if (existingRow != null && existingRow.Kind == 4 && existingRow.FeatureId == item.Feature.FeatureId) { exists = true; break; }
++                if (exists) continue;
++                if (!_featureHeaderAdded)
++                {
++                    var header = NewRowRoot("FeaturePluginSection", _rowHeight);
++                    MakeLabel(header, "Text", "BepInEx 功能插件", _rowLabelStyle, 24f);
++                    header.GetComponent<UnityEngine.UI.Image>().raycastTarget = false;
++                    _rows.Add(new Row { Kind = 3, RootRt = header });
++                    _featureHeaderAdded = true;
++                }
++                var rt = NewRowRoot("FeaturePluginRow", FeatureRowHeight);
++                string text = FeatureLabel(item.Feature);
++                var label = MakeLabel(rt, "Text", text, _rowLabelStyle, 140f);
++                if (label != null) label.enableWordWrapping = true;
++                var row = new Row { Kind = 4, FeatureId = item.Feature.FeatureId, Label = label, LabelText = text, On = item.Feature.DesiredEnabled, RootRt = rt };
++                AddSwitch(rt, row);
++                added = true;
++            }
++            if (added) Relayout();
++        }
++
++        private static string FeatureLabel(IManagedFeaturePlugin feature)
++        {
++            string description = feature.Description ?? "";
++            string status = feature.StatusMessage ?? "";
++            string detail = status.Length > 0 ? status : description;
++            if (detail.Length > 100) detail = detail.Substring(0, 97) + "...";
++            return (feature.DisplayName ?? feature.FeatureId) + "  v" + (feature.FeatureVersion ?? "?")
++                + "  [" + feature.State + "]\n" + detail;
++        }
++
+         private static void AddUnitRow(string modId, string unitId, int npc, string typeName)
+         {
+             var rowRt = NewRowRoot("ModUnitRow", _rowHeight);
+@@ -2237,6 +2285,12 @@ namespace LocalModManager
+         {
+             try
+             {
++                if (row.Kind == 4)
++                {
++                    if (!FeaturePluginRegistry.SetEnabled(row.FeatureId, !row.On))
++                        Plugin.Logger.LogWarning("[FEATURES] no feature accepted request: " + row.FeatureId);
++                    return;
++                }
+                 row.On = !row.On;
+                 var mb = ManagerBehaviour.Instance;
+                 if (mb != null)
+@@ -2244,7 +2298,7 @@ namespace LocalModManager
+                     if (row.IsPackage)
+                     {
+                         // master switch: apply to every unit of the package
+-                        foreach (var p in mb.CurrentSnapshot())
++                        foreach (var p in ManagerBehaviour.CurrentSnapshot(mb))
+                         {
+                             if (p == null || p.ModId != row.ModId || p.Units == null) continue;
+                             foreach (var un in p.Units)
+@@ -2269,7 +2323,7 @@ namespace LocalModManager
+         {
+             try
+             {
+-                foreach (var p in mb.CurrentSnapshot())
++                foreach (var p in ManagerBehaviour.CurrentSnapshot(mb))
+                 {
+                     if (p == null || p.ModId != modId || p.Units == null) continue;
+                     foreach (var un in p.Units)
+@@ -2296,7 +2350,18 @@ namespace LocalModManager
+                 {
+                     if (row.Label != null && row.Label.text != row.LabelText)
+                         row.Label.text = row.LabelText;
+-                    if (mb != null)
++                    if (row.Kind == 4)
++                    {
++                        foreach (var item in FeaturePluginRegistry.Current)
++                        {
++                            if (item.Feature.FeatureId != row.FeatureId) continue;
++                            row.On = item.Feature.DesiredEnabled;
++                            string label = FeatureLabel(item.Feature);
++                            if (row.Label != null && row.Label.text != label) row.Label.text = label;
++                            break;
++                        }
++                    }
++                    else if (mb != null)
+                         row.On = row.IsPackage
+                             ? PackageAllOn(mb, row.ModId)
+                             : mb.EntryEnabled(row.ModId, row.UnitId, row.Npc);
+@@ -3957,6 +4022,7 @@ namespace LocalModManager
+             Environment.GetEnvironmentVariable("MOD_PAGE_SELFTEST") == "1";
+ 
+         private bool _scanTried;
++        private bool _featureScanTried;
+         private float _selfCheckAt = -1f;
+         private int _checkRounds;
+         private bool _revDone;
+@@ -4043,6 +4109,14 @@ namespace LocalModManager
+                 if (Input.GetKeyDown(KeyCode.F10)) _show = !_show;
+                 if (Input.GetMouseButtonDown(0)) SettingsEntryHook.NoteMouseDown();   // P1 gate source
+                 SettingsEntryHook.Maintain();
++                if (!_featureScanTried && Time.time > 5f)
++                {
++                    _featureScanTried = true;
++                    FeaturePluginRegistry.Refresh();
++                    var features = new List<string>();
++                    foreach (var item in FeaturePluginRegistry.Current) features.Add(item.Feature.FeatureId);
++                    Plugin.Logger.LogInfo("[FEATURES] discovered " + features.Count + " managed feature plugin(s): " + string.Join(", ", features));
++                }
+                 if (TabDiag.Enabled) TabDiag.Tick();                                  // MOD_TAB_DIAG input probe
+ 
+                 if (!_scanTried && Time.time > 5f)
+@@ -4474,10 +4548,11 @@ namespace LocalModManager
+         // ---- internal API for the settings-page MOD manager (S2) ----
+ 
+         /// <summary>Throttled package snapshot, shared with the IMGUI window.</summary>
+-        internal List<ModPackage> CurrentSnapshot()
++        internal static List<ModPackage> CurrentSnapshot(ManagerBehaviour instance)
+         {
+-            RefreshSnapshotIfDue();
+-            return _snap;
++            if (instance == null) return new List<ModPackage>();
++            instance.RefreshSnapshotIfDue();
++            return instance._snap;
+         }
+ 
+         /// <summary>Toggle one registry entry from the settings-page switch rows.</summary>
+diff --git a/src/bepinex_plugin/abstractions/IManagedFeaturePlugin.cs b/src/bepinex_plugin/abstractions/IManagedFeaturePlugin.cs
+new file mode 100644
+index 0000000..5ce3910
+--- /dev/null
++++ b/src/bepinex_plugin/abstractions/IManagedFeaturePlugin.cs
+@@ -0,0 +1,15 @@
++namespace LocalModManager.Abstractions
++{
++    public enum FeaturePluginState { Stopped, Starting, Running, Stopping, Failed }
++    public interface IManagedFeaturePlugin
++    {
++        string FeatureId { get; }
++        string DisplayName { get; }
++        string Description { get; }
++        string FeatureVersion { get; }
++        bool DesiredEnabled { get; }
++        FeaturePluginState State { get; }
++        string StatusMessage { get; }
++        void SetEnabled(bool enabled);
++    }
++}
+diff --git a/src/bepinex_plugin/abstractions/LocalModManager.Abstractions.csproj b/src/bepinex_plugin/abstractions/LocalModManager.Abstractions.csproj
+new file mode 100644
+index 0000000..f1c2918
+--- /dev/null
++++ b/src/bepinex_plugin/abstractions/LocalModManager.Abstractions.csproj
+@@ -0,0 +1,11 @@
++<Project Sdk="Microsoft.NET.Sdk">
++  <PropertyGroup>
++    <TargetFramework>net6.0</TargetFramework>
++    <AssemblyName>LocalModManager.Abstractions</AssemblyName>
++    <RootNamespace>LocalModManager.Abstractions</RootNamespace>
++    <Version>1.0.0</Version>
++    <Nullable>disable</Nullable>
++    <ImplicitUsings>disable</ImplicitUsings>
++    <DebugType>none</DebugType>
++  </PropertyGroup>
++</Project>
+-- 
+2.53.0.windows.2
+

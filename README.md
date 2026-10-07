@@ -19,6 +19,14 @@
 
 安装 v0.5.9 补丁后，已验证官方 AI 普通聊天和说服小游戏的 NPC 回复；其他入口及游戏更新后的兼容性尚需实测。播放走 WASAPI，不受游戏内音量滑杆直接控制。版本范围和已知限制见 [发布说明](RELEASE-NOTES-v0.5.8.md)。
 
+## Mod Manager 支持
+
+当前源码集成版 `v0.6.0` 实现了通用 BepInEx 功能插件接口，可在兼容的 Mod Manager 设置页中查看并开关 IndexTTS。**该接口尚未包含在 Releases 中的 v0.5.9 包**；请勿把旧发行版与下文的管理器支持混为一谈。安装要求、目录和开关行为见 [Mod Manager 集成说明](docs/MOD-MANAGER-SUPPORT.md)。
+
+集成使用 `LocalModManager.Abstractions.dll` 作为共享契约：它必须放在 `BepInEx/plugins/` 根目录。Mod Manager 本身也是同一个 BepInEx 加载链中的插件；不要另启管理器启动器或第二套 Doorstop/BepInEx。TTSMod 未安装管理器时仍可单独运行，但 v0.6.0 接口构建仍需要共享抽象 DLL。
+
+给管理器作者的改动说明、可合并提交号与本机验证范围见 [作者合并说明](docs/MOD-MANAGER-AUTHOR-HANDOFF.md)。管理器 fork 的功能分支目前保留在本地，尚未推送或发起 PR。
+
 ## 隐私与反馈
 
 默认不采集完整提示词或对话。手动开启 Stage2A 诊断时，记录会存于游戏内 `A1IndexTTSMod/.state/stage2a`，其中可能含私密聊天和游戏上下文；提交问题前请自行检查、删去敏感内容。运行时 `.state`、模型和日志不纳入 Git 或发行 ZIP。

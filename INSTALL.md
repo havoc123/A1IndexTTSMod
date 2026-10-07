@@ -50,6 +50,24 @@ A1/A1IndexTTSMod/.cache/audiocpp/models/IndexTTS2.5-GGUF/index-tts2_5-q8_0.gguf
 
 若没有声音，先看 `BepInEx/LogOutput.log` 中是否有 `A1 IndexTTS Mod 0.5.8`、`Stage3`、`audio.cpp` 和 `playback backend=wasapi_shared`；再看控制台是否显示模型/端口错误。确认 BepInEx、模型路径、驱动和音频输出设备。该 MOD 使用系统默认播放设备，声音不跟随游戏音量滑杆。
 
+## 可选：Mod Manager 控制（源码集成版 v0.6.0）
+
+Releases 当前的 v0.5.9 插件包不含此功能插件接口。若使用集成版 v0.6.0，请安装实现 `IManagedFeaturePlugin` 接口的兼容 Mod Manager，并确保共享抽象 DLL 与插件一起安装。目录应类似：
+
+```text
+BepInEx/plugins/
+  LocalModManager.dll
+  LocalModManager.Abstractions.dll
+  A1IndexTTSMod/
+    A1IndexTTSMod.dll
+    NAudio.Core.dll
+    NAudio.Wasapi.dll
+```
+
+官方仓库当前版本的 Mod Manager 尚不一定包含该接口；本项目的实现基于 `havoc123/WorldApart-ModManager-Public` 的 `codex/bepinex-feature-plugin-api` 功能分支。接口及给作者的提交信息见 [Mod Manager 支持说明](docs/MOD-MANAGER-SUPPORT.md) 与 [作者合并说明](docs/MOD-MANAGER-AUTHOR-HANDOFF.md)。
+
+在游戏设置页的 MOD 管理页面中，找到“BepInEx 功能插件”区域即可控制 IndexTTS。开关保存 `Stage3Mvp.Enabled` 配置。关闭会取消等待中的合成、停止当前播放，并停止本插件启动的 audio.cpp；再次开启会恢复服务。BepInEx 不会热卸载插件程序集。若 `127.0.0.1:8892` 已有外部服务，插件只连接它，不会替用户关闭该服务。状态显示 `Failed` 时，开关仍表示配置的期望启用状态，旁边的状态文字说明失败原因。
+
 ## 升级与卸载
 
 升级前退出游戏和 TTS 控制台，备份自己修改过的 `config/emotions.json` 与新增 WAV，再以新版包替换此 MOD 管理的文件。不要覆盖其他 MOD 的 BepInEx 文件。卸载时退出游戏后删除 `BepInEx/plugins/A1IndexTTSMod` 和游戏根目录 `A1IndexTTSMod`；如 BepInEx 由其他 MOD 共用，请保留它。`.state` 是本地运行数据，删除 MOD 目录时也会被删除。
