@@ -14,7 +14,7 @@
 
 提交增加 `LocalModManager.Abstractions.dll` 和 `IManagedFeaturePlugin`，由管理器从 BepInEx IL2CPP Chainloader 已加载实例发现实现者，并在现有 MOD 设置页增加独立的功能插件区域。原生 `ModRegistry` 包的读取与切换路径保持独立。功能行显示期望状态、运行状态及状态说明。
 
-目前尚未向 `scwunai` 发 PR 或发送消息。可以从 [GitHub 比较页面](https://github.com/scwunai/WorldApart-ModManager-Public/compare/main...havoc123:WorldApart-ModManager-Public:codex/bepinex-feature-plugin-api?expand=1) 创建 PR，目标仓库选 `scwunai/WorldApart-ModManager-Public`、目标分支选 `main`，来源选 `havoc123/WorldApart-ModManager-Public:codex/bepinex-feature-plugin-api`。也可以从本仓库 `contrib/` 目录取邮件补丁，将文件放到管理器仓库后运行 `git am 0001-Add-generic-BepInEx-feature-plugin-API.patch`。提交前请确认上游 `main` 未新增冲突改动。
+目前尚未向 `scwunai` 发 PR 或发送消息。可以从 [GitHub 比较页面](https://github.com/scwunai/WorldApart-ModManager-Public/compare/main...havoc123:codex/bepinex-feature-plugin-api?expand=1) 创建 PR，目标仓库选 `scwunai/WorldApart-ModManager-Public`、目标分支选 `main`，来源选 `havoc123/WorldApart-ModManager-Public:codex/bepinex-feature-plugin-api`。也可以从本仓库 `contrib/` 目录取邮件补丁，将文件放到管理器仓库后运行 `git am 0001-Add-generic-BepInEx-feature-plugin-API.patch`。提交前请确认上游 `main` 未新增冲突改动。
 
 ## TTSMod 对接
 
