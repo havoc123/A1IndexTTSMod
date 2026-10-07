@@ -39,6 +39,11 @@ internal static class WasapiSpeechPlayer
         }
     }
 
+    public static void Stop()
+    {
+        lock (Gate) StopCurrent();
+    }
+
     private static void StopCurrent()
     {
         try { _output?.Stop(); } catch { }

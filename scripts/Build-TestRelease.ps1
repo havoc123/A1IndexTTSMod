@@ -1,7 +1,8 @@
 [CmdletBinding()]
 param(
     [string] $OutputRoot = (Join-Path (Split-Path -Parent $PSScriptRoot) 'dist'),
-    [string] $Version = 'v0.5.8'
+    [string] $Version = 'v0.6.0',
+    [switch] $SkipArchive
 )
 
 $ErrorActionPreference = 'Stop'
@@ -19,6 +20,7 @@ $sourceRuntime = Join-Path $project '.cache\audiocpp\runtime'
 $sourceNpcs = Join-Path $project 'references\npcs'
 $sourceModel = Join-Path $project '.cache\audiocpp\models\IndexTTS2.5-GGUF\index-tts2_5-q8_0.gguf'
 $pluginFiles = @('A1IndexTTSMod.dll', 'NAudio.Core.dll', 'NAudio.Wasapi.dll')
+$sharedPluginFiles = @('LocalModManager.Abstractions.dll')
 $runScripts = @('Run-AudioCppForGame.ps1', 'Start-AudioCpp.ps1', 'Stop-AudioCpp.ps1')
 
 foreach ($path in @(
@@ -34,7 +36,7 @@ foreach ($path in @(
 )) {
     if (-not (Test-Path -LiteralPath $path)) { throw "Required release input is missing: $path" }
 }
-foreach ($namePart in $pluginFiles) {
+foreach ($namePart in @($pluginFiles) + @($sharedPluginFiles)) {
     if (-not (Test-Path -LiteralPath (Join-Path $sourceBin $namePart) -PathType Leaf)) {
         throw "Plugin output is missing: $namePart; build Release first."
     }
@@ -73,17 +75,21 @@ foreach ($wav in $wavFiles) {
 
 New-Item -ItemType Directory -Path $OutputRoot -Force | Out-Null
 $game = Join-Path $package 'A1'
-$plugin = Join-Path $game 'BepInEx\plugins\A1IndexTTSMod'
+$pluginsRoot = Join-Path $game 'BepInEx\plugins'
+$plugin = Join-Path $pluginsRoot 'A1IndexTTSMod'
 $mod = Join-Path $game 'A1IndexTTSMod'
 $runtime = Join-Path $mod '.cache\audiocpp\runtime'
 $modelDir = Join-Path $mod '.cache\audiocpp\models\IndexTTS2.5-GGUF'
 $npcs = Join-Path $mod 'references\npcs'
 $scripts = Join-Path $mod 'scripts'
 $config = Join-Path $mod 'config'
-New-Item -ItemType Directory -Path $plugin,$runtime,$modelDir,$npcs,$scripts,$config -Force | Out-Null
+New-Item -ItemType Directory -Path $pluginsRoot,$plugin,$runtime,$modelDir,$npcs,$scripts,$config -Force | Out-Null
 
 foreach ($namePart in $pluginFiles) {
     Copy-Item -LiteralPath (Join-Path $sourceBin $namePart) -Destination (Join-Path $plugin $namePart)
+}
+foreach ($namePart in $sharedPluginFiles) {
+    Copy-Item -LiteralPath (Join-Path $sourceBin $namePart) -Destination (Join-Path $pluginsRoot $namePart)
 }
 foreach ($entry in Get-ChildItem -LiteralPath $sourceRuntime -Force) {
     Copy-Item -LiteralPath $entry.FullName -Destination (Join-Path $runtime $entry.Name) -Recurse -Force

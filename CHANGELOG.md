@@ -1,5 +1,11 @@
 # 更新记录
 
+## v0.6.0（2026-10-07，集成开发）
+
+- 实现通用 BepInEx 功能插件接口，TTS 开关继续使用 `Stage3Mvp.Enabled` 配置，并保留管理器缺席时的独立加载。
+- 关闭时取消待合成回复、停止当前播放，并仅关闭本插件启动的 audio.cpp 服务；外部已运行服务只连接、不关闭。
+- `Install-Plugin.ps1` 与测试包结构包含共享的 `LocalModManager.Abstractions.dll`。运行时热开关验收见 `MOD-MANAGER-INTEGRATION-VALIDATION.md`。
+
 ## v0.5.9（2026-10-01，补丁）
 
 - 说服小游戏的结构化 NPC 回复现在会按 NPC ID 选择参考音并朗读，玩家提交的话术保持静音。

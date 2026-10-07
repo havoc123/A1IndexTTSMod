@@ -5,6 +5,7 @@ using System.Text.Json;
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
+using LocalModManager.Abstractions;
 
 namespace A1IndexTTSMod;
 
@@ -31,6 +32,15 @@ internal static class SpeechMvp
     private static string? _lastReplyKey;
     private static DateTime _lastReplyUtc;
     private static long _generation;
+    private static long _transition;
+    private static FeaturePluginState _state = FeaturePluginState.Stopped;
+    private static string _statusMessage = "Disabled";
+    private static bool _autoStartAudioCpp;
+    private static string _precision = "q8_0";
+    private static CancellationTokenSource? _lifecycleCancellation;
+
+    public static FeaturePluginState State { get { lock (Gate) return _state; } }
+    public static string StatusMessage { get { lock (Gate) return _statusMessage; } }
 
     [DllImport("winmm.dll", EntryPoint = "PlaySoundW", CharSet = CharSet.Unicode, SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
@@ -41,18 +51,18 @@ internal static class SpeechMvp
         ConfigEntry<bool> autoStartAudioCpp, ConfigEntry<string> audioCppPrecision)
     {
         _log = log;
-        _enabled = enabled.Value;
         _referenceId = referenceId.Value.Trim();
         _audioCppModelId = audioCppModelId.Value.Trim();
         _timeoutSeconds = Math.Clamp(timeoutSeconds.Value, 10, 600);
-        if (!_enabled) { log.LogInfo("Stage3 MVP speech is disabled."); return; }
+        _autoStartAudioCpp = autoStartAudioCpp.Value;
+        _precision = audioCppPrecision.Value.Trim().ToLowerInvariant();
         if (!Uri.TryCreate(url.Value, UriKind.Absolute, out var endpoint) ||
             endpoint.Scheme != Uri.UriSchemeHttp || !endpoint.IsLoopback ||
             endpoint.AbsolutePath is not ("/v1/tts" or "/v1/audio/speech") ||
             _referenceId.Length == 0 || _referenceId.Any(c => !(char.IsLetterOrDigit(c) || c is '_' or '-')) ||
             _audioCppModelId.Length == 0 || _audioCppModelId.Any(c => !(char.IsLetterOrDigit(c) || c is '_' or '-' or '.')))
         {
-            _enabled = false;
+            lock (Gate) { _enabled = false; _state = FeaturePluginState.Failed; _statusMessage = "Invalid TTS URL or model/reference ID"; }
             log.LogWarning("Stage3 MVP disabled: TtsUrl must be a loopback HTTP /v1/tts or /v1/audio/speech URL; reference/model IDs must be simple names.");
             return;
         }
@@ -62,8 +72,84 @@ internal static class SpeechMvp
         _voiceStageDir = Path.Combine(Paths.GameRootPath, "A1IndexTTSMod", ".state", "stage3-voice");
         _emotionMapPath = Path.Combine(Paths.GameRootPath, "A1IndexTTSMod", "config", "emotions.json");
         Directory.CreateDirectory(_audioDir);
-        log.LogInfo($"Stage3 MVP speech ready: {endpoint.Host}:{endpoint.Port}, backend={(_audioCpp ? "audio.cpp" : "IndexTTS API")}, reference={_referenceId}, model={_audioCppModelId}, timeout={_timeoutSeconds}s");
-        if (_audioCpp) AudioCppLifecycle.Start(log, endpoint, _audioCppModelId, autoStartAudioCpp.Value, audioCppPrecision.Value.Trim().ToLowerInvariant());
+        log.LogInfo($"Stage3 MVP speech configured: {endpoint.Host}:{endpoint.Port}, backend={(_audioCpp ? "audio.cpp" : "IndexTTS API")}, reference={_referenceId}, model={_audioCppModelId}, timeout={_timeoutSeconds}s");
+        SetEnabled(enabled.Value);
+    }
+
+    public static void SetEnabled(bool enabled)
+    {
+        CancellationTokenSource? oldPending;
+        CancellationTokenSource? oldLifecycle;
+        long transition;
+        CancellationToken lifecycleToken;
+        lock (Gate)
+        {
+            if (_enabled == enabled && ((enabled && (_state == FeaturePluginState.Starting || _state == FeaturePluginState.Running)) || (!enabled && _state == FeaturePluginState.Stopped))) return;
+            _enabled = enabled;
+            transition = ++_transition;
+            ++_generation;
+            oldPending = _pending;
+            _pending = null;
+            oldLifecycle = _lifecycleCancellation;
+            _lifecycleCancellation = enabled ? new CancellationTokenSource() : null;
+            lifecycleToken = _lifecycleCancellation?.Token ?? CancellationToken.None;
+            _state = enabled ? FeaturePluginState.Starting : FeaturePluginState.Stopping;
+            _statusMessage = enabled ? "Starting TTS service" : "Stopping speech and owned service";
+        }
+        try { oldPending?.Cancel(); } catch (ObjectDisposedException) { }
+        try { oldLifecycle?.Cancel(); } catch (ObjectDisposedException) { }
+        if (!enabled) StopPlayback();
+        _ = Task.Run(() => TransitionAsync(transition, enabled, lifecycleToken));
+    }
+
+    private static async Task TransitionAsync(long transition, bool enabled, CancellationToken token)
+    {
+        try
+        {
+            if (enabled)
+            {
+                if (_endpoint == null) throw new InvalidOperationException("TTS endpoint is not configured.");
+                if (_audioCpp)
+                    await AudioCppLifecycle.EnsureStartedAsync(_log!, _endpoint, _audioCppModelId, _autoStartAudioCpp, _precision, token).ConfigureAwait(false);
+                SetTransitionState(transition, FeaturePluginState.Running, _audioCpp ? AudioCppLifecycle.StatusMessage : "TTS feature enabled");
+                _log?.LogInfo("Stage3 MVP state=running: TTS endpoint ready or available.");
+            }
+            else
+            {
+                await AudioCppLifecycle.StopOwnedAsync().ConfigureAwait(false);
+                SetTransitionState(transition, FeaturePluginState.Stopped, "Disabled");
+                _log?.LogInfo("Stage3 MVP state=stopped: pending requests canceled and owned playback/service stopped.");
+            }
+        }
+        catch (OperationCanceledException) { }
+        catch (Exception e)
+        {
+            SetTransitionState(transition, FeaturePluginState.Failed, e.Message);
+            _log?.LogWarning($"Stage3 MVP state=failed: {e.GetType().Name}: {e.Message}");
+        }
+    }
+
+    private static void SetTransitionState(long transition, FeaturePluginState state, string message)
+    {
+        lock (Gate)
+        {
+            if (transition != _transition) return;
+            _state = state;
+            _statusMessage = message;
+        }
+    }
+
+    private static void StopPlayback()
+    {
+        string? file;
+        lock (Gate)
+        {
+            PlaySound(null, IntPtr.Zero, 0);
+            WasapiSpeechPlayer.Stop();
+            file = _playingFile;
+            _playingFile = null;
+        }
+        DeleteIfPresent(file);
     }
 
     public static void OnNpcReply(string npcKey, string displayText, string? emotion)
@@ -79,6 +165,7 @@ internal static class SpeechMvp
         long generation;
         lock (Gate)
         {
+            if (!_enabled || _endpoint == null) return;
             // A repeated callback for the same display event must not synthesize twice.
             if (key == _lastReplyKey && DateTime.UtcNow - _lastReplyUtc < TimeSpan.FromMilliseconds(750)) return;
             _lastReplyKey = key;
@@ -139,7 +226,6 @@ internal static class SpeechMvp
                 _log?.LogInfo($"Stage3 MVP TTS skipped generation={generation} npc={npcKey} reason={selection.Label}");
                 return;
             }
-            if (_audioCpp) await AudioCppLifecycle.WaitUntilReadyAsync(source.Token).ConfigureAwait(false);
             var vector = EmotionVector(emotion);
             _log?.LogInfo($"Stage3 MVP emotion generation={generation} tag={emotion ?? "unknown"} mode={(vector == null ? "qwen_text" : "vector")}");
             var npcVoice = selection.Path;
@@ -196,7 +282,7 @@ internal static class SpeechMvp
             string? oldFile;
             lock (Gate)
             {
-                if (generation != _generation || source.IsCancellationRequested) return;
+                if (!_enabled || generation != _generation || source.IsCancellationRequested) return;
                 PlaySound(null, IntPtr.Zero, 0); // Stop any earlier WinMM fallback before a new line.
                 var wasapi = WasapiSpeechPlayer.TryPlay(newFile, _log);
                 if (!wasapi && !PlaySound(newFile, IntPtr.Zero, SndAsync | SndNoDefault | SndFileName))

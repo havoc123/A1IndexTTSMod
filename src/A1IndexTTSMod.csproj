@@ -4,12 +4,13 @@
     <TargetFramework>net6.0</TargetFramework>
     <AssemblyName>A1IndexTTSMod</AssemblyName>
     <RootNamespace>A1IndexTTSMod</RootNamespace>
-    <Version>0.5.9</Version>
+    <Version>0.6.0</Version>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <DefaultItemExcludes>$(DefaultItemExcludes);managed-feature-api\**\*.cs</DefaultItemExcludes>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -24,6 +25,7 @@
   </Target>
 
   <ItemGroup>
+    <ProjectReference Include="managed-feature-api\LocalModManager.Abstractions.csproj" />
     <PackageReference Include="NAudio.Wasapi" Version="2.3.0" />
     <Reference Include="BepInEx.Core">
       <HintPath>$(BepInExDir)\core\BepInEx.Core.dll</HintPath>

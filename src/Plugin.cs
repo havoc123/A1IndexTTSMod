@@ -7,14 +7,33 @@ using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Unity.IL2CPP;
 using HarmonyLib;
+using LocalModManager.Abstractions;
 
 namespace A1IndexTTSMod;
 
 [BepInPlugin(PluginInfo.Guid, PluginInfo.Name, PluginInfo.Version)]
 [BepInProcess("WorldApart.exe")]
-public sealed class Plugin : BasePlugin
+public sealed class Plugin : BasePlugin, IManagedFeaturePlugin
 {
     private Harmony? _harmony;
+    private ConfigEntry<bool>? _managedEnabled;
+
+    public string FeatureId => PluginInfo.Guid;
+    public string DisplayName => "IndexTTS NPC 朗读";
+    public string Description => "朗读游戏内 NPC AI 回复";
+    public string FeatureVersion => PluginInfo.Version;
+    public bool DesiredEnabled => _managedEnabled?.Value ?? false;
+    public FeaturePluginState State => SpeechMvp.State;
+    public string StatusMessage => SpeechMvp.StatusMessage;
+
+    public void SetEnabled(bool enabled)
+    {
+        if (_managedEnabled == null) return;
+        _managedEnabled.Value = enabled;
+        try { Config.Save(); } catch (Exception e) { Log.LogWarning("Could not persist speech state: " + e.Message); }
+        SpeechMvp.SetEnabled(enabled);
+    }
+
     public override void Load()
     {
         try
@@ -26,9 +45,10 @@ public sealed class Plugin : BasePlugin
             var maxChars = Config.Bind("Stage2A", "MaxRecordChars", 120000, "Maximum characters copied from one text field.");
             var dir = Config.Bind("Stage2A", "CaptureDirectory", ".state/stage2a", "Capture path relative to the mod project directory.");
             if (diagnostics.Value) Probe.Start(Log, capture, maxChars, dir);
+            _managedEnabled = Config.Bind("Stage3Mvp", "Enabled", true, "Speak structured NPC AI replies through the local IndexTTS API.");
             SpeechMvp.Start(
                 Log,
-                Config.Bind("Stage3Mvp", "Enabled", true, "Speak structured NPC AI replies through the local IndexTTS API."),
+                _managedEnabled,
                 Config.Bind("Stage3Mvp", "TtsUrl", "http://127.0.0.1:8892/v1/audio/speech", "Local TTS endpoint; audio.cpp /v1/audio/speech by default, or legacy /v1/tts."),
                 Config.Bind("Stage3Mvp", "ReferenceId", "demo", "Reference audio ID under indextts25/voices."),
                 Config.Bind("Stage3Mvp", "AudioCppModelId", "indextts25", "Model ID in the local audio.cpp server config. Model precision is chosen by the server launcher."),
@@ -326,5 +346,5 @@ internal static class PluginInfo
 {
     public const string Guid = "org.a1indextts.mod";
     public const string Name = "A1 IndexTTS Mod";
-    public const string Version = "0.5.9";
+    public const string Version = "0.6.0";
 }
