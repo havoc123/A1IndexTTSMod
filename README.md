@@ -25,7 +25,7 @@
 
 集成使用 `LocalModManager.Abstractions.dll` 作为共享契约：它必须放在 `BepInEx/plugins/` 根目录。Mod Manager 本身也是同一个 BepInEx 加载链中的插件；不要另启管理器启动器或第二套 Doorstop/BepInEx。TTSMod 未安装管理器时仍可单独运行，但 v0.6.0 接口构建仍需要共享抽象 DLL。
 
-给管理器作者的改动说明、可合并提交号与本机验证范围见 [作者合并说明](docs/MOD-MANAGER-AUTHOR-HANDOFF.md)。管理器 fork 的功能分支目前保留在本地，尚未推送或发起 PR。
+给管理器作者的改动说明、可合并提交号与本机验证范围见 [作者合并说明](docs/MOD-MANAGER-AUTHOR-HANDOFF.md)。管理器功能分支已推到开发 fork，尚未向上游发起 PR。
 
 ## 隐私与反馈
 

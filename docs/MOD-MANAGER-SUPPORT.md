@@ -39,4 +39,4 @@ BepInEx/plugins/
 
 本功能使用通用接口，不依赖 TTS 类型，也不将 IndexTTS 伪装成原生 `mod.json` 包。管理器接口、发现过程、设置页实现、可合并提交和可直接应用的邮件补丁见 [作者合并说明](MOD-MANAGER-AUTHOR-HANDOFF.md)。
 
-集成验证记录见 [MOD-MANAGER-INTEGRATION-VALIDATION.md](../MOD-MANAGER-INTEGRATION-VALIDATION.md)。本地验证包含 Steam 共载、接口发现、快速开关、合成取消、停用后服务退出和重新启用；尚未验证真实 NPC 对话的可听播放，也未在新截图中检查最终状态行排版。
+本地验证范围包含 Steam 共载、接口发现、快速开关、合成取消、停用后服务退出和重新启用；尚未验证真实 NPC 对话的可听播放，也未在新截图中检查最终状态行排版。交接记录见 [作者合并说明](MOD-MANAGER-AUTHOR-HANDOFF.md)。
