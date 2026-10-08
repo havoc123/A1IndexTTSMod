@@ -3,7 +3,8 @@ param(
     [string] $SevenZip = 'C:\Program Files\7-Zip\7z.exe',
     [string] $OutputRoot = '',
     [string] $SevenZipVolumeSize = '1540m',
-    [switch] $SplitModel
+    [switch] $SplitModel,
+    [string] $ReuseModelArchive = ''
 )
 
 $ErrorActionPreference = 'Stop'
@@ -24,6 +25,15 @@ $cosyModel = Join-Path $project '.cache\audiocpp\models\CosyVoice3-GGUF\cosyvoic
 $game = 'E:\Program Files (x86)\Steam\steamapps\common\A1'
 if ([Reflection.AssemblyName]::GetAssemblyName((Join-Path $project 'src\bin\Release\net6.0\A1IndexTTSMod.dll')).Version.ToString() -ne "$version.0") { throw 'Built plugin does not match source version.' }
 if ($SplitModel) { $archive = Join-Path $output "A1IndexTTSMod-v$version-cosy-program-win64.7z" }
+if ($ReuseModelArchive) {
+    if (-not $SplitModel) { throw 'ReuseModelArchive requires SplitModel.' }
+    $ReuseModelArchive = [IO.Path]::GetFullPath($ReuseModelArchive)
+    if (-not (Test-Path -LiteralPath $ReuseModelArchive -PathType Leaf)) { throw 'Existing model archive is missing.' }
+    $archivedModelHash = (& $SevenZip e $ReuseModelArchive 'MODEL-SHA256.txt' -so) -join ''
+    if ($LASTEXITCODE -ne 0) { throw 'Could not read the existing model archive fingerprint.' }
+    $currentModelHash = (Get-FileHash -LiteralPath $cosyModel -Algorithm SHA256).Hash.ToLowerInvariant()
+    if ($archivedModelHash.Trim() -ne $currentModelHash) { throw 'Existing model archive does not identify the current GGUF.' }
+}
 
 foreach ($path in @($SevenZip, $loaderZip, $runtime, $cosyModel, (Join-Path $project '.cache\bepinex\2022.3.43.zip'), (Join-Path $project '.cache\doorstop\winhttp.dll'), (Join-Path $project 'references\npcs\npc_id_name.csv'), (Join-Path $game 'dotnet\coreclr.dll'))) {
     if (-not (Test-Path -LiteralPath $path)) { throw "Required local asset is missing: $path" }
@@ -99,6 +109,7 @@ Enabled = true
 TtsUrl = http://127.0.0.1:8892/v1/audio/speech
 Backend = CosyVoiceAudioCpp
 PromptEnhancement = true
+PresetVoiceStyles = true
 ReferenceId = demo
 AudioCppModelId = cosyvoice3
 TimeoutSeconds = 180
@@ -154,7 +165,13 @@ exit /b %RESULT%
     if (-not ([IO.Path]::GetFullPath($stage).StartsWith($output.TrimEnd('\') + '\', [StringComparison]::OrdinalIgnoreCase))) { throw 'Unsafe staging cleanup path.' }
     Remove-Item -LiteralPath $stage -Recurse -Force
 
-    if ($SplitModel) {
+    if ($SplitModel -and $ReuseModelArchive) {
+        $modelArchive = Join-Path $output 'CosyVoice3-q8_0-model-win64.7z'
+        Copy-Item -LiteralPath $ReuseModelArchive -Destination $modelArchive
+        if ((Get-FileHash -LiteralPath $ReuseModelArchive -Algorithm SHA256).Hash -ne
+            (Get-FileHash -LiteralPath $modelArchive -Algorithm SHA256).Hash) { throw 'Reused model archive copy differs from the source.' }
+        $currentModelHash | Set-Content -LiteralPath (Join-Path $output 'MODEL-SHA256.txt') -Encoding ascii
+    } elseif ($SplitModel) {
         $modelStage = Join-Path $output 'model-stage'
         $modelPayload = Join-Path $modelStage 'A1\A1IndexTTSMod\.cache\audiocpp\models\CosyVoice3-GGUF'
         New-Item -ItemType Directory -Path $modelPayload -Force | Out-Null

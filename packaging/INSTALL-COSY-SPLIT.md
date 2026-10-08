@@ -1,4 +1,4 @@
-# A1IndexTTSMod 0.7.5 CosyVoice 分体完整版
+# A1IndexTTSMod 0.7.6 CosyVoice 分体完整版
 
 本次发行将程序、依赖与参考音放在程序包，GGUF 模型放在独立模型包。两包合起来可供首次安装使用；模型内容相同的老用户只需安装程序包。
 
@@ -6,9 +6,9 @@
 
 | 文件 | 内容 |
 | --- | --- |
-| `A1IndexTTSMod-v0.7.5-cosy-program-win64.7z` | 0.7.5 插件、NAudio、BepInEx 6 IL2CPP、.NET、Unity 库缓存、A1 适配 Doorstop、audio.cpp CUDA/Vulkan 服务端及依赖、启动/停止脚本、默认参考音和 1169 条 NPC WAV、NPC 名称表、默认配置与许可 |
+| `A1IndexTTSMod-v0.7.6-cosy-program-win64.7z` | 0.7.6 插件、NAudio、BepInEx 6 IL2CPP、.NET、Unity 库缓存、A1 适配 Doorstop、audio.cpp CUDA/Vulkan 服务端及依赖、启动/停止脚本、默认参考音和 1169 条 NPC WAV、NPC 名称表、默认配置与许可 |
 | `CosyVoice3-q8_0-model-win64.7z` | CosyVoice3 Q8_0 GGUF、模型安装器、模型校验值与许可 |
-| `SHA256SUMS-A1IndexTTSMod-v0.7.5-cosy-split-win64.txt` | 两个压缩包的 SHA-256 校验值 |
+| `SHA256SUMS-A1IndexTTSMod-v0.7.6-cosy-split-win64.txt` | 两个压缩包的 SHA-256 校验值 |
 
 这是两个独立的 7z 压缩包，不是分卷。请分别解压到两个文件夹，不要只解压或复制其中的安装器。安装器应与各自的 `A1` 文件夹放在一起。
 
@@ -40,6 +40,7 @@ Backend = CosyVoiceAudioCpp
 TtsUrl = http://127.0.0.1:8892/v1/audio/speech
 AudioCppModelId = cosyvoice3
 PromptEnhancement = true
+PresetVoiceStyles = true
 AutoStartAudioCpp = true
 AudioCppPrecision = q8_0
 ```
@@ -48,9 +49,13 @@ AudioCppPrecision = q8_0
 
 本包针对项目使用的 A1 Windows x64 IL2CPP 游戏及 Unity 2022.3.43 加载环境。它不含游戏本体、存档、第三方人物 MOD 或 AI 服务账号。
 
-## 0.7.5 更新内容
+## 0.7.6 更新内容
 
-要求有可朗读台词的每轮回复都携带风格帧，明确帧位于 `content` 字符串内部，以及内层双引号按外层 JSON 转义。无明显情绪时也要求平静自然的风格。菜单第三页会显示本轮是否要求风格、是否检测到风格。该契约不能从技术上保证所有上游模型都会遵守。
+默认内置预设问候语和话题开场白情感库，覆盖 1232 个角色、4180 条来源与分支记录。按当前角色和实际台词精确匹配，纯文本预设台词也可进入朗读流程；当轮有效模型风格优先。第三页明确显示“离线预设库”来源和匹配记录。新装默认后端统一为 CosyVoice，IndexTTS 路线归档。
+
+原 0.7.5 程序包不含上述开场白功能。0.7.6 继续使用同一份 CosyVoice3 Q8_0 模型，已安装模型无需重新下载；发行目录复用的模型压缩包可能附带旧版安装说明，模型文件与安装方式不变，以本程序包说明为准。
+
+继承 0.7.5 的输出契约增强：要求有可朗读台词的每轮回复都携带风格帧，明确帧位于 `content` 字符串内部，以及内层双引号按外层 JSON 转义。无明显情绪时也要求平静自然的风格。菜单第三页会显示本轮是否要求风格、是否检测到风格。该契约不能从技术上保证所有上游模型都会遵守。
 
 ## HTTP 500 合成失败
 
@@ -63,7 +68,7 @@ AudioCppPrecision = q8_0
 在 PowerShell 中执行以下命令，将结果与随发行提供的校验文件比较：
 
 ```powershell
-Get-FileHash -Algorithm SHA256 .\A1IndexTTSMod-v0.7.5-cosy-program-win64.7z
+Get-FileHash -Algorithm SHA256 .\A1IndexTTSMod-v0.7.6-cosy-program-win64.7z
 Get-FileHash -Algorithm SHA256 .\CosyVoice3-q8_0-model-win64.7z
 ```
 
