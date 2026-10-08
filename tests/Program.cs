@@ -192,6 +192,17 @@ Assert(scopedObject is FakeLlmOptions scoped && !ReferenceEquals(sharedOptions, 
 Assert(sharedOptions.ResponseFormat.ToString() == schema && scopedExtension!.Tail.Contains("A1_TTS_STYLE_V1", StringComparison.Ordinal), "request prompt/schema were not committed together");
 Assert(scopedExtension!.FieldDescriptions.Contains("existing output contract", StringComparison.Ordinal) && scopedExtension.FieldDescriptions.Contains("<a1tts_v1>", StringComparison.Ordinal), "original and new output field descriptions were not kept together");
 var tailWithContract = "任务背景\n输出示例：\n" + example + "\n继续要求";
+var noSchemaOptions = new FakeLlmOptions { ResponseFormat = null!, Temperature = 0.25, TimeoutSeconds = 39 };
+var noSchemaDescriptions = PromptEnhancer.CreateFieldDescriptionsFromResponseFormat(noSchemaOptions);
+Assert(PromptEnhancer.TryCreateRequestSnapshot(noSchemaOptions, tailWithContract, example, noSchemaDescriptions,
+    out var noSchemaSnapshot, out var noSchemaExtension), "custom provider with null ResponseFormat skipped style enhancement");
+Assert(ReferenceEquals(noSchemaSnapshot, noSchemaOptions) && noSchemaOptions.ResponseFormat == null &&
+    noSchemaOptions.Temperature == 0.25 && noSchemaOptions.TimeoutSeconds == 39,
+    "schema-less enhancement changed game-owned options or invented a schema");
+Assert(noSchemaExtension!.ResponseFormatJson == "" && noSchemaExtension.Tail.Contains("<a1tts_v1>") &&
+    noSchemaExtension.Tail.Contains("A1_TTS_STYLE_V1") &&
+    JsonNode.Parse(noSchemaExtension.ExampleJson)!["content"]!.GetValue<string>().Contains("<a1tts_v1>"),
+    "schema-less request did not carry the frame instructions and example");
 var tailExtended = PromptEnhancer.Extend(tailWithContract, schema, example, "字段", instructions);
 Assert(tailExtended.Tail.Contains("输出示例：\n" + tailExtended.ExampleJson, StringComparison.Ordinal), "tail-embedded contract example was not updated in place");
 Assert(tailExtended.Tail.Split("完整 JSON 示例", StringSplitOptions.None).Length == 1, "tail contract update appended a duplicate, potentially conflicting example");

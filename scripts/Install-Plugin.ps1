@@ -13,6 +13,8 @@ $PluginSource = Join-Path $ProjectRoot 'src\bin\Release\net6.0\A1IndexTTSMod.dll
 $PluginTarget = Join-Path $BepInExDir 'plugins\A1IndexTTSMod\A1IndexTTSMod.dll'
 $DependencyNames = @('NAudio.Core.dll', 'NAudio.Wasapi.dll', 'NAudio.WinMM.dll')
 $SharedDependencyNames = @('LocalModManager.Abstractions.dll')
+$RuntimeScriptNames = @('Run-AudioCppForGame.ps1', 'Start-AudioCpp.ps1', 'Stop-AudioCpp.ps1')
+$RuntimeScriptsTarget = Join-Path $GameRoot 'A1IndexTTSMod\scripts'
 $StateRoot = Join-Path $ProjectRoot '.state'
 $StatePath = Join-Path $StateRoot 'plugin-install.json'
 
@@ -22,6 +24,11 @@ if (-not (Test-Path -LiteralPath (Join-Path $BepInExDir 'LogOutput.log')) -and
 }
 if (-not (Test-Path -LiteralPath $PluginSource)) { throw 'Plugin DLL is missing; run scripts\Build.ps1 first.' }
 $hash = (Get-FileHash -LiteralPath $PluginSource -Algorithm SHA256).Hash.ToLowerInvariant()
+foreach ($name in $RuntimeScriptNames) {
+    if (-not (Test-Path -LiteralPath (Join-Path $PSScriptRoot $name))) {
+        throw "Plugin runtime script is missing: $name"
+    }
+}
 
 if (Test-Path -LiteralPath $PluginTarget) {
     if (-not (Test-Path -LiteralPath $StatePath)) {
@@ -54,6 +61,11 @@ foreach ($name in @($DependencyNames) + @($SharedDependencyNames)) {
     Copy-Item -LiteralPath (Join-Path (Split-Path -Parent $PluginSource) $name) -Destination $target -Force
 }
 New-Item -ItemType Directory -Path $StateRoot -Force | Out-Null
+# Keep the supervisor's command-line contract in step with the installed DLL.
+New-Item -ItemType Directory -Path $RuntimeScriptsTarget -Force | Out-Null
+foreach ($name in $RuntimeScriptNames) {
+    Copy-Item -LiteralPath (Join-Path $PSScriptRoot $name) -Destination (Join-Path $RuntimeScriptsTarget $name) -Force
+}
 [pscustomobject]@{
     path = [IO.Path]::GetRelativePath($GameRoot, $PluginTarget)
     sha256 = $hash

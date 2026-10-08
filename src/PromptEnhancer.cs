@@ -58,23 +58,27 @@ internal static class PromptEnhancer
         catch (JsonException) { return false; }
     }
 
-    public static Extension Extend(string tail, string responseFormatJson, string exampleJson, string fieldDescriptions,
+    public static Extension Extend(string tail, string? responseFormatJson, string exampleJson, string fieldDescriptions,
         string enhancementText)
     {
-        var responseFormat = JsonNode.Parse(responseFormatJson) as JsonObject
-            ?? throw new JsonException("The game's response format root must be an object.");
-        var schema = responseFormat;
-        if (responseFormat["json_schema"] is JsonObject wrapped && wrapped["schema"] is JsonObject innerSchema)
-            schema = innerSchema;
-        if (schema["properties"] is not JsonObject properties)
-            throw new JsonException("The game's response schema has no object properties to extend.");
-        if (properties["content"] is not JsonObject contentSchema)
-            throw new JsonException("The game's response schema has no object content property to describe the text envelope.");
-        var envelopeDescription = "玩家可见正文；启用本 Mod 的语音风格传输时，正文末尾可追加一个 <a1tts_v1>{JSON}</a1tts_v1> 帧。帧内 JSON 仅含 emotion_tags（1–3 个简短中文标签）、delivery（可听见的说话方式）和 intensity（0–1）；无风格时不追加帧。Mod 会在显示、历史与下游提示前剥离该帧。";
-        var originalContentDescription = contentSchema["description"]?.GetValue<string>();
-        contentSchema["description"] = string.IsNullOrWhiteSpace(originalContentDescription)
-            ? envelopeDescription
-            : originalContentDescription.TrimEnd() + " " + envelopeDescription;
+        JsonObject? responseFormat = null;
+        if (responseFormatJson != null)
+        {
+            responseFormat = JsonNode.Parse(responseFormatJson) as JsonObject
+                ?? throw new JsonException("The game's response format root must be an object.");
+            var schema = responseFormat;
+            if (responseFormat["json_schema"] is JsonObject wrapped && wrapped["schema"] is JsonObject innerSchema)
+                schema = innerSchema;
+            if (schema["properties"] is not JsonObject properties)
+                throw new JsonException("The game's response schema has no object properties to extend.");
+            if (properties["content"] is not JsonObject contentSchema)
+                throw new JsonException("The game's response schema has no object content property to describe the text envelope.");
+            var envelopeDescription = "玩家可见正文；启用本 Mod 的语音风格传输时，正文末尾可追加一个 <a1tts_v1>{JSON}</a1tts_v1> 帧。帧内 JSON 仅含 emotion_tags（1–3 个简短中文标签）、delivery（可听见的说话方式）和 intensity（0–1）；无风格时不追加帧。Mod 会在显示、历史与下游提示前剥离该帧。";
+            var originalContentDescription = contentSchema["description"]?.GetValue<string>();
+            contentSchema["description"] = string.IsNullOrWhiteSpace(originalContentDescription)
+                ? envelopeDescription
+                : originalContentDescription.TrimEnd() + " " + envelopeDescription;
+        }
 
         var example = JsonNode.Parse(exampleJson) as JsonObject
             ?? throw new JsonException("The game's response example root must be an object.");
@@ -88,7 +92,7 @@ internal static class PromptEnhancer
             JsonNode.Parse(example.ToJsonString()) as JsonObject)
             ? AppendOnce(tailWithExample, tailAddition)
             : AppendOnce(tail, tailAddition + "\n\n完整 JSON 示例（沿用原示例字段和值，并在 content 末尾追加语音风格帧）：\n" + example.ToJsonString());
-        return new Extension(enhancedTail, responseFormat.ToJsonString(), example.ToJsonString(), descriptions, contractAddition);
+        return new Extension(enhancedTail, responseFormat?.ToJsonString() ?? "", example.ToJsonString(), descriptions, contractAddition);
     }
 
     public static string LoadInstructions()
@@ -126,7 +130,15 @@ internal static class PromptEnhancer
         stage = "response_property";
         var responseProperty = optionsType.GetProperty("ResponseFormat", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
         var original = responseProperty?.GetValue(options);
-        if (responseProperty == null || original == null) return false;
+        if (responseProperty == null) return false;
+        if (original == null)
+        {
+            // Custom providers may use the textual output contract without a schema.
+            // Enhance that contract while preserving the original null ResponseFormat.
+            extension = Extend(tail, null, exampleJson, fieldDescriptions, LoadInstructions());
+            requestOptions = options;
+            return true;
+        }
 
         stage = "serialize_response_format";
         var originalJson = ReadResponseFormatJson(original);
@@ -174,7 +186,8 @@ internal static class PromptEnhancer
     {
         var responseProperty = options.GetType().GetProperty("ResponseFormat", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
             ?? throw new JsonException("LlmCallOptions has no ResponseFormat property.");
-        var responseValue = responseProperty.GetValue(options) ?? throw new JsonException("ResponseFormat is null.");
+        var responseValue = responseProperty.GetValue(options);
+        if (responseValue == null) return "沿用游戏原始文本输出契约中的字段与说明。";
         var response = JsonNode.Parse(ReadResponseFormatJson(responseValue)) as JsonObject
             ?? throw new JsonException("ResponseFormat is not a JSON object.");
         var schema = response["json_schema"] is JsonObject wrapped && wrapped["schema"] is JsonObject inner ? inner : response;

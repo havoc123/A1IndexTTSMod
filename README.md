@@ -1,16 +1,16 @@
 # 不问凡尘 AI NPC 语音 MOD
 
-当前源码版本：**v0.7.3**。为《不问凡尘》的 AI NPC 回复提供本地语音合成，支持 **IndexTTS 2.5** 与 **CosyVoice 3（audio.cpp）**，按角色选择参考音，并使用同轮模型回复给出的语音风格。
+当前源码版本：**v0.7.4**。为《不问凡尘》的 AI NPC 回复提供本地语音合成，支持 **IndexTTS 2.5** 与 **CosyVoice 3（audio.cpp）**，按角色选择参考音，并使用同轮模型回复给出的语音风格。
 
 这是非官方社区 MOD，与游戏开发商、BepInEx、audio.cpp 及模型开发团队没有从属关系。需要合法安装的游戏本体；游戏 AI 对话额度仍按游戏规则使用，本 MOD 负责本地语音合成。
 
 ## 版本与下载
 
-**源码版本与 GitHub 已发布安装包分别更新。** 当前仓库为 v0.7.3；截至 2026-10-08，GitHub [Releases](https://github.com/havoc123/A1IndexTTSMod/releases) 中的历史安装包为 v0.5.8 主包及 v0.5.9 说服语音补丁，均为预发布。它们不包含本页所述的全部新功能。本次源码同步没有发布新的 Release 安装包。
+**源码版本与 GitHub 已发布安装包分别更新。** 当前仓库为 v0.7.4；截至 2026-10-08，GitHub [Releases](https://github.com/havoc123/A1IndexTTSMod/releases) 中的历史安装包为 v0.5.8 主包及 v0.5.9 说服语音补丁，均为预发布。它们不包含本页所述的全部新功能。本地已制作 v0.7.3 → v0.7.4 升级补丁，尚未上传 GitHub Release。
 
 历史主包 `A1IndexTTSMod-v0.5.8-r3-win64.zip` 包含插件、audio.cpp CUDA 运行时及 1169 份 NPC 参考音；不包含游戏、基础 BepInEx 加载器或 IndexTTS 模型。已有该主包的用户可安装 `A1IndexTTSMod-v0.5.9-persuasion-patch-win64.zip`。历史安装步骤见 [INSTALL.md](INSTALL.md)，历史版本范围见 [发布说明](RELEASE-NOTES-v0.5.8.md)。
 
-最新源码需要自行构建并准备匹配的运行时和模型。完整整合包、升级补丁、工坊包的内容以各自附带说明为准，不要将旧版安装包视为 v0.7.3 的完整环境。
+最新源码需要自行构建并准备匹配的运行时和模型。完整整合包、升级补丁、工坊包的内容以各自附带说明为准，不要将旧版安装包视为 v0.7.4 的完整环境。
 
 ## 当前功能
 
@@ -80,7 +80,15 @@ BepInEx/plugins/
 .\scripts\Install-Plugin.ps1 -GameRoot 'E:\你的游戏目录'
 ```
 
-输出在 `src/bin/Release/net6.0/`。安装前退出游戏；安装插件不会替你下载模型和服务运行时。打包脚本依赖本机准备的运行时、模型及参考音，详见相应脚本参数和包内说明。
+输出在 `src/bin/Release/net6.0/`。安装前退出游戏；安装脚本会同步 DLL 和配套的三个 audio.cpp 启停脚本，避免新 DLL 调用旧脚本时因参数不匹配启动失败。安装插件不会替你下载模型和服务运行时。打包脚本依赖本机准备的运行时、模型及参考音，详见相应脚本参数和包内说明。
+
+构建后制作 v0.7.3 → v0.7.4 升级补丁：
+
+```powershell
+.\scripts\Build-UpgradePatch.ps1 -FromVersion v0.7.3 -BasePackageName 'A1IndexTTSMod-v0.7.3'
+```
+
+补丁输出到 `dist/`，包含插件 DLL、三个启停脚本和安装器；安装器检查旧插件版本、校验文件并备份替换目标，保留配置、模型和参考音。
 
 ## 隐私、反馈与授权
 

@@ -8,6 +8,8 @@
 
 帧内必须是普通 JSON 对象，且只含 `emotion_tags`、`delivery`、`intensity` 三项。标签需为 1–3 个非空字符串（每项最多 16 字），`delivery` 为 1–80 字，`intensity` 为 0–1 的有限数。最大帧长为 2048 个字符。解析器接受帧内一个标准 JSON Markdown 围栏作为容错，但提示始终要求输出无围栏 JSON。没有可靠风格时不追加帧，不使用 `null` 帧。
 
+请求增强覆盖有 Schema 和无 Schema 两条路线。有 `ResponseFormat` 时同步增强其 `content.description`；游戏自定义模型路线的 `ResponseFormat` 为空时，只增强现有文本输出契约、尾部提示与 JSON 示例，保留原请求选项，不凭空添加供应商 Schema。第三页会说明本轮没有 Schema，并显示中文文本契约增补；增强失败会显示实际失败阶段。
+
 模型只生成结构化文本，不计算 Base64、摘要或校验和。协议标记与 JSON 在 `content` 中传输，不新增游戏回复对象的字段。插件在 NPC 回复映射、显示、历史记录和下轮提示之前解包并移除帧；TTS 收到的是清洁正文，风格保存在插件自己的轮次记录与 TTS 请求快照中。
 
 若响应同时包含历史兼容字段 `voice_style` 和正文帧：合法的顶层 `voice_style` 优先；其缺失、为 `null` 或无效时使用合法正文帧。无论来源如何，插件都会从交给游戏的 JSON 中移除顶层 `voice_style`。正文帧优先满足跨代理和未知字段白名单重建的兼容目标。

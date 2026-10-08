@@ -384,17 +384,22 @@ internal static class Probe
         try { if (options?.ResponseFormat != null) originalSchema = PromptEnhancer.ReadResponseFormatJson(options.ResponseFormat); }
         catch (Exception e) { _speechLog?.LogWarning("Stage3 original reply schema observation failed: " + e.GetType().Name); }
         SpeechPanelData.RecordPromptSnapshot(false, originalSchema, null, "正在观察实际出站请求");
+        void RecordSkipped(string reason) => SpeechPanelData.RecordPromptSnapshot(false, originalSchema, null,
+            "本轮未添加语音风格要求：" + reason);
         if (options == null || sourceDocument == null)
         {
+            RecordSkipped("游戏请求参数不完整");
             _speechLog?.LogWarning($"Stage3 prompt enhancement skipped purpose=ActualReply reason=unexpected_arguments tail={tail?.GetType().Name ?? "null"} options={options?.GetType().Name ?? "null"} document={sourceDocument?.GetType().Name ?? "null"}");
             return;
         }
+        var committed = false;
         try
         {
             var hasDocumentContract = TryReadOutputContract(sourceDocument, out var originalContract);
             var exampleSource = hasDocumentContract ? originalContract : tail;
             if (!PromptEnhancer.TryExtractReplyExample(exampleSource, out var originalExample, out _))
             {
+                RecordSkipped("游戏输出契约中未找到 JSON 回复示例");
                 _speechLog?.LogWarning($"Stage3 prompt enhancement skipped purpose=ActualReply reason=no_json_reply_example source={(hasDocumentContract ? "PromptDocument" : "tail")}");
                 return;
             }
@@ -402,6 +407,7 @@ internal static class Probe
             try { fieldDescriptions = PromptEnhancer.CreateFieldDescriptionsFromResponseFormat(options); }
             catch (Exception e)
             {
+                RecordSkipped("读取游戏字段说明失败：" + DescribeError(e));
                 _speechLog?.LogWarning("Stage3 prompt enhancement skipped purpose=ActualReply reason=field_descriptions_failed: " + DescribeError(e));
                 return;
             }
@@ -412,18 +418,21 @@ internal static class Probe
                 if (!PromptEnhancer.TryCreateRequestSnapshot(options, tail, originalExample, fieldDescriptions,
                     out requestOptions, out extension) || requestOptions == null || extension == null)
                 {
+                    RecordSkipped("无法构造本轮提示增强快照");
                     _speechLog?.LogWarning("Stage3 prompt enhancement skipped purpose=ActualReply reason=request_snapshot_failed");
                     return;
                 }
             }
             catch (Exception e)
             {
+                RecordSkipped("构造本轮提示增强快照失败：" + DescribeError(e));
                 _speechLog?.LogWarning("Stage3 prompt enhancement skipped purpose=ActualReply reason=request_snapshot_exception: " + DescribeError(e));
                 return;
             }
             PromptDocument? requestDocument = sourceDocument;
             if (hasDocumentContract && (!TryClonePromptDocument(sourceDocument, extension, out requestDocument) || requestDocument == null))
             {
+                RecordSkipped("无法复制游戏输出契约文档");
                 _speechLog?.LogWarning("Stage3 prompt enhancement skipped purpose=ActualReply reason=document_contract_clone_failed");
                 return;
             }
@@ -433,22 +442,31 @@ internal static class Probe
             __6 = extension.Tail;
             __8 = scopedOptions;
             if (hasDocumentContract) __9 = requestDocument!;
+            committed = true;
+            var hasSchema = !string.IsNullOrEmpty(extension.ResponseFormatJson);
+            SpeechPanelData.RecordPromptSnapshot(true, hasSchema ? extension.ResponseFormatJson : null, extension.ContractAddition,
+                hasSchema
+                    ? "已观测：本地拦截到实际 ActualReply 请求增强后的 ResponseFormat；最终供应商网络层未观测"
+                    : "已添加 content 语音帧要求和示例；本轮自定义模型请求未提供 Schema（ResponseFormat 为空），沿用游戏文本输出契约");
             if (_captureEnabled && _full)
             {
-                var responseFormat = PromptEnhancer.ReadResponseFormatJson(
-                    requestOptions.GetType().GetProperty("ResponseFormat", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(requestOptions)!);
+                var responseFormat = extension.ResponseFormatJson;
                 Emit(new { kind = "prompt_enhancement_applied", runId = RunId, purpose,
                     tail = Limit(extension.Tail), tailHasVoiceStyle = extension.Tail.Contains("voice_style", StringComparison.Ordinal),
                     responseFormat = Limit(responseFormat), schemaHasVoiceStyle = responseFormat.Contains("voice_style", StringComparison.Ordinal),
                     contractSource = hasDocumentContract ? "PromptDocument" : "tail" });
             }
-            _speechLog?.LogInfo($"Stage3 prompt enhancement applied purpose={purpose} contractSource={(hasDocumentContract ? "PromptDocument" : "tail")} snapshot=tail+schema+example+field_descriptions{(hasDocumentContract ? "+PromptDocument" : "")}");
-            SpeechPanelData.RecordPromptSnapshot(true, extension.ResponseFormatJson, extension.ContractAddition,
-                "已观测：本地拦截到实际 ActualReply 请求增强后的 ResponseFormat；最终供应商网络层未观测");
+            _speechLog?.LogInfo($"Stage3 prompt enhancement applied purpose={purpose} contractSource={(hasDocumentContract ? "PromptDocument" : "tail")} snapshot=tail+{(hasSchema ? "schema+" : "")}example+field_descriptions{(hasDocumentContract ? "+PromptDocument" : "")}");
         }
         catch (Exception e)
         {
-            _speechLog?.LogWarning("Stage3 prompt enhancement failed open without modifying this request: " + DescribeError(e));
+            if (committed)
+                _speechLog?.LogWarning("Stage3 prompt enhancement committed; subsequent diagnostics failed: " + DescribeError(e));
+            else
+            {
+                RecordSkipped("提示增强失败：" + DescribeError(e));
+                _speechLog?.LogWarning("Stage3 prompt enhancement failed open without modifying this request: " + DescribeError(e));
+            }
         }
     }
 
@@ -1106,5 +1124,5 @@ internal static class PluginInfo
 {
     public const string Guid = "org.a1indextts.mod";
     public const string Name = "A1-TTS-Mod";
-    public const string Version = "0.7.3";
+    public const string Version = "0.7.4";
 }

@@ -764,7 +764,8 @@ internal sealed class SpeechPanelUi : MonoBehaviour
         var json = _dataLayer switch
         {
             0 => FormatJsonForDisplay(turn.VoiceStyleJson) ?? "本轮没有捕获合法语音风格。" + (turn.VoiceStyleStatus == "invalid" ? "\n解析失败：" + (turn.VoiceStyleFailureReason ?? "格式错误") : ""),
-            1 => FormatJsonForDisplay(turn.OutputSchema) ?? turn.PromptStatus + "\n本轮实际请求 Schema 未观测。",
+            1 => FormatJsonForDisplay(turn.OutputSchema) ?? turn.PromptStatus +
+                (turn.PromptAddition != null ? "\n\n本轮文本输出契约增补：\n" + turn.PromptAddition : "\n本轮实际请求 Schema 未观测。"),
             _ => FormatJsonForDisplay(turn.TtsRequestJson) ?? "本轮尚未发起 TTS 请求：" + turn.TtsStatus
         };
         GUILayout.Label(_dataLayer switch
