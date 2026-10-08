@@ -4,12 +4,11 @@
 
 ## 下载
 
-- `A1IndexTTSMod-v0.5.8-r3-win64.zip`：插件、audio.cpp Windows CUDA 运行时、1169 份 NPC 参考音、男女默认音、配置与说明。**包含音频**；包含路径无关的启动器和首次运行缓存；不包含游戏、BepInEx 基础加载器或模型。
-- `SHA256SUMS-r3.txt`：r3 主包和修复补丁的散列。下载后请校验。
-- `A1IndexTTSMod-v0.5.8-portable-doorstop-patch.zip`：给已经安装旧版包的用户直接覆盖游戏根目录；只需解压，不需运行脚本。
+- `A1IndexTTSMod-v0.5.8-win64.zip`：插件、audio.cpp Windows CUDA 运行时、1169 份 NPC 参考音、男女默认音、配置与说明。**包含音频**；不包含游戏、BepInEx 基础加载器或模型。
+- `SHA256SUMS.txt`：安装包散列。下载后请校验。
 - Q8 模型请单独从 [audio.cpp GGUF 模型页](https://huggingface.co/audio-cpp/audio.cpp-gguf/tree/main/IndexTTS2.5-GGUF)取得，放入 `A1IndexTTSMod/.cache/audiocpp/models/IndexTTS2.5-GGUF/index-tts2_5-q8_0.gguf`。
 
-详细步骤见 [INSTALL.md](https://github.com/havoc123/A1IndexTTSMod/blob/main/INSTALL.md)。请按说明将 ZIP 内 `A1` 的**内容**合并到游戏根目录。首次运行会打开可见的 audio.cpp 控制台并预热模型。
+详细步骤见 [INSTALL.md](https://github.com/havoc123/A1IndexTTSMod/blob/v0.5.8/INSTALL.md)。请按说明将 ZIP 内 `A1` 的**内容**合并到游戏根目录。首次运行会打开可见的 audio.cpp 控制台并预热模型。
 
 ## 已验证与已知限制
 

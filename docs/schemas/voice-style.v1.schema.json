@@ -1,0 +1,23 @@
+{
+  "type": ["object", "null"],
+  "description": "正文协议帧内的语音表演 JSON 结构（不是游戏回复顶层属性）；通过 content 末尾的 <a1tts_v1>{JSON}</a1tts_v1> 版本化文本帧传输，不依赖顶层扩展 JSON 字段；不改变游戏原有 emotion 或任何游戏判定。",
+  "properties": {
+    "emotion_tags": {
+      "type": "array",
+      "description": "1 至 3 个简短中文自然语言情感标签；开放描述，第一个为主情绪。长度限制在 Mod 本地执行。",
+      "items": {
+        "type": "string"
+      }
+    },
+    "delivery": {
+      "type": "string",
+      "description": "本句可听见的说话方式，如语速、音量、停顿、气息和句尾变化；不含引擎 token 或隐藏剧情。"
+    },
+    "intensity": {
+      "type": "number",
+      "description": "0 到 1 的项目内部情绪表现强度，不是任何 TTS 引擎的原生参数；范围在 Mod 本地执行。"
+    }
+  },
+  "required": ["emotion_tags", "delivery", "intensity"],
+  "additionalProperties": false
+}

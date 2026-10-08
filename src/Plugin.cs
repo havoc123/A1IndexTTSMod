@@ -3,20 +3,66 @@ using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Unity.IL2CPP;
 using HarmonyLib;
+using JNGame.Ainpc.Prompt;
+using LocalModManager.Abstractions;
 
 namespace A1IndexTTSMod;
 
 [BepInPlugin(PluginInfo.Guid, PluginInfo.Name, PluginInfo.Version)]
 [BepInProcess("WorldApart.exe")]
-public sealed class Plugin : BasePlugin
+public sealed class Plugin : BasePlugin, IManagedFeaturePlugin
 {
+    internal static Plugin? Instance { get; private set; }
     private Harmony? _harmony;
+    private ConfigEntry<bool>? _managedEnabled;
+    private ConfigEntry<bool>? _autoRead;
+    private ConfigEntry<int>? _panelVolume;
+    private ConfigEntry<int>? _panelScale;
+    private ConfigEntry<int>? _panelTab;
+
+    public string FeatureId => PluginInfo.Guid;
+    public string DisplayName => "IndexTTS NPC 朗读";
+    public string Description => "朗读游戏内 NPC AI 回复";
+    public string FeatureVersion => PluginInfo.Version;
+    public bool DesiredEnabled => _managedEnabled?.Value ?? false;
+    public FeaturePluginState State => SpeechMvp.State;
+    public string StatusMessage => SpeechMvp.StatusMessage;
+
+    public void SetEnabled(bool enabled)
+    {
+        if (_managedEnabled == null) return;
+        _managedEnabled.Value = enabled;
+        try { Config.Save(); } catch (Exception e) { Log.LogWarning("Could not persist speech state: " + e.Message); }
+        SpeechMvp.SetEnabled(enabled);
+    }
+
+    internal void SetAutoRead(bool enabled)
+    {
+        if (_autoRead == null) return;
+        _autoRead.Value = enabled;
+        try { Config.Save(); } catch (Exception e) { Log.LogWarning("Could not persist auto-read preference: " + e.Message); }
+        SpeechMvp.SetAutoRead(enabled);
+    }
+
+    internal void SetPanelVolume(int volume, bool persist)
+    {
+        if (_panelVolume == null) return;
+        _panelVolume.Value = Math.Clamp(volume, 0, 100);
+        SpeechMvp.SetVolume(_panelVolume.Value);
+        if (persist)
+        {
+            try { Config.Save(); } catch (Exception e) { Log.LogWarning("Could not persist volume preference: " + e.Message); }
+        }
+    }
+
     public override void Load()
     {
+        Instance = this;
         try
         {
             var diagnostics = Config.Bind("Stage2A", "Enabled", false,
@@ -26,24 +72,58 @@ public sealed class Plugin : BasePlugin
             var maxChars = Config.Bind("Stage2A", "MaxRecordChars", 120000, "Maximum characters copied from one text field.");
             var dir = Config.Bind("Stage2A", "CaptureDirectory", ".state/stage2a", "Capture path relative to the mod project directory.");
             if (diagnostics.Value) Probe.Start(Log, capture, maxChars, dir);
+            _managedEnabled = Config.Bind("Stage3Mvp", "Enabled", true, "Speak structured NPC AI replies through the local IndexTTS API.");
+            _panelVolume = Config.Bind("SpeechPanel", "VolumePercent", 100, "Mod-only playback volume (0-100).");
+            _panelVolume.Value = Math.Clamp(_panelVolume.Value, 0, 100);
+            _autoRead = Config.Bind("SpeechPanel", "AutoRead", true, "Automatically speak new NPC replies.");
+            _panelScale = Config.Bind("SpeechPanel", "InterfaceScalePercent", 100, "User interface scale, in addition to automatic display scaling (75-175%).");
+            _panelScale.Value = Math.Clamp(_panelScale.Value, 75, 175);
+            _panelTab = Config.Bind("SpeechPanel", "LastTab", 0, "Last open speech panel tab (0-2).");
+            _panelTab.Value = Math.Clamp(_panelTab.Value, 0, 2);
+            NpcVoiceResolver.Initialize(Log);
+            var ttsUrl = Config.Bind("Stage3Mvp", "TtsUrl", "http://127.0.0.1:8892/v1/audio/speech", "Local TTS endpoint; audio.cpp /v1/audio/speech by default, or legacy /v1/tts.");
+            var backendDefinition = new ConfigDefinition("Stage3Mvp", "Backend");
+            var backendWasConfigured = Config.ContainsKey(backendDefinition);
+            var backend = Config.Bind(backendDefinition, "IndexTtsAudioCpp", new ConfigDescription("Explicit backend selection: IndexTtsAudioCpp, IndexTtsLegacyApi, or CosyVoiceAudioCpp (requires a verified Cosy audio.cpp server build)."));
+            if (BackendConfigMigration.InferLegacyBackend(backendWasConfigured, ttsUrl.Value) is { } migratedBackend)
+            {
+                backend.Value = migratedBackend;
+                Config.Save();
+                Log.LogInfo("Migrated existing /v1/tts configuration to explicit IndexTtsLegacyApi backend.");
+            }
+            var promptEnhancement = Config.Bind("Stage3Mvp", "PromptEnhancement", true, "Add voice_style to actual NPC reply prompts while NPC speech is enabled.");
+            Probe.SetPromptEnhancement(promptEnhancement);
             SpeechMvp.Start(
                 Log,
-                Config.Bind("Stage3Mvp", "Enabled", true, "Speak structured NPC AI replies through the local IndexTTS API."),
-                Config.Bind("Stage3Mvp", "TtsUrl", "http://127.0.0.1:8892/v1/audio/speech", "Local TTS endpoint; audio.cpp /v1/audio/speech by default, or legacy /v1/tts."),
+                _managedEnabled,
+                ttsUrl,
                 Config.Bind("Stage3Mvp", "ReferenceId", "demo", "Reference audio ID under indextts25/voices."),
                 Config.Bind("Stage3Mvp", "AudioCppModelId", "indextts25", "Model ID in the local audio.cpp server config. Model precision is chosen by the server launcher."),
                 Config.Bind("Stage3Mvp", "TimeoutSeconds", 180, "Maximum wait for one synthesis request."),
-                Config.Bind("Stage3Mvp", "AutoStartAudioCpp", true, "Start a visible project audio.cpp window and close it when this game exits."),
-                Config.Bind("Stage3Mvp", "AudioCppPrecision", "q8_0", "Auto-start model precision: q8_0, f16, or orig (model file must already exist)."));
+                Config.Bind("Stage3Mvp", "AutoStartAudioCpp", true, "Start the project audio.cpp service and close it when this game exits."),
+                Config.Bind("Stage3Mvp", "AudioCppPrecision", "q8_0", "Auto-start model precision: q8_0, f16, or orig (model file must already exist)."),
+                Config.Bind("Stage3Mvp", "GpuBackend", "Nvidia", "GPU route for auto-started audio.cpp: Nvidia (default CUDA) or Vulkan (AMD/community Vulkan server)."),
+                Config.Bind("Stage3Mvp", "GpuDevice", 0, "Vulkan device index (default 0; change only when a multi-GPU system lists AMD at another index)."),
+                backend);
+            SpeechMvp.SetAutoRead(_autoRead.Value);
+            SpeechMvp.SetVolume(_panelVolume.Value);
+            SpeechPanelUi.Configure(Log, _panelVolume, _autoRead, _managedEnabled, _panelScale, _panelTab);
             Probe.SetSpeechLog(Log);
             _harmony = new Harmony(PluginInfo.Guid);
-            Patch("Game", "Game.Model.NpcModel", "AddNpcChatMessage", "OnNpcDisplay");
-            Patch("Game", "Game.NpcPersuadePanel", "OnReceivePersuadeResponse", "OnPersuadeResponse");
+            PatchCompleteBudgeted();
+            PatchDialogueLifecycle("Game.NpcDialoguePanel", "OnShow", nameof(Probe.OnDialogueShowPrefix));
+            PatchDialogueLifecycle("Game.NpcDialoguePanel", "OnHide", nameof(Probe.OnDialogueHidePrefix));
+            PatchDialogueSetData();
+            PatchUiInputGuards();
+            PatchExact("Game", "Game.Model.NpcModel", "IsRepeatedChatReply", new[] { "System.String", "System.String" },
+                "OnPreGameReplyNormalization", "OnPreGameReplyNormalizationPostfix");
+            PatchExact("Game", "Game.Model.NpcModel", "AddNpcChatMessage", new[] { "System.String", "System.String" },
+                "OnNpcDisplayPrefix", "OnNpcDisplay", "OnNpcDisplayFinalizer");
+            PatchSingleParameter("Game", "Game.NpcPersuadePanel", "OnReceivePersuadeResponse", "Game.Model.ChatMessage", "OnPersuadeResponsePrefix", "OnPersuadeResponse");
             if (diagnostics.Value)
             {
                 Patch("Game", "Game.Model.NpcModel", "SendChatMessage", "OnPlayerInput", prefix:true);
                 Patch("Game", "Game.Model.AinpcRuntime", "LogRequest", "OnRequest");
-                Patch("A1Ainpc.Runtime", "JNGame.Ainpc.Llm.UnityWebRequestTransport", "PostJsonAsync", "OnOfficialTransportRequest", prefix:true);
             }
             Log.LogInfo("Stage2A diagnostic capture is " + (diagnostics.Value ? (capture.Value ? "ON (full prompt)" : "ON") : "OFF"));
         }
@@ -61,6 +141,146 @@ public sealed class Plugin : BasePlugin
         else _harmony!.Patch(target, postfix: new HarmonyMethod(postfix));
         Log.LogInfo($"Probe hooked {target.DeclaringType?.FullName}.{target.Name}({string.Join(",", target.GetParameters().Select(p => p.ParameterType.Name))})");
     }
+
+    private void PatchDialogueLifecycle(string typeName, string methodName, string callbackName)
+    {
+        var type = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(a => a.GetName().Name == "Game")?.GetType(typeName);
+        var candidates = type?.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+            .Where(m => m.Name == methodName && m.GetParameters().Length == 0).ToArray() ?? Array.Empty<MethodInfo>();
+        if (candidates.Length != 1)
+        {
+            Log.LogWarning($"Dialogue UI hook not installed: {typeName}.{methodName} declared zero-argument candidates={candidates.Length}; panel remains unavailable until a verified hook is added.");
+            return;
+        }
+        var callback = typeof(Probe).GetMethod(callbackName, BindingFlags.Public | BindingFlags.Static);
+        if (callback == null) { Log.LogWarning("Dialogue UI callback missing: " + callbackName); return; }
+        _harmony!.Patch(candidates[0], prefix: new HarmonyMethod(callback));
+        Log.LogInfo($"Hooked verified dialogue lifecycle {candidates[0].DeclaringType?.FullName}.{methodName}() declared on {typeName}.");
+    }
+
+    private void PatchDialogueSetData()
+    {
+        const string typeName = "Game.NpcDialoguePanel";
+        var type = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(a => a.GetName().Name == "Game")?.GetType(typeName);
+        var hierarchy = new List<Type>();
+        for (var current = type; current != null && current != typeof(object); current = current.BaseType) hierarchy.Add(current);
+        var declaredMethods = hierarchy.SelectMany(t => t.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly)).ToArray();
+        const string npcIdType = "LubanDatas.TbNpcBaseCfgId";
+        var candidates = declaredMethods.Where(m => m.Name == "SetDataInternal" &&
+            m.GetParameters().Select(p => p.ParameterType.FullName).SequenceEqual(new[] { npcIdType, "System.Boolean" })).ToArray();
+        var targetName = "SetDataInternal";
+        if (candidates.Length == 0)
+        {
+            targetName = "SetData";
+            candidates = declaredMethods.Where(m => m.Name == targetName && m.GetParameters().Length == 1 &&
+                m.GetParameters()[0].ParameterType.FullName == npcIdType).ToArray();
+        }
+        if (candidates.Length != 1)
+        {
+            var signatures = declaredMethods
+                .Where(m => m.Name is "SetData" or "SetDataInternal")
+                .Select(m => $"{m.DeclaringType?.FullName}.{m.Name}({string.Join(",", m.GetParameters().Select(p => p.ParameterType.FullName))})");
+            Log.LogWarning($"NPC dialogue {targetName} hook not installed: candidate count={candidates.Length}; observed signatures=[{string.Join(";", signatures)}].");
+            return;
+        }
+        var callback = typeof(Probe).GetMethod(nameof(Probe.OnDialogueSetDataPrefix), BindingFlags.Public | BindingFlags.Static)!;
+        _harmony!.Patch(candidates[0], prefix: new HarmonyMethod(callback));
+        Log.LogInfo($"Hooked verified dialogue binding {candidates[0].DeclaringType?.FullName}.{targetName}({string.Join(",", candidates[0].GetParameters().Select(p => p.ParameterType.FullName))}); callback filters runtime instances to {typeName}.");
+    }
+
+    private void PatchUiInputGuards()
+    {
+        var gameAssembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(a => a.GetName().Name == "Game");
+        var buttonHandler = gameAssembly?.GetType("Game.InputHandler.ButtonInputHandler") ??
+                            gameAssembly?.GetType("Il2CppGame.InputHandler.ButtonInputHandler");
+        var invokeCandidates = buttonHandler?.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+            .Where(m => m.Name == "InvokePerformed" && m.GetParameters().Length == 2)
+            .Distinct().ToArray() ?? Array.Empty<MethodInfo>();
+        if (invokeCandidates.Length == 1)
+        {
+            PatchUniqueMethod(buttonHandler!.Assembly.GetName().Name!, buttonHandler.FullName!, "InvokePerformed",
+                m => m == invokeCandidates[0], nameof(Probe.OnUiShortcutPrefix));
+        }
+        else
+        {
+            var signatures = buttonHandler?.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+                .Where(m => m.Name == "InvokePerformed")
+                .Select(m => string.Join(",", m.GetParameters().Select(p => p.ParameterType.FullName))) ?? Array.Empty<string>();
+            Log.LogWarning($"UI shortcut guard not installed: ButtonInputHandler.InvokePerformed two-argument candidates={invokeCandidates.Length}; signatures=[{string.Join(";", signatures)}].");
+        }
+        PatchUniqueMethod("UnityEngine.UI", "UnityEngine.EventSystems.EventSystem", "Update",
+            m => m.GetParameters().Length == 0, nameof(Probe.OnUiEventSystemPrefix), nameof(Probe.OnUiEventSystemPostfix));
+    }
+
+    private void PatchUniqueMethod(string assemblyName, string typeName, string methodName,
+        Func<MethodInfo, bool> signaturePredicate, string callbackName, string? postfixName = null)
+    {
+        var type = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(a => a.GetName().Name == assemblyName)?.GetType(typeName);
+        var candidates = type?.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+            .Where(m => m.Name == methodName && signaturePredicate(m)).ToArray() ?? Array.Empty<MethodInfo>();
+        if (candidates.Length != 1)
+        {
+            Log.LogWarning($"UI input guard not installed: {typeName}.{methodName} exact candidate count={candidates.Length}.");
+            return;
+        }
+        var callback = typeof(Probe).GetMethod(callbackName, BindingFlags.Public | BindingFlags.Static);
+        if (callback == null) { Log.LogWarning("UI input callback missing: " + callbackName); return; }
+        var postfix = postfixName == null ? null : typeof(Probe).GetMethod(postfixName, BindingFlags.Public | BindingFlags.Static);
+        _harmony!.Patch(candidates[0], prefix: new HarmonyMethod(callback),
+            postfix: postfix == null ? null : new HarmonyMethod(postfix));
+        Log.LogInfo($"Hooked UI input guard {candidates[0].DeclaringType?.FullName}.{methodName}({string.Join(",", candidates[0].GetParameters().Select(p => p.ParameterType.FullName))}).");
+    }
+
+    private void PatchExact(string assembly, string type, string method, string[] parameterTypes, string prefixCallback, string postfixCallback, string? finalizerCallback = null)
+    {
+        var targetType = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(a => a.GetName().Name == assembly)?.GetType(type);
+        var target = targetType?.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance)
+            .SingleOrDefault(m => m.Name == method && m.GetParameters().Select(p => p.ParameterType.FullName).SequenceEqual(parameterTypes));
+        if (target == null) { Log.LogWarning($"Hook target not found with exact signature: {type}.{method}({string.Join(",", parameterTypes)})"); return; }
+        var prefix = typeof(Probe).GetMethod(prefixCallback, BindingFlags.Public | BindingFlags.Static)!;
+        var postfix = typeof(Probe).GetMethod(postfixCallback, BindingFlags.Public | BindingFlags.Static)!;
+        var finalizer = finalizerCallback == null ? null : new HarmonyMethod(typeof(Probe).GetMethod(finalizerCallback, BindingFlags.Public | BindingFlags.Static)!);
+        _harmony!.Patch(target, prefix: new HarmonyMethod(prefix), postfix: new HarmonyMethod(postfix), finalizer: finalizer);
+        Log.LogInfo($"Hooked exact signature {target.DeclaringType?.FullName}.{target.Name}({string.Join(",", parameterTypes)})");
+    }
+
+    private void PatchSingleParameter(string assembly, string type, string method, string parameterType, string prefixCallback, string postfixCallback)
+    {
+        var targetType = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(a => a.GetName().Name == assembly)?.GetType(type);
+        var target = targetType?.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance)
+            .SingleOrDefault(m => m.Name == method && m.GetParameters() is { Length: 1 } p && p[0].ParameterType.FullName == parameterType);
+        if (target == null) { Log.LogWarning($"Hook target not found with exact signature: {type}.{method}({parameterType})"); return; }
+        var prefix = typeof(Probe).GetMethod(prefixCallback, BindingFlags.Public | BindingFlags.Static)!;
+        var postfix = typeof(Probe).GetMethod(postfixCallback, BindingFlags.Public | BindingFlags.Static)!;
+        _harmony!.Patch(target, prefix: new HarmonyMethod(prefix), postfix: new HarmonyMethod(postfix));
+        Log.LogInfo($"Hooked exact signature {target.DeclaringType?.FullName}.{target.Name}({parameterType})");
+    }
+
+    private void PatchCompleteBudgeted()
+    {
+        const string assembly = "Game";
+        const string type = "Game.Model.AinpcRuntime";
+        const string method = "CompleteBudgeted";
+        var targetType = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(a => a.GetName().Name == assembly)?.GetType(type);
+        var target = targetType?.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static)
+            .SingleOrDefault(candidate =>
+            {
+                if (candidate.Name != method) return false;
+                var p = candidate.GetParameters();
+                return p.Length == 10 &&
+                    p[0].ParameterType.FullName == "Game.Model.NpcModel" &&
+                    p[1].ParameterType.FullName == "JNGame.Ainpc.Prompt.ModeParams" &&
+                    p[2].ParameterType == typeof(string) && p[3].ParameterType == typeof(string) && p[4].ParameterType == typeof(string) &&
+                    p[5].ParameterType.IsGenericType && p[5].ParameterType.GetGenericTypeDefinition().FullName == "Il2CppSystem.Collections.Generic.IReadOnlyList`1" &&
+                    p[6].ParameterType == typeof(string) && p[7].ParameterType == typeof(string) &&
+                    p[8].ParameterType.FullName == "JNGame.Ainpc.Llm.LlmCallOptions" &&
+                    p[9].ParameterType.FullName == "JNGame.Ainpc.Prompt.PromptDocument";
+            });
+        if (target == null) { Log.LogWarning("Prompt enhancement hook not found with exact CompleteBudgeted signature; feature remains off for LLM requests."); return; }
+        var prefix = typeof(Probe).GetMethod(nameof(Probe.OnCompleteBudgetedPrefix), BindingFlags.Public | BindingFlags.Static)!;
+        _harmony!.Patch(target, prefix: new HarmonyMethod(prefix));
+        Log.LogInfo("Hooked exact Game.Model.AinpcRuntime.CompleteBudgeted signature for actual-reply prompt/schema extension.");
+    }
 }
 
 internal static class Probe
@@ -76,8 +296,240 @@ internal static class Probe
     private static string _runDir = "";
     private static BepInEx.Logging.ManualLogSource? _log;
     private static BepInEx.Logging.ManualLogSource? _speechLog;
+    private static ConfigEntry<bool>? _promptEnhancement;
+    [ThreadStatic] private static int _npcDisplayScopeDepth;
 
     public static void SetSpeechLog(BepInEx.Logging.ManualLogSource log) => _speechLog = log;
+    public static void SetPromptEnhancement(ConfigEntry<bool> enabled) => _promptEnhancement = enabled;
+
+    public static void OnDialogueShowPrefix(object __instance)
+    {
+        try { SpeechPanelUi.OnDialogueShown(__instance); }
+        catch (Exception e) { _speechLog?.LogWarning("Dialogue panel show observer failed: " + e.GetType().Name); }
+    }
+
+    public static void OnDialogueHidePrefix(object __instance)
+    {
+        try { SpeechPanelUi.OnDialogueHidden(__instance); }
+        catch (Exception e) { _speechLog?.LogWarning("Dialogue panel hide observer failed: " + e.GetType().Name); }
+    }
+
+    public static void OnDialogueSetDataPrefix(object __instance, object[] __args)
+    {
+        if (__instance.GetType().FullName != "Game.NpcDialoguePanel") return;
+        try { SpeechPanelUi.OnDialogueData(__instance, __args.Length > 0 ? __args[0] : null); }
+        catch (Exception e) { _speechLog?.LogWarning("Dialogue NPC binding observer failed: " + e.GetType().Name); }
+    }
+
+    public static bool OnUiShortcutPrefix(UnityEngine.InputSystem.InputAction.CallbackContext __1)
+    {
+        if (!SpeechPanelUi.ShouldBlockGameInput()) return true;
+        // Mouse actions outside the overlay remain available; keyboard/gamepad shortcuts do not.
+        var pointer = __1.control?.device?.TryCast<UnityEngine.InputSystem.Pointer>();
+        return pointer != null && !SpeechPanelUi.ShouldBlockGamePointer();
+    }
+
+    public static bool OnUiEventSystemPrefix(UnityEngine.EventSystems.EventSystem __instance, out bool __state)
+    {
+        __state = __instance.sendNavigationEvents;
+        if (SpeechPanelUi.ShouldBlockGameInput()) __instance.sendNavigationEvents = false;
+        return !SpeechPanelUi.ShouldBlockGamePointer();
+    }
+
+    public static void OnUiEventSystemPostfix(UnityEngine.EventSystems.EventSystem __instance, bool __state)
+        => __instance.sendNavigationEvents = __state;
+
+    public static void OnCompleteBudgetedPrefix(object[] __args, ref string __6,
+        ref JNGame.Ainpc.Llm.LlmCallOptions __8, ref PromptDocument __9)
+    {
+        var tail = __6;
+        var options = __8;
+        var sourceDocument = __9;
+        if (__args.Length == 10)
+        {
+            var purposeObservation = __args[2]?.ToString() ?? "null";
+            var sectionSummary = DescribePromptDocument(sourceDocument);
+            _speechLog?.LogInfo($"Stage3 CompleteBudgeted observed purpose={purposeObservation} tailChars={tail.Length} inputChars={(__args[7] as string)?.Length ?? -1} doc={sectionSummary}");
+            if (_captureEnabled && _full)
+            {
+                var formatValue = options.ResponseFormat;
+                var format = "";
+                try { if (formatValue != null) format = PromptEnhancer.ReadResponseFormatJson(formatValue); }
+                catch (Exception e) { format = "<serialize_error:" + formatValue?.GetType().FullName + ":" + e.Message + ">"; }
+                var hasContract = TryReadOutputContract(sourceDocument, out var contract);
+                Emit(new { kind = "complete_budgeted_request", runId = RunId, purpose = purposeObservation,
+                    tail = Limit(tail), tailSha256 = Hash(tail),
+                    outputContractSource = hasContract ? "PromptDocument" : "none",
+                    outputContract = hasContract ? Limit(contract) : null, outputContractSha256 = hasContract ? Hash(contract) : null,
+                    responseFormat = Limit(format), responseFormatSha256 = Hash(format), doc = sectionSummary });
+            }
+        }
+        if (__args.Length == 10 && string.Equals(__args[2] as string, "ActualReply", StringComparison.OrdinalIgnoreCase) &&
+            (!SpeechMvp.IsFeatureEnabled || !(_promptEnhancement?.Value ?? false)))
+        {
+            string? schema = null;
+            try { if (options.ResponseFormat != null) schema = PromptEnhancer.ReadResponseFormatJson(options.ResponseFormat); }
+            catch (Exception e) { _speechLog?.LogWarning("Stage3 actual reply schema observation failed: " + e.GetType().Name); }
+            SpeechPanelData.RecordPromptSnapshot(false, schema, null,
+                !SpeechMvp.IsFeatureEnabled ? "功能总开关关闭，未向本轮请求添加语音字段" : "提示增强已关闭，本轮使用游戏原始提示和 Schema");
+        }
+        if (!SpeechMvp.IsFeatureEnabled || !(_promptEnhancement?.Value ?? false) || __args.Length != 10) return;
+        var purpose = __args[2] as string;
+        if (!string.Equals(purpose, "ActualReply", StringComparison.OrdinalIgnoreCase))
+        {
+            _speechLog?.LogInfo($"Stage3 prompt enhancement skipped purpose={purpose ?? "null"} reason=not_actual_reply");
+            return;
+        }
+        string? originalSchema = null;
+        try { if (options?.ResponseFormat != null) originalSchema = PromptEnhancer.ReadResponseFormatJson(options.ResponseFormat); }
+        catch (Exception e) { _speechLog?.LogWarning("Stage3 original reply schema observation failed: " + e.GetType().Name); }
+        SpeechPanelData.RecordPromptSnapshot(false, originalSchema, null, "正在观察实际出站请求");
+        if (options == null || sourceDocument == null)
+        {
+            _speechLog?.LogWarning($"Stage3 prompt enhancement skipped purpose=ActualReply reason=unexpected_arguments tail={tail?.GetType().Name ?? "null"} options={options?.GetType().Name ?? "null"} document={sourceDocument?.GetType().Name ?? "null"}");
+            return;
+        }
+        try
+        {
+            var hasDocumentContract = TryReadOutputContract(sourceDocument, out var originalContract);
+            var exampleSource = hasDocumentContract ? originalContract : tail;
+            if (!PromptEnhancer.TryExtractReplyExample(exampleSource, out var originalExample, out _))
+            {
+                _speechLog?.LogWarning($"Stage3 prompt enhancement skipped purpose=ActualReply reason=no_json_reply_example source={(hasDocumentContract ? "PromptDocument" : "tail")}");
+                return;
+            }
+            string fieldDescriptions;
+            try { fieldDescriptions = PromptEnhancer.CreateFieldDescriptionsFromResponseFormat(options); }
+            catch (Exception e)
+            {
+                _speechLog?.LogWarning("Stage3 prompt enhancement skipped purpose=ActualReply reason=field_descriptions_failed: " + DescribeError(e));
+                return;
+            }
+            object? requestOptions;
+            PromptEnhancer.Extension? extension;
+            try
+            {
+                if (!PromptEnhancer.TryCreateRequestSnapshot(options, tail, originalExample, fieldDescriptions,
+                    out requestOptions, out extension) || requestOptions == null || extension == null)
+                {
+                    _speechLog?.LogWarning("Stage3 prompt enhancement skipped purpose=ActualReply reason=request_snapshot_failed");
+                    return;
+                }
+            }
+            catch (Exception e)
+            {
+                _speechLog?.LogWarning("Stage3 prompt enhancement skipped purpose=ActualReply reason=request_snapshot_exception: " + DescribeError(e));
+                return;
+            }
+            PromptDocument? requestDocument = sourceDocument;
+            if (hasDocumentContract && (!TryClonePromptDocument(sourceDocument, extension, out requestDocument) || requestDocument == null))
+            {
+                _speechLog?.LogWarning("Stage3 prompt enhancement skipped purpose=ActualReply reason=document_contract_clone_failed");
+                return;
+            }
+            // Commit the related prompt, response format, and output-contract document together.
+            if (requestOptions is not JNGame.Ainpc.Llm.LlmCallOptions scopedOptions)
+                throw new InvalidOperationException("Request options snapshot has an unexpected runtime type.");
+            __6 = extension.Tail;
+            __8 = scopedOptions;
+            if (hasDocumentContract) __9 = requestDocument!;
+            if (_captureEnabled && _full)
+            {
+                var responseFormat = PromptEnhancer.ReadResponseFormatJson(
+                    requestOptions.GetType().GetProperty("ResponseFormat", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(requestOptions)!);
+                Emit(new { kind = "prompt_enhancement_applied", runId = RunId, purpose,
+                    tail = Limit(extension.Tail), tailHasVoiceStyle = extension.Tail.Contains("voice_style", StringComparison.Ordinal),
+                    responseFormat = Limit(responseFormat), schemaHasVoiceStyle = responseFormat.Contains("voice_style", StringComparison.Ordinal),
+                    contractSource = hasDocumentContract ? "PromptDocument" : "tail" });
+            }
+            _speechLog?.LogInfo($"Stage3 prompt enhancement applied purpose={purpose} contractSource={(hasDocumentContract ? "PromptDocument" : "tail")} snapshot=tail+schema+example+field_descriptions{(hasDocumentContract ? "+PromptDocument" : "")}");
+            SpeechPanelData.RecordPromptSnapshot(true, extension.ResponseFormatJson, extension.ContractAddition,
+                "已观测：本地拦截到实际 ActualReply 请求增强后的 ResponseFormat；最终供应商网络层未观测");
+        }
+        catch (Exception e)
+        {
+            _speechLog?.LogWarning("Stage3 prompt enhancement failed open without modifying this request: " + DescribeError(e));
+        }
+    }
+
+    private static string DescribeError(Exception exception)
+    {
+        while (exception is TargetInvocationException invocation && invocation.InnerException is Exception inner) exception = inner;
+        var message = exception.Message;
+        return exception.GetType().FullName + ": " + (message.Length <= 240 ? message : message[..240]);
+    }
+
+    private static string DescribePromptDocument(object? document)
+    {
+        if (document is not PromptDocument promptDocument) return "null_or_unexpected";
+        try
+        {
+            var sections = promptDocument.Sections;
+            var collection = new Il2CppSystem.Collections.Generic.IReadOnlyCollection<PromptSection>(sections.Pointer);
+            var result = new List<string>();
+            for (var i = 0; i < collection.Count; i++)
+            {
+                var section = sections[i];
+                if (section == null) continue;
+                result.Add($"{section.Key}:{(section.Body ?? "").Length}:{Hash(section.Body ?? "")}");
+            }
+            return string.Join(",", result);
+        }
+        catch (Exception e) { return "unreadable:" + e.GetType().Name; }
+    }
+
+    private static bool TryReadOutputContract(PromptDocument document, out string body)
+    {
+        body = "";
+        try
+        {
+            var sections = document.Sections;
+            var collection = new Il2CppSystem.Collections.Generic.IReadOnlyCollection<PromptSection>(sections.Pointer);
+            for (var i = 0; i < collection.Count; i++)
+            {
+                var section = sections[i];
+                if (section != null && section.Key == PromptDocument.KEY_OUTPUT_CONTRACT)
+                {
+                    body = section.Body ?? "";
+                    return !string.IsNullOrWhiteSpace(body);
+                }
+            }
+        }
+        catch (Exception e) { _speechLog?.LogWarning("Stage3 output contract read failed: " + e.GetType().Name); }
+        return false;
+    }
+
+    private static bool TryClonePromptDocument(PromptDocument source, PromptEnhancer.Extension extension, out PromptDocument? clone)
+    {
+        clone = null;
+        try
+        {
+            var sourceSections = source.Sections;
+            var sourceCollection = new Il2CppSystem.Collections.Generic.IReadOnlyCollection<PromptSection>(sourceSections.Pointer);
+            var result = new PromptDocument();
+            var foundContract = false;
+            for (var i = 0; i < sourceCollection.Count; i++)
+            {
+                var section = sourceSections[i];
+                if (section == null) return false;
+                var body = section.Body ?? "";
+                if (section.Key == PromptDocument.KEY_OUTPUT_CONTRACT)
+                {
+                    foundContract = true;
+                    if (!PromptEnhancer.TryExtractReplyExample(body, out _, out var updatedBody,
+                        JsonNode.Parse(extension.ExampleJson) as JsonObject)) return false;
+                    body = updatedBody;
+                    if (!body.Contains(extension.ContractAddition, StringComparison.Ordinal))
+                        body = body.TrimEnd() + "\n\n" + extension.ContractAddition;
+                }
+                result.Add(section.Key, body, section.Protection);
+            }
+            if (!foundContract) return false;
+            clone = result;
+            return true;
+        }
+        catch (Exception e) { _speechLog?.LogWarning("Stage3 output contract clone failed: " + e.GetType().Name); return false; }
+    }
 
     public static void Start(BepInEx.Logging.ManualLogSource log, ConfigEntry<bool> full, ConfigEntry<int> maxChars, ConfigEntry<string> dir)
     {
@@ -94,46 +546,216 @@ internal static class Probe
     {
         Safe(() => { var text = __args.OfType<string>().FirstOrDefault() ?? ""; _lastInputSeq = EmitText("player_input", __instance, text); });
     }
-    public static void OnNpcDisplay(object __instance, object[] __args)
+
+    // This game method receives the provider reply string before NpcModel maps it to
+    // ChatReply.RawEnvelope. Observe both strings without changing the reply or return value.
+    public static void OnPreGameReplyNormalization(object __instance, string __0, string __1)
     {
+        if (!_captureEnabled) return;
         Safe(() =>
         {
-            var text = __args.OfType<string>().FirstOrDefault() ?? "";
-            var raw = __args.OfType<string>().Skip(1).FirstOrDefault();
-            if (_captureEnabled) EmitText("npc_display", __instance, text, raw);
-            // Only structured AI replies are spoken. Notices and player messages stay silent.
-            var reply = ExtractNpcReply(raw ?? "");
-            if (!string.IsNullOrWhiteSpace(text) && !string.IsNullOrWhiteSpace(reply?.Content))
-                SpeechMvp.OnNpcReply(NpcId(__instance), text, reply.Emotion);
+            var raw = __0 ?? "";
+            var previousContent = __1 ?? "";
+            var separated = NpcReplyPayload.Separate(raw);
+            Emit(new
+            {
+                kind = "llm_content_before_game_reply_mapping",
+                runId = RunId,
+                npcId = NpcId(__instance),
+                rawLength = raw.Length,
+                rawSha256 = Hash(raw),
+                raw = _full ? Limit(raw) : null,
+                previousContentLength = previousContent.Length,
+                previousContentSha256 = Hash(previousContent),
+                voiceStyleStatus = separated?.VoiceStyleStatus ?? "unparseable_or_not_reply_json",
+                voiceStyleJsonType = separated?.VoiceStyleJsonType ?? "unknown",
+                voiceStyleFailureReason = separated?.VoiceStyleFailureReason
+            });
         });
+    }
+
+    public static void OnPreGameReplyNormalizationPostfix(object __instance, string __0, string __1, bool __result)
+    {
+        // Keep the target's decision visible in the same event stream to show whether the
+        // game discarded a candidate as a duplicate. No game state is modified.
+        Safe(() =>
+        {
+            var raw = __0 ?? "";
+            var separated = NpcReplyPayload.Separate(raw);
+            var fields = separated == null ? ExtractNpcReply(raw) : ExtractNpcReply(separated.GameJson);
+            var npcKey = NpcId(__instance);
+            var contentSha256 = fields?.Content is { } content ? Hash(content) : null;
+            var acceptedContent = fields?.Content;
+            var cached = !__result && separated != null &&
+                !string.IsNullOrWhiteSpace(acceptedContent) && SpeechMvp.IsFeatureEnabled;
+            if (cached)
+                StyleStore.Store(npcKey, acceptedContent!, separated!.VoiceStyle, Hash(raw), raw,
+                    separated.VoiceStyleStatus, separated.VoiceStyleFailureReason, separated.VoiceStyleSource);
+            if (_captureEnabled) Emit(new
+            {
+                kind = "llm_content_repeat_check_result",
+                runId = RunId,
+                npcId = npcKey,
+                rawSha256 = Hash(raw),
+                previousContentSha256 = Hash(__1 ?? ""),
+                isRepeated = __result,
+                cachedVoiceStyle = cached,
+                contentSha256,
+                voiceStyleStatus = separated?.VoiceStyleStatus ?? "unparseable_or_not_reply_json"
+            });
+        });
+    }
+    internal sealed record NpcReplyFields(string? Content, string? Emotion, string? Control, bool? GiveGift, string? GiftItem, VoiceStyle? VoiceStyle, string DisplayIdentity);
+    internal sealed class NpcDisplayPatchState
+    {
+        private int _exited;
+        public NpcReplyFields? Reply { get; init; }
+        public string? GameJson { get; init; }
+        public string? RawReplyJson { get; init; }
+        public string? PluginRawOutput { get; init; }
+        public string VoiceStyleStatus { get; init; } = "unknown";
+        public string? VoiceStyleSource { get; init; }
+        public string? VoiceStyleFailureReason { get; init; }
+        public bool EnteredScope { get; init; }
+        public void ExitScope()
+        {
+            if (EnteredScope && Interlocked.Exchange(ref _exited, 1) == 0)
+                _npcDisplayScopeDepth = Math.Max(0, _npcDisplayScopeDepth - 1);
+        }
+    }
+
+    public static void OnNpcDisplayPrefix(object __instance, object[] __args, ref string __0, ref string __1, out NpcDisplayPatchState? __state)
+    {
+        _npcDisplayScopeDepth++;
+        __state = new NpcDisplayPatchState { EnteredScope = true };
+        try
+        {
+            if (__0 != null)
+            {
+                var displayEnvelope = StyleEnvelopeCodec.Decode(__0);
+                if (displayEnvelope.Status != "absent") __0 = displayEnvelope.Content;
+            }
+            var raw = __1;
+            if (raw == null) return;
+            var separated = NpcReplyPayload.Separate(raw);
+            if (separated == null) return;
+            __1 = separated.GameJson;
+            var fields = ExtractNpcReply(separated.GameJson);
+            var pendingStyle = StyleStore.Take(NpcId(__instance), fields?.Content);
+            var effectiveStyle = separated.VoiceStyle ?? pendingStyle?.Style;
+            var originalReply = pendingStyle?.RawReply ?? raw;
+            var pluginRawOutput = effectiveStyle == null ? null : NpcReplyPayload.WithVoiceStyle(separated.GameJson, effectiveStyle);
+            EmitRawReplyObservation(__instance, raw, separated, effectiveStyle,
+                separated.VoiceStyle != null ? separated.VoiceStyleSource : pendingStyle == null ? null : "IsRepeatedChatReply_or_content_envelope",
+                pendingStyle?.SourceRawSha256);
+            __state = new NpcDisplayPatchState
+            {
+                EnteredScope = true,
+                GameJson = separated.GameJson,
+                RawReplyJson = originalReply,
+                PluginRawOutput = pluginRawOutput,
+                VoiceStyleStatus = effectiveStyle == null ? pendingStyle?.Status ?? separated.VoiceStyleStatus : "valid",
+                VoiceStyleSource = separated.VoiceStyle != null ? separated.VoiceStyleSource : pendingStyle?.Source,
+                VoiceStyleFailureReason = separated.VoiceStyleFailureReason ?? pendingStyle?.FailureReason,
+                Reply = fields == null ? null : fields with { VoiceStyle = effectiveStyle, DisplayIdentity = "" }
+            };
+        }
+        catch (Exception e) { _speechLog?.LogWarning("Stage3 reply field separation error: " + e.GetType().Name); }
+    }
+
+    public static void OnNpcDisplay(object __instance, object[] __args, NpcDisplayPatchState? __state)
+    {
+        try { Safe(() =>
+        {
+            var text = __args.OfType<string>().FirstOrDefault() ?? "";
+            // Re-clean at the consuming boundary: Harmony's __args array may still expose
+            // the pre-prefix string even when ref __0 was replaced for the original method.
+            text = SpeechTextFilter.RemoveVoiceStyleEnvelope(text);
+            var raw = __state?.GameJson ?? __args.OfType<string>().Skip(1).FirstOrDefault();
+            if (_captureEnabled) EmitText("npc_display_game_payload", __instance, text, raw);
+            if (__state?.PluginRawOutput is { } pluginRawOutput)
+            {
+                var synchronized = SynchronizeLastNpcRawOutput(__instance, text, pluginRawOutput, out var actualRawOutput);
+                if (_captureEnabled) Emit(new
+                {
+                    kind = "npc_raw_output_plugin_sync",
+                    runId = RunId,
+                    npcId = NpcId(__instance),
+                    synchronized,
+                    intendedRawSha256 = Hash(pluginRawOutput),
+                    actualRawSha256 = actualRawOutput == null ? null : Hash(actualRawOutput),
+                    voiceStyleStatus = ExtractNpcReply(actualRawOutput ?? "")?.VoiceStyle == null ? "absent" : "valid",
+                    rawOutput = _full ? Limit(actualRawOutput ?? "") : null
+                });
+                if (!synchronized) _speechLog?.LogWarning("Stage3 could not synchronize recovered voice_style into ChatMessage.NpcRawOutput; TTS still uses the recovered style metadata.");
+            }
+            // Only structured AI replies are spoken. Notices and player messages stay silent.
+            var reply = __state?.Reply ?? ExtractNpcReply(raw ?? "");
+            if (!string.IsNullOrWhiteSpace(text) && !string.IsNullOrWhiteSpace(reply?.Content))
+            {
+                var npcKey = NpcId(__instance);
+                var identity = DisplayMessageIdentity(__instance, npcKey);
+                if (identity == null) { _speechLog?.LogWarning("Stage3 display reply has no ChatMessage timestamp identity; TTS skipped to avoid duplicate playback."); return; }
+                var spokenText = SpeechTextFilter.RemoveParentheticals(text);
+                SpeechPanelData.RecordReply(identity, npcKey, text, spokenText, reply.Emotion, reply.VoiceStyle,
+                    __state?.RawReplyJson ?? raw, __state?.VoiceStyleStatus ?? "unknown", __state?.VoiceStyleSource,
+                    __state?.VoiceStyleFailureReason);
+                _speechLog?.LogInfo($"Stage3 ordinary display callback identity={identity}");
+                SpeechMvp.OnNpcReply(npcKey, text, reply.Emotion, reply.VoiceStyle, identity);
+            }
+        }); }
+        finally { __state?.ExitScope(); }
+    }
+
+    public static Exception? OnNpcDisplayFinalizer(Exception? __exception, NpcDisplayPatchState? __state)
+    {
+        __state?.ExitScope();
+        return __exception;
     }
 
     public static void OnPersuadeResponse(object __instance, object[] __args)
     {
+        if (_npcDisplayScopeDepth > 0)
+        {
+            _speechLog?.LogInfo("Stage3 persuade callback reentered AddNpcChatMessage; deferring TTS to its Postfix so the full voice_style is retained.");
+            return;
+        }
         try
         {
             var message = __args.FirstOrDefault(a => a?.GetType().FullName == "Game.Model.ChatMessage");
             if (message == null) return;
             var messageType = message.GetType();
-            var text = messageType.GetProperty("MessageText")?.GetValue(message) as string;
+            var textProperty = messageType.GetProperty("MessageText", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            var text = textProperty?.GetValue(message) as string;
             if (string.IsNullOrWhiteSpace(text)) return;
             var raw = messageType.GetProperty("NpcRawOutput")?.GetValue(message) as string;
             var marker = messageType.GetProperty("SystemMarker")?.GetValue(message) as string;
             // Player submissions can carry the NPC's sender ID in this callback.
             // A structured NPC payload is the reliable discriminator here.
-            var reply = ExtractNpcReply(raw ?? "");
-            if (!string.IsNullOrEmpty(marker) || string.IsNullOrWhiteSpace(reply?.Content)) return;
-            var panelType = __instance.GetType();
-            var npc = panelType.GetProperty("_subscribedNpc", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)?.GetValue(__instance);
-            var npcKey = NpcId(npc);
-            if (!npcKey.StartsWith("npc:", StringComparison.Ordinal))
+            var separated = NpcReplyPayload.Separate(raw ?? "");
+            var reply = separated == null ? null : ExtractNpcReply(separated.GameJson);
+            if (!string.IsNullOrEmpty(marker) || reply == null || string.IsNullOrWhiteSpace(reply.Content)) return;
+            var npcKey = GetPersuadeNpcKey(__instance);
+            var pending = StyleStore.Take(npcKey, reply.Content);
+            reply = reply with { VoiceStyle = separated?.VoiceStyle ?? pending?.Style };
+            if (textProperty?.CanWrite == true)
             {
-                var configId = panelType.GetProperty("_npcId", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)?.GetValue(__instance);
-                var configValue = configId?.GetType().GetProperty("Value")?.GetValue(configId);
-                if (configValue is int id && id > 0) npcKey = "npc:" + id;
+                var decodedText = StyleEnvelopeCodec.Decode(text).Content;
+                if (!string.Equals(decodedText, text, StringComparison.Ordinal)) textProperty.SetValue(message, decodedText);
+                text = decodedText;
             }
             _speechLog?.LogInfo($"Stage3 persuade NPC response npc={npcKey} chars={text.Length} rawChars={raw?.Length ?? 0}");
-            SpeechMvp.OnNpcReply(npcKey, text, reply.Emotion ?? "normal");
+            var timestamp = messageType.GetProperty("MSTimestamp")?.GetValue(message)?.ToString();
+            if (string.IsNullOrWhiteSpace(timestamp) || timestamp == "0") return;
+            var identity = DisplayTurnIdentity.Create(npcKey, timestamp);
+            if (identity == null) return;
+            SpeechPanelData.RecordReply(identity, npcKey, text, SpeechTextFilter.RemoveParentheticals(text),
+                reply.Emotion ?? "normal", reply.VoiceStyle, pending?.RawReply ?? raw,
+                reply.VoiceStyle == null ? pending?.Status ?? separated?.VoiceStyleStatus ?? "unparseable_or_unavailable" : "valid",
+                separated?.VoiceStyle != null ? separated.VoiceStyleSource : pending != null ? "pending_store" : null,
+                separated?.VoiceStyleFailureReason ?? pending?.FailureReason);
+            _speechLog?.LogInfo($"Stage3 persuade display callback identity={identity}");
+            SpeechMvp.OnNpcReply(npcKey, text, reply.Emotion ?? "normal", reply.VoiceStyle, identity);
         }
         catch (Exception e)
         {
@@ -165,33 +787,51 @@ internal static class Probe
                 }
             }
             var argTypes = __args.Select((a,i) => new { index=i, type=a?.GetType().FullName ?? "null" }).ToArray();
-            _lastRequestSeq = Emit(new { kind="client_request_context", runId=RunId, npcId=NpcId(npc), mode="unknown", requestForInputSeq=_lastInputSeq, messagesCount=fields.Count, messagesType=messages?.GetType().FullName, messages=fields, schemaLength=schema.Length, schemaSha256=Hash(schema), schema=_full ? Limit(RedactCredentialFields(schema)) : null, args=argTypes });
+            var providerDiagnostics = ReadOfficialProviderDiagnostics();
+            _lastRequestSeq = Emit(new { kind="client_request_context", runId=RunId, npcId=NpcId(npc), mode="unknown", requestForInputSeq=_lastInputSeq, messagesCount=fields.Count, messagesType=messages?.GetType().FullName, messages=fields, schemaLength=schema.Length, schemaSha256=Hash(schema), schema=_full ? Limit(RedactCredentialFields(schema)) : null, providerDiagnostics, args=argTypes });
         });
     }
 
-    public static void OnOfficialTransportRequest(object __instance, object[] __args)
+    public static void OnPersuadeResponsePrefix(object __instance, object[] __args)
     {
-        Safe(() =>
+        try
         {
-            if (!IsOfficialTransport(__instance)) return;
-            var body = __args.Length > 1 ? __args[1] as string : null;
-            if (string.IsNullOrEmpty(body)) return;
-            var safeBody = RedactCredentialFields(body);
-            var omitted = safeBody.StartsWith("[omitted:", StringComparison.Ordinal);
-            Emit(new
+            var message = __args.FirstOrDefault(a => a?.GetType().FullName == "Game.Model.ChatMessage");
+            if (message == null) return;
+            var type = message.GetType();
+            var rawProperty = type.GetProperty("NpcRawOutput", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            var raw = rawProperty?.GetValue(message) as string;
+            if (string.IsNullOrWhiteSpace(raw)) return;
+            var separated = NpcReplyPayload.Separate(raw);
+            if (separated == null) return;
+            var fields = ExtractNpcReply(separated.GameJson);
+            if (fields?.Content == null) return;
+            var textProperty = type.GetProperty("MessageText", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            var text = textProperty?.GetValue(message) as string;
+            if (text != null && textProperty?.CanWrite == true)
             {
-                kind = "official_llm_outbound_request",
-                runId = RunId,
-                linkedInputSeq = _lastInputSeq,
-                linkedContextSeq = _lastRequestSeq,
-                bodyLength = safeBody.Length,
-                bodySha256 = Hash(safeBody),
-                body = _full && !omitted ? Limit(safeBody) : null,
-                payloadOmitted = omitted,
-                credentialFieldsRedacted = !omitted,
-                endpoint = "[not recorded]"
-            });
-        });
+                var decoded = StyleEnvelopeCodec.Decode(text);
+                if (decoded.Status != "absent") textProperty.SetValue(message, decoded.Content);
+            }
+            if (rawProperty?.CanWrite == true) rawProperty.SetValue(message, separated.GameJson);
+            if (separated.VoiceStyle != null)
+            {
+                var key = GetPersuadeNpcKey(__instance);
+                StyleStore.Store(key, fields.Content, separated.VoiceStyle, Hash(raw), raw,
+                    separated.VoiceStyleStatus, separated.VoiceStyleFailureReason, separated.VoiceStyleSource);
+            }
+        }
+        catch (Exception e) { _speechLog?.LogWarning("Stage3 persuade response cleanup error: " + e.GetType().Name); }
+    }
+
+    private static string GetPersuadeNpcKey(object panel)
+    {
+        var npc = panel.GetType().GetProperty("_subscribedNpc", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)?.GetValue(panel);
+        var key = NpcId(npc);
+        if (key.StartsWith("npc:", StringComparison.Ordinal)) return key;
+        var configId = panel.GetType().GetProperty("_npcId", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)?.GetValue(panel);
+        var value = configId?.GetType().GetProperty("Value")?.GetValue(configId);
+        return value is int id && id > 0 ? "npc:" + id : key;
     }
 
     private static long EmitText(string kind, object npc, string text, string? raw=null)
@@ -207,7 +847,32 @@ internal static class Probe
         });
     }
 
-    private sealed record NpcReplyFields(string? Content, string? Emotion, string? Control, bool? GiveGift, string? GiftItem);
+    private static void EmitRawReplyObservation(object npc, string raw, NpcReplyPayload.Separated separated,
+        VoiceStyle? effectiveStyle = null, string? effectiveStyleSource = null, string? sourceRawSha256 = null)
+    {
+        if (!_captureEnabled) return;
+        Emit(new
+        {
+            kind = "npc_reply_raw_observation", runId = RunId, npcId = NpcId(npc),
+            linkedRequestSeq = _lastRequestSeq, rawLength = raw.Length, rawSha256 = Hash(raw),
+            raw = _full ? Limit(raw) : null,
+            voiceStyleStatus = separated.VoiceStyleStatus,
+            voiceStyleJsonType = separated.VoiceStyleJsonType,
+            voiceStyleFailureReason = separated.VoiceStyleFailureReason,
+            effectiveVoiceStyleStatus = effectiveStyle == null ? "absent" : "valid",
+            effectiveVoiceStyleSource = effectiveStyleSource,
+            effectiveVoiceStyleSourceRawSha256 = sourceRawSha256,
+            validStyle = _full ? effectiveStyle : null
+        });
+    }
+
+    internal static void RecordTtsInstruction(string identity, string backend, VoiceStyle? style, string? instruction)
+    {
+        if (!_captureEnabled || !_full) return;
+        Emit(new { kind = "tts_instruction_consumed", runId = RunId, displayIdentity = identity,
+            backend, style, instruction = instruction ?? "" });
+    }
+
     private static NpcReplyFields? ExtractNpcReply(string raw)
     {
         try
@@ -215,6 +880,8 @@ internal static class Probe
             using var document = JsonDocument.Parse(raw);
             var root = document.RootElement;
             if (root.ValueKind != JsonValueKind.Object || !root.TryGetProperty("content", out _)) return null;
+            VoiceStyle? voiceStyle = null;
+            if (root.TryGetProperty("voice_style", out var style)) voiceStyle = VoiceStyle.Parse(style);
             var content = root.TryGetProperty("content", out var c) && c.ValueKind == JsonValueKind.String ? c.GetString() : null;
             var emotion = root.TryGetProperty("emotion", out var e) && e.ValueKind == JsonValueKind.String ? e.GetString() : null;
             var control = root.TryGetProperty("control", out var ctl) && ctl.ValueKind == JsonValueKind.String ? ctl.GetString() : null;
@@ -225,15 +892,16 @@ internal static class Probe
                 if (intent.TryGetProperty("give_gift", out var g) && g.ValueKind is JsonValueKind.True or JsonValueKind.False) giveGift = g.GetBoolean();
                 if (intent.TryGetProperty("gift_item", out var item) && item.ValueKind == JsonValueKind.String) giftItem = item.GetString();
             }
-            return new NpcReplyFields(content, emotion, control, giveGift, giftItem);
+            return new NpcReplyFields(content, emotion, control, giveGift, giftItem, voiceStyle, "");
         }
         catch { return null; }
     }
 
-    private static bool IsOfficialTransport(object transport)
+    private static bool IsOfficialTransport(object? transport)
     {
         try
         {
+            if (transport == null) return false;
             var runtime = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(a => a.GetName().Name == "Game")?.GetType("Game.Model.AinpcRuntime");
             var official = runtime?.GetProperty("Official", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static)?.GetValue(null);
             if (official == null) return false;
@@ -259,6 +927,118 @@ internal static class Probe
         }
         catch { return null; }
     }
+
+    private static object ReadOfficialProviderDiagnostics()
+    {
+        try
+        {
+            var runtime = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(a => a.GetName().Name == "Game")?.GetType("Game.Model.AinpcRuntime");
+            var official = runtime?.GetProperty("Official", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static)?.GetValue(null);
+            if (official == null) return new { providerType = (string?)null, providerNativeType = (string?)null, providerPointer = (long?)null, transportType = (string?)null, transportNativeType = (string?)null, transportPointer = (long?)null };
+            var type = official.GetType();
+            var transport = type.GetProperty("_transport", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(official)
+                ?? type.GetField("_transport", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(official);
+            var (providerNativeType, transportNativeType, nativeFields) = ReadNativeProviderFields(official);
+            return new { providerType = type.FullName, providerNativeType, providerPointer = NativePointer(official), transportType = transport?.GetType().FullName, transportNativeType, transportPointer = NativePointer(transport), nativeFields };
+        }
+        catch (Exception e)
+        {
+            return new { providerType = (string?)null, providerPointer = (long?)null, transportType = (string?)null, transportPointer = (long?)null, error = e.GetType().Name };
+        }
+    }
+
+    private static (string? providerType, string? transportType, object[] fields) ReadNativeProviderFields(object official)
+    {
+        try
+        {
+            var pointer = NativePointer(official);
+            if (!pointer.HasValue) return (null, null, Array.Empty<object>());
+            var nativeObject = new IntPtr(pointer.Value);
+            var klass = Il2CppInterop.Runtime.IL2CPP.il2cpp_object_get_class(nativeObject);
+            var providerType = NativeClassName(klass);
+            var fields = new List<object>();
+            var transportType = (string?)null;
+            var iterator = IntPtr.Zero;
+            while (true)
+            {
+                var field = Il2CppInterop.Runtime.IL2CPP.il2cpp_class_get_fields(klass, ref iterator);
+                if (field == IntPtr.Zero) break;
+                var name = Il2CppInterop.Runtime.IL2CPP.il2cpp_field_get_name_(field) ?? "";
+                if (name.Length == 0) continue;
+                var value = Il2CppInterop.Runtime.IL2CPP.il2cpp_field_get_value_object(field, nativeObject);
+                var valueType = value == IntPtr.Zero ? null : NativeClassName(Il2CppInterop.Runtime.IL2CPP.il2cpp_object_get_class(value));
+                if (name.Contains("transport", StringComparison.OrdinalIgnoreCase)) transportType = valueType;
+                fields.Add(new { name, valueType });
+            }
+            return (providerType, transportType, fields.ToArray());
+        }
+        catch (Exception e)
+        {
+            return ("native-inspection-error:" + e.GetType().Name, null, Array.Empty<object>());
+        }
+    }
+
+    private static string? NativeClassName(IntPtr klass)
+    {
+        if (klass == IntPtr.Zero) return null;
+        var ns = Il2CppInterop.Runtime.IL2CPP.il2cpp_class_get_namespace_(klass);
+        var name = Il2CppInterop.Runtime.IL2CPP.il2cpp_class_get_name_(klass);
+        return string.IsNullOrEmpty(ns) ? name : ns + "." + name;
+    }
+
+    private static string? DisplayMessageIdentity(object npc, string npcKey)
+    {
+        try
+        {
+            var messages = npc.GetType().GetProperty("ChatMessages", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)?.GetValue(npc);
+            if (messages == null) return null;
+            var collectionType = messages.GetType();
+            var count = (int)(collectionType.GetProperty("Count")?.GetValue(messages) ?? 0);
+            var item = collectionType.GetProperty("Item") ?? collectionType.GetProperties().FirstOrDefault(property => property.GetIndexParameters().Length == 1);
+            if (count < 1 || item == null) return null;
+            var message = item.GetValue(messages, new object[] { count - 1 });
+            if (message == null) return null;
+            var messageType = message.GetType();
+            var timestamp = messageType.GetProperty("MSTimestamp", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)?.GetValue(message)?.ToString();
+            if (string.IsNullOrWhiteSpace(timestamp) || timestamp == "0") return null;
+            return DisplayTurnIdentity.Create(npcKey, timestamp);
+        }
+        catch (Exception e)
+        {
+            _speechLog?.LogWarning("Stage3 could not read native display ChatMessage identity: " + e.GetType().Name);
+            return null;
+        }
+    }
+
+    private static bool SynchronizeLastNpcRawOutput(object npc, string displayText, string pluginRawOutput, out string? actualRawOutput)
+    {
+        actualRawOutput = null;
+        try
+        {
+            var messages = npc.GetType().GetProperty("ChatMessages", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)?.GetValue(npc);
+            if (messages == null) return false;
+            var collectionType = messages.GetType();
+            var count = (int)(collectionType.GetProperty("Count")?.GetValue(messages) ?? 0);
+            var item = collectionType.GetProperty("Item") ?? collectionType.GetProperties().FirstOrDefault(property => property.GetIndexParameters().Length == 1);
+            if (count < 1 || item == null) return false;
+            var message = item.GetValue(messages, new object[] { count - 1 });
+            if (message == null) return false;
+            var messageType = message.GetType();
+            var messageText = messageType.GetProperty("MessageText", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)?.GetValue(message) as string;
+            if (!string.Equals(messageText, displayText, StringComparison.Ordinal)) return false;
+            var rawOutput = messageType.GetProperty("NpcRawOutput", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            if (rawOutput?.CanWrite != true) return false;
+            rawOutput.SetValue(message, pluginRawOutput);
+            actualRawOutput = rawOutput.GetValue(message) as string;
+            return string.Equals(actualRawOutput, pluginRawOutput, StringComparison.Ordinal);
+        }
+        catch (Exception e)
+        {
+            _speechLog?.LogWarning("Stage3 ChatMessage.NpcRawOutput synchronization error: " + e.GetType().Name);
+            return false;
+        }
+    }
+
     private static string NpcId(object? npc)
     {
         try
@@ -325,6 +1105,6 @@ internal static class Probe
 internal static class PluginInfo
 {
     public const string Guid = "org.a1indextts.mod";
-    public const string Name = "A1 IndexTTS Mod";
-    public const string Version = "0.5.9";
+    public const string Name = "A1-TTS-Mod";
+    public const string Version = "0.7.3";
 }

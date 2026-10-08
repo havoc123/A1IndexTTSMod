@@ -5,8 +5,34 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
+    <HarmonyPath Condition="'$(HarmonyPath)' == ''">E:\Program Files (x86)\Steam\steamapps\common\A1\BepInEx\core\0Harmony.dll</HarmonyPath>
+    <BepInExCoreDir Condition="'$(BepInExCoreDir)' == ''">E:\Program Files (x86)\Steam\steamapps\common\A1\BepInEx\core</BepInExCoreDir>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\src\NpcVoiceResolver.cs" Link="NpcVoiceResolver.cs" />
+    <Compile Include="..\src\VoiceStyle.cs" Link="VoiceStyle.cs" />
+    <Compile Include="..\src\StyleEnvelopeCodec.cs" Link="StyleEnvelopeCodec.cs" />
+    <Compile Include="..\src\StyleStore.cs" Link="StyleStore.cs" />
+    <Compile Include="..\src\SpeechTextFilter.cs" Link="SpeechTextFilter.cs" />
+    <Compile Include="..\src\PcmVolumeWaveProvider.cs" Link="PcmVolumeWaveProvider.cs" />
+    <Compile Include="..\src\PromptEnhancer.cs" Link="PromptEnhancer.cs" />
+    <EmbeddedResource Include="..\docs\prompts\npc-emotion-enhancement.zh-CN.md">
+      <LogicalName>A1IndexTTSMod.npc-emotion-enhancement.zh-CN.md</LogicalName>
+      <WithCulture>false</WithCulture>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup Condition="Exists('$(HarmonyPath)')">
+    <Reference Include="0Harmony">
+      <HintPath>$(HarmonyPath)</HintPath>
+    </Reference>
+    <Content Include="$(BepInExCoreDir)\*.dll" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="BepInEx.Core">
+      <HintPath>$(BepInExCoreDir)\BepInEx.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="NAudio.Core">
+      <HintPath>..\src\bin\Release\net6.0\NAudio.Core.dll</HintPath>
+    </Reference>
   </ItemGroup>
 </Project>

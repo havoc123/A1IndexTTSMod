@@ -2,6 +2,8 @@
 .state/
 src/bin/
 src/obj/
+src/managed-feature-api/bin/
+src/managed-feature-api/obj/
 *.log
 *.jsonl
 *.png

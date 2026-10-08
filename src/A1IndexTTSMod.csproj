@@ -4,12 +4,13 @@
     <TargetFramework>net6.0</TargetFramework>
     <AssemblyName>A1IndexTTSMod</AssemblyName>
     <RootNamespace>A1IndexTTSMod</RootNamespace>
-    <Version>0.5.9</Version>
+    <Version>0.7.3</Version>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <DefaultItemExcludes>$(DefaultItemExcludes);managed-feature-api\**\*.cs</DefaultItemExcludes>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -24,7 +25,29 @@
   </Target>
 
   <ItemGroup>
+    <Reference Include="Unity.InputSystem">
+      <HintPath>$(BepInExDir)\interop\Unity.InputSystem.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="A1GUI">
+      <HintPath>$(BepInExDir)\interop\A1GUI.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>$(BepInExDir)\interop\UnityEngine.UI.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Unity.TextMeshPro">
+      <HintPath>$(BepInExDir)\interop\Unity.TextMeshPro.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <ProjectReference Include="managed-feature-api\LocalModManager.Abstractions.csproj" />
+    <EmbeddedResource Include="..\docs\prompts\npc-emotion-enhancement.zh-CN.md">
+      <LogicalName>A1IndexTTSMod.npc-emotion-enhancement.zh-CN.md</LogicalName>
+      <WithCulture>false</WithCulture>
+    </EmbeddedResource>
     <PackageReference Include="NAudio.Wasapi" Version="2.3.0" />
+    <PackageReference Include="NAudio.WinMM" Version="2.3.0" />
     <Reference Include="BepInEx.Core">
       <HintPath>$(BepInExDir)\core\BepInEx.Core.dll</HintPath>
       <Private>false</Private>
@@ -41,12 +64,36 @@
       <HintPath>$(BepInExDir)\interop\A1Ainpc.Runtime.dll</HintPath>
       <Private>false</Private>
     </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>$(BepInExDir)\interop\Newtonsoft.Json.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
     <Reference Include="Il2Cppmscorlib">
       <HintPath>$(BepInExDir)\interop\Il2Cppmscorlib.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="Il2CppInterop.Runtime">
       <HintPath>$(BepInExDir)\core\Il2CppInterop.Runtime.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.IMGUIModule">
+      <HintPath>$(BepInExDir)\interop\UnityEngine.IMGUIModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.TextRenderingModule">
+      <HintPath>$(BepInExDir)\interop\UnityEngine.TextRenderingModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>$(BepInExDir)\interop\UnityEngine.CoreModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UIModule">
+      <HintPath>$(BepInExDir)\interop\UnityEngine.UIModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.InputLegacyModule">
+      <HintPath>$(BepInExDir)\interop\UnityEngine.InputLegacyModule.dll</HintPath>
       <Private>false</Private>
     </Reference>
   </ItemGroup>

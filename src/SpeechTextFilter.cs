@@ -7,8 +7,11 @@ internal static class SpeechTextFilter
 {
     private static readonly Regex Whitespace = new(@"\s+", RegexOptions.Compiled);
 
+    public static string RemoveVoiceStyleEnvelope(string text) => StyleEnvelopeCodec.Decode(text).Content;
+
     public static string RemoveParentheticals(string text)
     {
+        text = RemoveVoiceStyleEnvelope(text);
         var result = new StringBuilder(text.Length);
         var openAt = -1;
         var depth = 0;

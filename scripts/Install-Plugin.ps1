@@ -11,7 +11,8 @@ if (-not $BepInExDir) { $BepInExDir = Join-Path $GameRoot 'BepInEx' }
 $BepInExDir = [IO.Path]::GetFullPath($BepInExDir)
 $PluginSource = Join-Path $ProjectRoot 'src\bin\Release\net6.0\A1IndexTTSMod.dll'
 $PluginTarget = Join-Path $BepInExDir 'plugins\A1IndexTTSMod\A1IndexTTSMod.dll'
-$DependencyNames = @('NAudio.Core.dll', 'NAudio.Wasapi.dll')
+$DependencyNames = @('NAudio.Core.dll', 'NAudio.Wasapi.dll', 'NAudio.WinMM.dll')
+$SharedDependencyNames = @('LocalModManager.Abstractions.dll')
 $StateRoot = Join-Path $ProjectRoot '.state'
 $StatePath = Join-Path $StateRoot 'plugin-install.json'
 
@@ -31,13 +32,16 @@ if (Test-Path -LiteralPath $PluginTarget) {
     if ($existingHash -ne $state.sha256) { throw "Installed plugin was changed outside this script: $PluginTarget" }
 }
 
-foreach ($name in $DependencyNames) {
+foreach ($name in @($DependencyNames) + @($SharedDependencyNames)) {
     $source = Join-Path (Split-Path -Parent $PluginSource) $name
-    $target = Join-Path (Split-Path -Parent $PluginTarget) $name
+    $target = if ($SharedDependencyNames -contains $name) { Join-Path $BepInExDir ('plugins\' + $name) } else { Join-Path (Split-Path -Parent $PluginTarget) $name }
     if (-not (Test-Path -LiteralPath $source)) { throw "Plugin dependency is missing: $source" }
     if (Test-Path -LiteralPath $target) {
         $known = @($state.dependencies | Where-Object { $_.name -eq $name }) | Select-Object -First 1
-        if (-not $known -or (Get-FileHash -LiteralPath $target -Algorithm SHA256).Hash.ToLowerInvariant() -ne $known.sha256) {
+        $actual = (Get-FileHash -LiteralPath $target -Algorithm SHA256).Hash.ToLowerInvariant()
+        $sourceHash = (Get-FileHash -LiteralPath $source -Algorithm SHA256).Hash.ToLowerInvariant()
+        $sharedMatch = ($SharedDependencyNames -contains $name) -and ($actual -eq $sourceHash)
+        if ((-not $known -and -not $sharedMatch) -or ($known -and $actual -ne $known.sha256)) {
             throw "Installed dependency was changed outside this script: $target"
         }
     }
@@ -45,14 +49,15 @@ foreach ($name in $DependencyNames) {
 
 New-Item -ItemType Directory -Path (Split-Path -Parent $PluginTarget) -Force | Out-Null
 Copy-Item -LiteralPath $PluginSource -Destination $PluginTarget -Force
-foreach ($name in $DependencyNames) {
-    Copy-Item -LiteralPath (Join-Path (Split-Path -Parent $PluginSource) $name) -Destination (Join-Path (Split-Path -Parent $PluginTarget) $name) -Force
+foreach ($name in @($DependencyNames) + @($SharedDependencyNames)) {
+    $target = if ($SharedDependencyNames -contains $name) { Join-Path $BepInExDir ('plugins\' + $name) } else { Join-Path (Split-Path -Parent $PluginTarget) $name }
+    Copy-Item -LiteralPath (Join-Path (Split-Path -Parent $PluginSource) $name) -Destination $target -Force
 }
 New-Item -ItemType Directory -Path $StateRoot -Force | Out-Null
 [pscustomobject]@{
     path = [IO.Path]::GetRelativePath($GameRoot, $PluginTarget)
     sha256 = $hash
-    dependencies = @($DependencyNames | ForEach-Object {
+    dependencies = @((@($DependencyNames) + @($SharedDependencyNames)) | ForEach-Object {
         [pscustomobject]@{ name = $_; sha256 = (Get-FileHash -LiteralPath (Join-Path (Split-Path -Parent $PluginSource) $_) -Algorithm SHA256).Hash.ToLowerInvariant() }
     })
     installedAtUtc = [DateTime]::UtcNow.ToString('o')

@@ -1,7 +1,8 @@
 [CmdletBinding()]
 param(
     [string] $OutputRoot = (Join-Path (Split-Path -Parent $PSScriptRoot) 'dist'),
-    [string] $Version = 'v0.5.8'
+    [string] $Version = 'v0.7.3',
+    [switch] $SkipArchive
 )
 
 $ErrorActionPreference = 'Stop'
@@ -12,17 +13,19 @@ $package = Join-Path $OutputRoot $name
 $archive = Join-Path $OutputRoot "$name.zip"
 
 if (Test-Path -LiteralPath $package) { throw "Package directory already exists: $package" }
-if (Test-Path -LiteralPath $archive) { throw "Archive already exists: $archive" }
+if (-not $SkipArchive -and (Test-Path -LiteralPath $archive)) { throw "Archive already exists: $archive" }
 
 $sourceBin = Join-Path $project 'src\bin\Release\net6.0'
 $sourceRuntime = Join-Path $project '.cache\audiocpp\runtime'
 $sourceNpcs = Join-Path $project 'references\npcs'
 $sourceModel = Join-Path $project '.cache\audiocpp\models\IndexTTS2.5-GGUF\index-tts2_5-q8_0.gguf'
-$pluginFiles = @('A1IndexTTSMod.dll', 'NAudio.Core.dll', 'NAudio.Wasapi.dll')
+$pluginFiles = @('A1IndexTTSMod.dll', 'NAudio.Core.dll', 'NAudio.Wasapi.dll', 'NAudio.WinMM.dll')
+$sharedPluginFiles = @('LocalModManager.Abstractions.dll')
 $runScripts = @('Run-AudioCppForGame.ps1', 'Start-AudioCpp.ps1', 'Stop-AudioCpp.ps1')
 
 foreach ($path in @(
     (Join-Path $sourceRuntime 'audiocpp_server.exe'),
+    (Join-Path $sourceRuntime 'audiocpp_server-vulkan.exe'),
     (Join-Path $sourceRuntime 'LICENSE'),
     (Join-Path $sourceRuntime 'model_specs'),
     (Join-Path $project 'references\demo.wav'),
@@ -34,7 +37,7 @@ foreach ($path in @(
 )) {
     if (-not (Test-Path -LiteralPath $path)) { throw "Required release input is missing: $path" }
 }
-foreach ($namePart in $pluginFiles) {
+foreach ($namePart in @($pluginFiles) + @($sharedPluginFiles)) {
     if (-not (Test-Path -LiteralPath (Join-Path $sourceBin $namePart) -PathType Leaf)) {
         throw "Plugin output is missing: $namePart; build Release first."
     }
@@ -73,17 +76,21 @@ foreach ($wav in $wavFiles) {
 
 New-Item -ItemType Directory -Path $OutputRoot -Force | Out-Null
 $game = Join-Path $package 'A1'
-$plugin = Join-Path $game 'BepInEx\plugins\A1IndexTTSMod'
+$pluginsRoot = Join-Path $game 'BepInEx\plugins'
+$plugin = Join-Path $pluginsRoot 'A1IndexTTSMod'
 $mod = Join-Path $game 'A1IndexTTSMod'
 $runtime = Join-Path $mod '.cache\audiocpp\runtime'
 $modelDir = Join-Path $mod '.cache\audiocpp\models\IndexTTS2.5-GGUF'
 $npcs = Join-Path $mod 'references\npcs'
 $scripts = Join-Path $mod 'scripts'
 $config = Join-Path $mod 'config'
-New-Item -ItemType Directory -Path $plugin,$runtime,$modelDir,$npcs,$scripts,$config -Force | Out-Null
+New-Item -ItemType Directory -Path $pluginsRoot,$plugin,$runtime,$modelDir,$npcs,$scripts,$config -Force | Out-Null
 
 foreach ($namePart in $pluginFiles) {
     Copy-Item -LiteralPath (Join-Path $sourceBin $namePart) -Destination (Join-Path $plugin $namePart)
+}
+foreach ($namePart in $sharedPluginFiles) {
+    Copy-Item -LiteralPath (Join-Path $sourceBin $namePart) -Destination (Join-Path $pluginsRoot $namePart)
 }
 foreach ($entry in Get-ChildItem -LiteralPath $sourceRuntime -Force) {
     Copy-Item -LiteralPath $entry.FullName -Destination (Join-Path $runtime $entry.Name) -Recurse -Force
@@ -102,6 +109,10 @@ foreach ($namePart in $runScripts) {
 foreach ($doc in @('README.md', 'INSTALL.md', 'LICENSE', 'THIRD_PARTY_NOTICES.md', 'CHANGELOG.md')) {
     Copy-Item -LiteralPath (Join-Path $project $doc) -Destination (Join-Path $package $doc)
 }
+Copy-Item -LiteralPath (Join-Path $project 'packaging\INSTALL-WORKSHOP.md') -Destination (Join-Path $package 'INSTALL.md') -Force
+Copy-Item -LiteralPath (Join-Path $project 'packaging\README-WORKSHOP.md') -Destination (Join-Path $package 'README.md') -Force
+Copy-Item -LiteralPath (Join-Path $project 'packaging\安装TTSMod.bat') -Destination (Join-Path $package '安装TTSMod.bat')
+Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'Install-WorkshopPackage.ps1') -Destination (Join-Path $package 'Install-TTSMod.ps1')
 New-Item -ItemType Directory -Path (Join-Path $package 'third_party') -Force | Out-Null
 Copy-Item -LiteralPath (Join-Path $project 'third_party\NAudio-LICENSE.txt') -Destination (Join-Path $package 'third_party\NAudio-LICENSE.txt')
 
@@ -123,9 +134,14 @@ A1/A1IndexTTSMod/.cache/audiocpp/models/IndexTTS2.5-GGUF/index-tts2_5-q8_0.gguf
 Expected local Q8 SHA-256: $modelHash
 "@ | Set-Content -LiteralPath (Join-Path $package 'PACKAGE-MANIFEST.txt') -Encoding utf8
 
-Compress-Archive -LiteralPath $game,(Join-Path $package 'README.md'),(Join-Path $package 'INSTALL.md'),(Join-Path $package 'LICENSE'),(Join-Path $package 'THIRD_PARTY_NOTICES.md'),(Join-Path $package 'CHANGELOG.md'),(Join-Path $package 'third_party'),(Join-Path $package 'PACKAGE-MANIFEST.txt') `
-    -DestinationPath $archive -CompressionLevel Optimal
-$zipHash = (Get-FileHash -LiteralPath $archive -Algorithm SHA256).Hash.ToLowerInvariant()
+if (-not $SkipArchive) {
+    Compress-Archive -LiteralPath $game,(Join-Path $package 'README.md'),(Join-Path $package 'INSTALL.md'),(Join-Path $package 'Install-TTSMod.ps1'),(Join-Path $package '安装TTSMod.bat'),(Join-Path $package 'LICENSE'),(Join-Path $package 'THIRD_PARTY_NOTICES.md'),(Join-Path $package 'CHANGELOG.md'),(Join-Path $package 'third_party'),(Join-Path $package 'PACKAGE-MANIFEST.txt') `
+        -DestinationPath $archive -CompressionLevel Optimal
+    $zipHash = (Get-FileHash -LiteralPath $archive -Algorithm SHA256).Hash.ToLowerInvariant()
+} else {
+    $archive = $null
+    $zipHash = $null
+}
 [pscustomobject]@{
     PackageDirectory = $package
     Archive = $archive
