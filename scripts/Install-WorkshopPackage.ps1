@@ -1,5 +1,5 @@
-[CmdletBinding()]
-param([string] $GamePath = '')
+﻿[CmdletBinding()]
+param([string] $GamePath = '', [switch] $AllowMissingModel)
 
 $ErrorActionPreference = 'Stop'
 
@@ -30,6 +30,7 @@ try {
         'BepInEx\plugins\A1IndexTTSMod\A1IndexTTSMod.dll',
         'BepInEx\plugins\A1IndexTTSMod\NAudio.Core.dll',
         'BepInEx\plugins\A1IndexTTSMod\NAudio.Wasapi.dll',
+        'BepInEx\plugins\A1IndexTTSMod\NAudio.WinMM.dll',
         'BepInEx\plugins\LocalModManager.Abstractions.dll',
         'A1IndexTTSMod\.cache\audiocpp\runtime\audiocpp_server.exe',
         'A1IndexTTSMod\.cache\audiocpp\runtime\audiocpp_server-vulkan.exe',
@@ -44,7 +45,7 @@ try {
     $cosyModelRelative = 'A1IndexTTSMod\.cache\audiocpp\models\CosyVoice3-GGUF\cosyvoice3-q8_0.gguf'
     $indexModelRelative = 'A1IndexTTSMod\.cache\audiocpp\models\IndexTTS2.5-GGUF\index-tts2_5-q8_0.gguf'
     $modelRelative = if (Test-Path -LiteralPath (Join-Path $payload $cosyModelRelative) -PathType Leaf) { $cosyModelRelative } else { $indexModelRelative }
-    if (-not (Test-Path -LiteralPath (Join-Path $payload $modelRelative) -PathType Leaf)) {
+    if (-not $AllowMissingModel -and -not (Test-Path -LiteralPath (Join-Path $payload $modelRelative) -PathType Leaf)) {
         throw '安装包没有找到 CosyVoice3 或 IndexTTS Q8 模型文件。'
     }
 
@@ -83,7 +84,9 @@ try {
                 if ((Get-Item -LiteralPath $source).PSIsContainer) {
                     $sourceFiles = @(Get-ChildItem -LiteralPath $source -File -Recurse)
                     foreach ($sourceFile in $sourceFiles) {
-                        $fileRelative = [IO.Path]::GetRelativePath($source, $sourceFile.FullName)
+                        $fileRelative = $sourceFile.FullName.Substring($source.TrimEnd('\').Length + 1)
+                        # Plugin and configuration files are handled below, not loader binaries.
+                        if ($relative -eq 'BepInEx' -and ($fileRelative -like 'plugins\*' -or $fileRelative -like 'config\*')) { continue }
                         $targetFile = Join-Path $target $fileRelative
                         if (Test-Path -LiteralPath $targetFile -PathType Leaf) {
                             $sourceHash = (Get-FileHash -LiteralPath $sourceFile.FullName -Algorithm SHA256).Hash
@@ -99,7 +102,7 @@ try {
     }
 
     Write-Host "目标游戏目录：$gameRoot"
-    Write-Host '将复制安装包内的 BepInEx 6 IL2CPP、.NET 运行时、audio.cpp、模型、插件及 NPC 参考音。已有配置、参考音和模型会保留。'
+    Write-Host '将复制包内的加载器、运行依赖、插件和参考音。已有配置、参考音和模型会保留。'
     if ((Read-Host '确认安装？输入 Y 继续').Trim().ToUpperInvariant() -ne 'Y') {
         Write-Host '已取消。'
         exit 0
@@ -122,7 +125,11 @@ try {
 
     Write-Host '语音 MOD 文件安装完成。若已有旧配置，安装器已保留原文件，请按包内说明核对后端。'
     Write-Host '若已有参考音或模型文件，安装器会保留原文件，不覆盖。'
-    Write-Host '请从 Steam 正常启动游戏。'
+    if ($AllowMissingModel -and -not (Test-Path -LiteralPath (Join-Path $gameRoot $cosyModelRelative) -PathType Leaf)) {
+        Write-Host '尚未安装 CosyVoice3 模型。请先安装独立模型包，再从 Steam 启动游戏。' -ForegroundColor Yellow
+    } else {
+        Write-Host '请从 Steam 正常启动游戏。'
+    }
 } catch {
     [Console]::Error.WriteLine("安装失败：$($_.Exception.Message)")
     exit 1

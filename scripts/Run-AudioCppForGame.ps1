@@ -2,7 +2,7 @@
 param(
     [Parameter(Mandatory)][ValidateRange(1, [int]::MaxValue)][int] $GamePid,
     [Parameter(Mandatory)][ValidatePattern("^[a-f0-9]{32}$")][string] $InstanceId,
-    [ValidateSet('index_tts2', 'cosyvoice3')][string] $Backend = 'index_tts2',
+    [ValidateSet('index_tts2', 'cosyvoice3')][string] $Backend = 'cosyvoice3',
     [ValidateSet('q8_0', 'f16', 'orig')][string] $Precision = 'q8_0',
     [ValidateSet('Nvidia', 'Vulkan')][string] $GpuBackend = 'Nvidia',
     [ValidateRange(0, 15)][int] $GpuDevice = 0,

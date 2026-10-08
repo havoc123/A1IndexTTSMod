@@ -1,99 +1,108 @@
-# 不问凡尘 AI NPC 语音 MOD
+# 不问凡尘 NPC 语音 MOD · CosyVoice
 
-当前源码版本：**v0.7.4**。为《不问凡尘》的 AI NPC 回复提供本地语音合成，支持 **IndexTTS 2.5** 与 **CosyVoice 3（audio.cpp）**，按角色选择参考音，并使用同轮模型回复给出的语音风格。
+为《不问凡尘》的 NPC 对话添加本地语音，按角色选择参考音，并结合当轮台词的情绪和说话方式朗读。
 
-这是非官方社区 MOD，与游戏开发商、BepInEx、audio.cpp 及模型开发团队没有从属关系。需要合法安装的游戏本体；游戏 AI 对话额度仍按游戏规则使用，本 MOD 负责本地语音合成。
+**v0.7.0 起，项目主线为 CosyVoice 3 / audio.cpp，包含增强情感功能。当前源码版本为 v0.7.5。IndexTTS 路线已停止维护，作为历史归档保留。** 仓库、插件与配置文件沿用 `A1IndexTTSMod` 名称，名称不代表当前仍以 IndexTTS 为主线。
 
-## 版本与下载
+## 下载与安装
 
-**源码版本与 GitHub 已发布安装包分别更新。** 当前仓库为 v0.7.4；截至 2026-10-08，GitHub [Releases](https://github.com/havoc123/A1IndexTTSMod/releases) 中的历史安装包为 v0.5.8 主包及 v0.5.9 说服语音补丁，均为预发布。它们不包含本页所述的全部新功能。本地已制作 v0.7.3 → v0.7.4 升级补丁，尚未上传 GitHub Release。
+安装包以 [GitHub Releases](https://github.com/havoc123/A1IndexTTSMod/releases) 和具体发行说明为准。**源码提交不会自动更新已下载的安装包。** 历史 v0.5.x IndexTTS 包不适用于当前 CosyVoice 安装步骤。
 
-历史主包 `A1IndexTTSMod-v0.5.8-r3-win64.zip` 包含插件、audio.cpp CUDA 运行时及 1169 份 NPC 参考音；不包含游戏、基础 BepInEx 加载器或 IndexTTS 模型。已有该主包的用户可安装 `A1IndexTTSMod-v0.5.9-persuasion-patch-win64.zip`。历史安装步骤见 [INSTALL.md](INSTALL.md)，历史版本范围见 [发布说明](RELEASE-NOTES-v0.5.8.md)。
+当前采用程序与模型分开安装：
 
-最新源码需要自行构建并准备匹配的运行时和模型。完整整合包、升级补丁、工坊包的内容以各自附带说明为准，不要将旧版安装包视为 v0.7.4 的完整环境。
+| 下载内容 | 包含什么 | 如何安装 |
+| --- | --- | --- |
+| CosyVoice 程序包 | 插件、加载器、audio.cpp 运行依赖、NPC 参考音和安装器 | 解压后运行 `安装CosyVoice语音MOD.bat` |
+| CosyVoice3 Q8_0 模型包 | GGUF 模型、模型安装器和校验信息 | 解压后运行 `安装CosyVoice模型.bat` |
 
-## 当前功能
+首次安装需要两包；已有相同模型可复用。安装前退出游戏并等待 Steam 云存档同步完成，两个安装器选择同一个 `WorldApart.exe` 所在目录，安装后从 Steam 启动游戏。
 
-- AI 普通聊天和说服回复的语音接入；过滤玩家输入、系统内容与括号内动作描写。
-- 按 NPC 选择专属 WAV，支持默认男/女参考音、导入 WAV、试听以及当前角色的临时或持久音色设置。
-- 游戏对话框中的 **“语音设置”** 入口，提供“音色与参数”“最近语音”“本轮数据”三个页签。
-- 按 NPC 名字或部分编号筛选参考音，直接显示首项，其余匹配结果可展开选择；角色姓名来自 `references/npcs/npc_id_name.csv`。
-- 最近语音可重播、按当前音色重新合成；本轮数据展示可读中文、解析后的正文与风格、原始响应及最终 TTS 请求摘要。
-- Mod 独立音量、自动朗读、界面缩放，以及启用和关闭的确认提示。
-- 关闭语音会取消待合成任务、停止播放并关闭由本插件启动的 audio.cpp 服务；外部独立启动的服务由其原管理者控制。
-- 支持 Nvidia/CUDA 与 Vulkan GPU 路由，Vulkan 可指定设备序号。
-- 支持通用 Mod Manager 功能插件接口；未安装管理器时仍可独立运行。
+完整步骤、文件名和故障排查见 **[CosyVoice 分体安装说明](packaging/INSTALL-COSY-SPLIT.md)**。早期 CosyVoice 分卷完整包见 [旧完整包说明](packaging/INSTALL-COSY-COMPLETE.md)。
 
-## 语音风格如何传递
+当前源码另外包含默认启用的预设开场白情感库；此前制作的 v0.7.5 安装包不会随源码提交更新，请以具体包的更新记录为准。
 
-提示增强开启时，同一次游戏 LLM 回复在原生 `content` 字符串末尾输出版本化 `<a1tts_v1>` 风格帧。插件提取并独立保存合法风格，移除帧后将干净正文交给游戏与 TTS，不依赖中间代理保留额外 JSON 字段。合法的旧版顶层 `voice_style` 仍可读取。
+### 运行要求
 
-菜单第三页区分解析视图与原始回包，显示风格来源和解析状态。协议格式、两种来源的优先规则、长度限制及失败行为见 [正文风格帧 v1](docs/CONTENT-STYLE-ENVELOPE-V1.md)。
+- 合法安装的《不问凡尘》Windows x64 版，以及可工作的 BepInEx 6 IL2CPP 加载环境。
+- 与程序包匹配的 audio.cpp 服务端、CosyVoice3 Q8_0 模型和参考音。
+- 默认 NVIDIA/CUDA；Vulkan 路线需相应服务端和驱动，可指定 GPU 设备。实际速度和显存需求取决于硬件。
 
-该机制不是对所有代理的无条件兼容保证：模型漏帧、回复截断或上游修改正文，仍可能导致风格缺失。部分代理会依据正文推断游戏情绪，帧内文字可能影响该推断。插件对缺失或无效风格使用既有回退策略，不凭空恢复原模型数据。
+MOD 负责本地合成；游戏 AI 对话额度、模型服务和账号仍按游戏自身设置使用。程序包不包含游戏本体或存档。
 
-## 运行环境与安装
+## 主要功能
 
-- Windows x64，游戏为 Unity IL2CPP；本项目使用过的游戏构建 GUID 为 `0acccbcdb9a14aa3a528bd4d850c3202`，游戏更新后需重新确认兼容性。
-- BepInEx 6 IL2CPP；本项目验证的加载器为 `6.0.0-be.788+5b766a3`。游戏启动后需能生成 BepInEx 日志与 `interop`。
-- 与所选后端匹配的 audio.cpp 运行时、模型及参考音。IndexTTS 和 CosyVoice 的模型与服务设置不能互换。
-- Nvidia 路线使用 CUDA 运行时；Vulkan 路线还需准备 `audiocpp_server-vulkan.exe` 及其配套文件。仅改配置不会自动下载这些文件，也不代表所有显卡已实测通过。
+- **角色音色：** 普通聊天和说服回复按 NPC 选择参考音；支持导入 WAV、试听，以及为当前角色临时应用或保存音色。
+- **增强情感：** 同一次游戏模型回复给出当句情绪、说话方式和强度，传给 CosyVoice 的中文指令。
+- **预设开场白：** 默认内置情感库，覆盖 1232 个角色、4180 条来源与分支记录，按当前角色和实际台词匹配。
+- **游戏内菜单：** 对话框旁的“语音设置”提供“音色与参数”“最近语音”“本轮数据”三页；参考音可按姓名或部分编号筛选。
+- **回放与诊断：** 重播、按当前音色重合成，查看中文情感、来源、实际响应与 TTS 请求摘要。
+- **播放控制：** 独立音量、自动朗读和界面缩放；启用与关闭均需确认。关闭会取消任务、停止播放，并关闭插件自行启动的 audio.cpp 服务。
+- **独立运行：** 无需 MOD 管理器，也可接入支持的通用功能插件接口。
 
-关闭游戏后安装。最新版插件的关键依赖结构为：
+## 情感从哪里来
 
-```text
-BepInEx/plugins/
-  LocalModManager.Abstractions.dll
-  A1IndexTTSMod/
-    A1IndexTTSMod.dll
-    NAudio.Core.dll
-    NAudio.Wasapi.dll
-    NAudio.WinMM.dll
+### 模型生成的对话
+
+插件增强游戏原有的实际回复请求，要求有可朗读台词时，在原生 `content` 字符串末尾携带语音风格帧。插件提取情感并移除帧，游戏显示与 TTS 朗读干净正文，情感通过独立 `instruction` 交给 CosyVoice。
+
+增强利用这次游戏对话已有的人物卡、关系与上下文，不为每句情感再调用额外模型。模型漏帧、截断或代理改写正文仍可能造成风格缺失；第三页显示解析状态，不把缺失一律判定为 MOD 冲突。详见 [正文风格帧 v1](docs/CONTENT-STYLE-ENVELOPE-V1.md)。
+
+### 游戏预设的问候与开场白
+
+预设台词不一定经过上述模型请求，因此另有根据角色资料、台词与话题背景离线编写的情感库。纯文本 NPC 消息精确匹配后也能朗读；当轮已有有效模型风格时优先使用模型风格。
+
+第三页明确标注“离线预设库”，不会把它当成模型回包。4180 条记录含重复文本、条件模板和分支，并非 4180 句不同台词。情感库不新增台词，也不改变开场白出现条件。详见 [预设情感库说明](docs/PRESET-VOICE-STYLES.md)。
+
+## 配置
+
+配置位于 `BepInEx/config/org.a1indextts.mod.cfg`。当前源码新装默认使用 CosyVoice；升级保留已有配置，从 IndexTTS 迁移时需安装 CosyVoice 模型并核对：
+
+```ini
+[Stage3Mvp]
+Enabled = true
+Backend = CosyVoiceAudioCpp
+TtsUrl = http://127.0.0.1:8892/v1/audio/speech
+AudioCppModelId = cosyvoice3
+PromptEnhancement = true
+PresetVoiceStyles = true
+AutoStartAudioCpp = true
+AudioCppPrecision = q8_0
+GpuBackend = Nvidia
+GpuDevice = 0
 ```
 
-共享抽象 DLL 放在 `plugins` 根目录；不要在多个插件子目录重复放置不同版本。构建后的安装脚本会复制这些依赖。工坊安装器说明见 [工坊安装](packaging/INSTALL-WORKSHOP.md)，CosyVoice 整合包说明见 [CosyVoice 安装](packaging/INSTALL-COSY-COMPLETE.md)。
-
-## 常用配置
-
-配置由 BepInEx 生成于 `BepInEx/config/org.a1indextts.mod.cfg`。下表为 `[Stage3Mvp]` 下的主要设置：
-
-| 设置 | 默认值 | 说明 |
-| --- | --- | --- |
-| `Enabled` | `true` | Mod 语音总开关 |
-| `PromptEnhancement` | `true` | 为实际回复添加正文风格帧要求 |
-| `Backend` | `IndexTtsAudioCpp` | 可选 `IndexTtsAudioCpp`、`IndexTtsLegacyApi`、`CosyVoiceAudioCpp` |
-| `TtsUrl` | `http://127.0.0.1:8892/v1/audio/speech` | 必须与实际服务及后端匹配 |
-| `GpuBackend` | `Nvidia` | `Nvidia` 使用原 CUDA 路线；`Vulkan` 使用独立 Vulkan 服务端 |
-| `GpuDevice` | `0` | Vulkan 设备序号，多显卡机器按实际枚举结果选择 |
-| `AudioCppPrecision` | `q8_0` | 所选精度需要对应模型文件 |
-
-`[SpeechPanel]` 保存 Mod 播放音量、自动朗读、界面缩放和页签等偏好。播放使用 WASAPI，并提供 WinMM 回退；游戏自身的音量滑杆不会直接控制 Mod 播放音量。
-
-`references/npcs/<npcId>.wav` 为专属参考音。姓名表中 `audio=1` 为原音、`audio=2` 为生成音、`audio=0` 为无专属音；无专属音时按角色性别使用默认参考音，未知性别按跳过策略处理。旧式情绪向量配置位于 `config/emotions.json`。
+`[SpeechPanel]` 保存音量、自动朗读、界面缩放和上次页签。日常音色设置直接在游戏菜单操作。模型与运行时不能仅靠修改后端名称完成切换。
 
 ## 从源码构建
 
-仓库 `global.json` 固定 .NET SDK `10.0.103`，插件目标框架为 .NET 6。先安装 BepInEx 并启动游戏一次，生成本机 `BepInEx/interop`，然后在仓库根目录运行：
+使用 `global.json` 指定的 .NET SDK，插件目标框架为 .NET 6。准备本机游戏的 BepInEx 与已生成的 `interop` 后运行：
 
 ```powershell
 .\scripts\Build.ps1 -BepInExDir 'E:\你的游戏目录\BepInEx'
 .\scripts\Install-Plugin.ps1 -GameRoot 'E:\你的游戏目录'
 ```
 
-输出在 `src/bin/Release/net6.0/`。安装前退出游戏；安装脚本会同步 DLL 和配套的三个 audio.cpp 启停脚本，避免新 DLL 调用旧脚本时因参数不匹配启动失败。安装插件不会替你下载模型和服务运行时。打包脚本依赖本机准备的运行时、模型及参考音，详见相应脚本参数和包内说明。
+输出在 `src/bin/Release/net6.0/`。情感库编译进 DLL，无需单独安装 JSON。安装前退出游戏；安装脚本同步插件依赖和启停脚本，不负责下载模型。
 
-构建后制作 v0.7.3 → v0.7.4 升级补丁：
+## 版本与历史路线
 
-```powershell
-.\scripts\Build-UpgradePatch.ps1 -FromVersion v0.7.3 -BasePackageName 'A1IndexTTSMod-v0.7.3'
-```
+| 版本 | 主线变化 |
+| --- | --- |
+| v0.7.0 | CosyVoice 主线，加入当句情感与说话方式增强 |
+| v0.7.1–v0.7.3 | 游戏内语音菜单、音色管理、播放完善和 GPU 路由 |
+| v0.7.4 | 修复自定义模型无 Schema 时的风格传输 |
+| v0.7.5 | 有可朗读台词时必填风格契约；程序与模型分体安装 |
+| 当前新增源码 | 默认内置预设开场白情感库，新装默认后端统一为 CosyVoice |
+| 历史 IndexTTS 路线 | 已停止维护，仅供历史安装和代码参考 |
 
-补丁输出到 `dist/`，包含插件 DLL、三个启停脚本和安装器；安装器检查旧插件版本、校验文件并备份替换目标，保留配置、模型和参考音。
+**为什么停止维护 IndexTTS？** 项目需要传递“情绪 + 中文说话方式”的完整演绎描述。原 IndexTTS 适配主要发送固定情绪向量，没有直接承接完整说话方式；CosyVoice 的独立中文指令更符合当前数据链。集中维护一套模型、启动配置与安装方案，也能减少双线路造成的部署混淆和维护成本。这个取舍不表示 IndexTTS 没有情感能力，也不代表做过统一性能或音质排名。
 
-## 隐私、反馈与授权
+历史源码和资料保留，已有后端分支不作为当前维护承诺。见 **[IndexTTS 历史路线](docs/archive/INDEXTTS.md)**；详细更新见 [CHANGELOG](CHANGELOG.md)。
 
-完整 Stage2A 诊断默认关闭。手动开启后，记录可能包含对话与游戏上下文；分享日志和“本轮数据”前请检查并脱敏。模型、运行时缓存、游戏存档和诊断日志不作为本仓库源码同步内容。
+## 反馈与许可
 
-反馈请到 [Issues](https://github.com/havoc123/A1IndexTTSMod/issues)，说明安装包/插件版本、游戏构建、GPU、TTS 后端和复现步骤，可附脱敏日志。不同游戏入口、代理和 GPU 组合的验证范围不同；编译通过不等于全部运行环境已验收。
+反馈请附插件版本、安装包名称、GPU、复现步骤和对应时刻的“复制本轮诊断摘要”。HTTP 500 表示 TTS 服务返回失败，需要同一时刻的 audio.cpp 服务端错误信息才能继续定位。
 
-自写源码和文档采用 [MIT](LICENSE)。游戏资料、NPC 参考音及第三方二进制不因进入仓库而自动取得 MIT 授权，来源与限制见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。参考音不作为可任意再训练、克隆或转售的开放数据集；模型与第三方运行时遵循各自许可。
+[提交问题](https://github.com/havoc123/A1IndexTTSMod/issues) · [MIT 许可](LICENSE) · [第三方说明](THIRD_PARTY_NOTICES.md)
+
+非官方社区 MOD，与游戏开发商、BepInEx、audio.cpp 或模型团队无从属关系。分享日志前请检查私人对话和凭据；完整诊断采集默认关闭。

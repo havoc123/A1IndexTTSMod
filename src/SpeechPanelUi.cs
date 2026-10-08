@@ -737,11 +737,14 @@ internal sealed class SpeechPanelUi : MonoBehaviour
             _showRawReply = GUILayout.Toggle(_showRawReply, "展开查看实际收到的原始响应快照", _tabStyle);
             var separated = turn.ActualReplyJson == null ? null : NpcReplyPayload.Separate(turn.ActualReplyJson);
             var parsedView = separated == null
-                ? "无法解析为 NPC 回复 JSON。原因：响应缺失、格式损坏或没有 content 字段。请展开原始响应快照查看。"
+                ? turn.PresetVoiceStyleMatch != null
+                    ? "预设台词正文：\n" + turn.DisplayText + "\n\n离线预设情感（不是模型回包字段）：\n" +
+                      FormatJsonForDisplay(turn.VoiceStyleJson) + "\n\n匹配记录：" + turn.PresetVoiceStyleMatch
+                    : "无法解析为 NPC 回复 JSON。原因：响应缺失、格式损坏或没有 content 字段。请展开原始响应快照查看。"
                 : "干净游戏回复（已剥离本 Mod 协议帧与旧版 voice_style 字段）：\n" +
                   (FormatJsonForDisplay(separated.GameJson) ?? separated.GameJson) +
                   "\n\n独立语音风格：\n" + (turn.VoiceStyleJson == null ? "未捕获合法风格。" : FormatJsonForDisplay(turn.VoiceStyleJson)) +
-                  "\n\n解析状态：" + StyleStatusLabel(turn.VoiceStyleStatus, turn.VoiceStyleFailureReason) +
+                  "\n\n解析状态：" + TurnStyleStatusLabel(turn) +
                   "\n风格来源：" + StyleSourceLabel(turn.VoiceStyleSource) +
                   "\n原游戏 emotion：" + (turn.Emotion ?? "未观测");
             _dataScrollPosition = GUILayout.BeginScrollView(_dataScrollPosition, false, true,
@@ -763,17 +766,19 @@ internal sealed class SpeechPanelUi : MonoBehaviour
         }
         var json = _dataLayer switch
         {
-            0 => FormatJsonForDisplay(turn.VoiceStyleJson) ?? "本轮没有捕获合法语音风格。" + (turn.VoiceStyleStatus == "invalid" ? "\n解析失败：" + (turn.VoiceStyleFailureReason ?? "格式错误") : ""),
+            0 => FormatJsonForDisplay(turn.VoiceStyleJson) ?? TurnStyleStatusLabel(turn) + "\n本轮没有捕获合法语音风格。",
             1 => FormatJsonForDisplay(turn.OutputSchema) ?? turn.PromptStatus +
                 (turn.PromptAddition != null ? "\n\n本轮文本输出契约增补：\n" + turn.PromptAddition : "\n本轮实际请求 Schema 未观测。"),
             _ => FormatJsonForDisplay(turn.TtsRequestJson) ?? "本轮尚未发起 TTS 请求：" + turn.TtsStatus
         };
         GUILayout.Label(_dataLayer switch
         {
-            0 => $"解析状态：{StyleStatusLabel(turn.VoiceStyleStatus, turn.VoiceStyleFailureReason)} · 来源：{StyleSourceLabel(turn.VoiceStyleSource)} · 原游戏 emotion：{turn.Emotion ?? "未观测"}",
+            0 => $"解析状态：{TurnStyleStatusLabel(turn)} · 来源：{StyleSourceLabel(turn.VoiceStyleSource)} · 原游戏 emotion：{turn.Emotion ?? "未观测"}",
             1 => turn.PromptStatus,
             _ => "本地 TTS 请求摘要；参考音音频载荷已省略，不显示 base64。"
         }, _mutedStyle);
+        if (turn.PresetVoiceStyleMatch != null)
+            GUILayout.Label("预设匹配：" + turn.PresetVoiceStyleMatch, _mutedStyle);
         _dataScrollPosition = GUILayout.BeginScrollView(_dataScrollPosition, false, true,
             GUILayout.Height(340), GUILayout.ExpandWidth(true));
         GUILayout.TextArea(json, _bodyStyle, GUILayout.MinHeight(500), GUILayout.ExpandWidth(true));
@@ -785,11 +790,19 @@ internal sealed class SpeechPanelUi : MonoBehaviour
 
     private Vector2 _rawReplyScrollPosition;
 
+    private static string TurnStyleStatusLabel(SpeechPanelTurn turn)
+    {
+        if (turn.VoiceStyleRequired && turn.VoiceStyleJson == null && (turn.VoiceStyleStatus is "absent" or "null"))
+            return "已要求返回语音风格，但在本 Mod 收到的响应中未检测到；无法仅凭此判断模型漏生成或上游清洗";
+        return StyleStatusLabel(turn.VoiceStyleStatus, turn.VoiceStyleFailureReason);
+    }
+
     private static string StyleStatusLabel(string status, string? reason) => status switch
     {
         "valid" => "已解析",
+        "preset_matched" => "已匹配离线预设情感",
         "null" => "明确为空",
-        "absent" => "未返回",
+        "absent" => "未检测到风格（本轮未记录强制要求）",
         "invalid" => "格式无效" + (reason == null ? "" : "（" + StyleFailureLabel(reason) + "）"),
         "unparseable" or "unparseable_or_unavailable" or "unparseable_or_not_reply_json" => "无法解析回包",
         "unknown" or "未观测" => "未观测",
@@ -816,6 +829,7 @@ internal sealed class SpeechPanelUi : MonoBehaviour
     private static string StyleSourceLabel(string? source) => source switch
     {
         "content_envelope_v1" => "正文协议 v1",
+        "offline_preset_library" => "离线预设库（按当前角色与台词匹配）",
         "legacy_voice_style" => "兼容旧版顶层字段",
         "pending_store" or "provider_reply" => "映射前回包缓存",
         "none" or null => "无",
@@ -861,7 +875,7 @@ internal sealed class SpeechPanelUi : MonoBehaviour
     private static string BuildTurnSummary(SpeechPanelTurn turn) => JsonSerializer.Serialize(new
     {
         turn.Identity, turn.NpcKey, turn.CreatedAt, turn.DisplayText, turn.SpokenText, turn.Emotion,
-        turn.VoiceStyleJson, turn.VoiceStyleStatus, turn.VoiceStyleSource, turn.PromptStatus, turn.OutputSchema, turn.PromptAddition, turn.ActualReplyJson,
+        turn.VoiceStyleJson, turn.VoiceStyleStatus, turn.VoiceStyleSource, turn.PresetVoiceStyleMatch, turn.VoiceStyleRequired, turn.PromptStatus, turn.OutputSchema, turn.PromptAddition, turn.ActualReplyJson,
         turn.TtsBackend, turn.ReferenceLabel, turn.TtsInstruction, turn.TtsRequestJson, turn.TtsStatus, turn.Error,
         audioBytes = turn.AudioBytes
     }, new JsonSerializerOptions { WriteIndented = true, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping });

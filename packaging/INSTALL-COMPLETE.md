@@ -1,5 +1,7 @@
 # 不问凡尘 AI NPC 语音 MOD v0.5.8 整合版
 
+> 历史 IndexTTS 安装说明，已归档。当前维护 [CosyVoice 分体安装](INSTALL-COSY-SPLIT.md)，原因见 [路线归档](../docs/archive/INDEXTTS.md)。
+
 本整合版已经包含 BepInEx 6 IL2CPP、适配当前游戏构建的 Doorstop 代理、MOD 插件、audio.cpp Windows CUDA 运行时、IndexTTS 2.5 Q8 GGUF 模型、1169 份 NPC 参考音和默认男女音。需要合法安装的《不问凡尘》Windows 版、NVIDIA 显卡及合适驱动；不包含游戏本体、存档或官方 AI 对话额度。当前已验证的游戏构建 GUID 为 `0acccbcdb9a14aa3a528bd4d850c3202`。
 
 ## 安装

@@ -1,0 +1,2285 @@
+{
+  "schema_version": 1,
+  "author": "Codex offline editorial decisions, 2026-10-08",
+  "actors": {
+    "natural": {
+      "emotion_tags": [
+        "平静",
+        "自然"
+      ],
+      "delivery": "自然清晰，中等语速，不夸张表演"
+    },
+    "ancient": {
+      "emotion_tags": [
+        "冷静",
+        "威严"
+      ],
+      "delivery": "古雅简练，字句有分量，收尾干脆"
+    },
+    "hostess": {
+      "emotion_tags": [
+        "温和",
+        "从容"
+      ],
+      "delivery": "中等语速，成熟从容，停顿有分寸"
+    },
+    "leisure": {
+      "emotion_tags": [
+        "轻松",
+        "淡然"
+      ],
+      "delivery": "语速稍慢，松弛随性，反问不尖刻"
+    },
+    "silky": {
+      "emotion_tags": [
+        "柔和",
+        "玩味"
+      ],
+      "delivery": "声音柔和，尾音轻扬，笑意含蓄不拖腔"
+    },
+    "waiter": {
+      "emotion_tags": [
+        "热情",
+        "机灵"
+      ],
+      "delivery": "语速稍快，先热情招呼，转折灵活"
+    },
+    "official": {
+      "emotion_tags": [
+        "稳重",
+        "认真"
+      ],
+      "delivery": "短句稳当，清楚直接，停顿后再落重点"
+    },
+    "shy": {
+      "emotion_tags": [
+        "温和",
+        "含蓄"
+      ],
+      "delivery": "轻声稍慢，表达清楚，停顿自然不故意结巴"
+    },
+    "child_bright": {
+      "emotion_tags": [
+        "活泼",
+        "好奇"
+      ],
+      "delivery": "清脆明亮，短句轻快，保持孩子式直率"
+    },
+    "bright": {
+      "emotion_tags": [
+        "活泼",
+        "自信"
+      ],
+      "delivery": "声音明亮，语速稍快，落字清楚利落"
+    },
+    "quirky": {
+      "emotion_tags": [
+        "轻松",
+        "好奇"
+      ],
+      "delivery": "节奏灵动，转折自然，带轻微笑意"
+    },
+    "pet": {
+      "emotion_tags": [
+        "平静",
+        "自然"
+      ],
+      "delivery": "保持原有短促兽鸣，不添加人声或台词"
+    },
+    "rough": {
+      "emotion_tags": [
+        "强硬",
+        "直率"
+      ],
+      "delivery": "字句粗粝干脆，有力度但不嘶吼"
+    },
+    "tea": {
+      "emotion_tags": [
+        "平和",
+        "从容"
+      ],
+      "delivery": "温润舒缓，留出自然停顿，重音轻而稳"
+    },
+    "proud_cold": {
+      "emotion_tags": [
+        "冷淡",
+        "自信"
+      ],
+      "delivery": "语气清冷，收尾笃定，锋芒克制"
+    },
+    "elder": {
+      "emotion_tags": [
+        "温和",
+        "惦念"
+      ],
+      "delivery": "语速稍慢，朴实亲切，停顿后再接下句"
+    },
+    "student": {
+      "emotion_tags": [
+        "认真",
+        "拘谨"
+      ],
+      "delivery": "音量稍轻，想清楚再说，认真而不僵硬"
+    },
+    "hawker": {
+      "emotion_tags": [
+        "热情",
+        "诙谐"
+      ],
+      "delivery": "招呼声响亮，节奏有起伏，夸张适度"
+    },
+    "child_puzzled": {
+      "emotion_tags": [
+        "好奇",
+        "困惑"
+      ],
+      "delivery": "清亮朴实，疑问自然，不装成熟"
+    },
+    "reserved": {
+      "emotion_tags": [
+        "冷静",
+        "克制"
+      ],
+      "delivery": "惜字如金，先短暂停顿，再答重点"
+    },
+    "aunt": {
+      "emotion_tags": [
+        "热心",
+        "直爽"
+      ],
+      "delivery": "声音爽利，关切有力度，日常交谈不喊叫"
+    },
+    "worker": {
+      "emotion_tags": [
+        "朴实",
+        "平静"
+      ],
+      "delivery": "语速适中，措辞质朴，语尾踏实"
+    },
+    "cantonese": {
+      "emotion_tags": [
+        "豪爽",
+        "热情"
+      ],
+      "delivery": "按原文粤语读音自然说，节奏爽利不模仿腔调"
+    },
+    "sword": {
+      "emotion_tags": [
+        "坚定",
+        "认真"
+      ],
+      "delivery": "简洁直切，重音明确，声音稳而不硬喊"
+    },
+    "encourage": {
+      "emotion_tags": [
+        "坚定",
+        "热情"
+      ],
+      "delivery": "气息充足，语速利落，鼓励有劲不吼叫"
+    },
+    "blunt": {
+      "emotion_tags": [
+        "冷静",
+        "直接"
+      ],
+      "delivery": "短句干脆，不铺陈寒暄，句尾明确"
+    },
+    "lively_elder": {
+      "emotion_tags": [
+        "亲切",
+        "自信"
+      ],
+      "delivery": "亲切而有长辈分寸，笑意自然，语气有起伏"
+    },
+    "guide": {
+      "emotion_tags": [
+        "温和",
+        "耐心"
+      ],
+      "delivery": "平实地说明，语速适中，询问不催促"
+    },
+    "earth": {
+      "emotion_tags": [
+        "稳重",
+        "亲切"
+      ],
+      "delivery": "熟人闲谈的短句，朴实直给，重音稳当"
+    },
+    "leader": {
+      "emotion_tags": [
+        "从容",
+        "自信"
+      ],
+      "delivery": "节奏沉稳，重点笃定，保持掌控感不压声"
+    },
+    "clever": {
+      "emotion_tags": [
+        "机敏",
+        "审慎"
+      ],
+      "delivery": "转折灵活，试探处稍停，判断说清楚"
+    },
+    "sun": {
+      "emotion_tags": [
+        "热情",
+        "坦率"
+      ],
+      "delivery": "明朗直接，声音开阔，热心但不喧哗"
+    },
+    "hard": {
+      "emotion_tags": [
+        "坚定",
+        "克制"
+      ],
+      "delivery": "话少干脆，落字有力，语气不绕弯"
+    },
+    "free": {
+      "emotion_tags": [
+        "轻松",
+        "随性"
+      ],
+      "delivery": "轻快松弛，语尾自然，不强加笑声"
+    },
+    "subtle": {
+      "emotion_tags": [
+        "温和",
+        "审慎"
+      ],
+      "delivery": "语气温和克制，重点轻落，留有余地"
+    },
+    "diplomat": {
+      "emotion_tags": [
+        "温和",
+        "稳妥"
+      ],
+      "delivery": "节奏稳当圆融，语尾舒展，给人留余地"
+    },
+    "patient": {
+      "emotion_tags": [
+        "平静",
+        "耐心"
+      ],
+      "delivery": "声音柔和，语速舒缓，说明循序渐进"
+    },
+    "ambitious": {
+      "emotion_tags": [
+        "自信",
+        "机敏"
+      ],
+      "delivery": "语速稍快，目标明确，重音灵活"
+    },
+    "sharp": {
+      "emotion_tags": [
+        "认真",
+        "直率"
+      ],
+      "delivery": "字句清楚锋利，反问利落，不尖叫"
+    },
+    "kind": {
+      "emotion_tags": [
+        "温和",
+        "可靠"
+      ],
+      "delivery": "仁厚平实，关切具体，语尾安稳"
+    },
+    "adaptive": {
+      "emotion_tags": [
+        "沉着",
+        "审慎"
+      ],
+      "delivery": "节奏有收放，重点清楚，态度有分寸"
+    },
+    "veteran": {
+      "emotion_tags": [
+        "沉静",
+        "克制"
+      ],
+      "delivery": "像阅历深的长者，短句留白，分量内敛"
+    },
+    "bold": {
+      "emotion_tags": [
+        "坚定",
+        "进取"
+      ],
+      "delivery": "节奏向前，落字果断，热度适中"
+    },
+    "cold": {
+      "emotion_tags": [
+        "冷静",
+        "疏离"
+      ],
+      "delivery": "声音平稳偏冷，短句克制，不额外示好"
+    },
+    "wanderer": {
+      "emotion_tags": [
+        "淡然",
+        "审慎"
+      ],
+      "delivery": "闲散自然，句子简短，关键提醒稍放慢"
+    },
+    "plain_master": {
+      "emotion_tags": [
+        "平静",
+        "笃定"
+      ],
+      "delivery": "像日常闲谈，音量平常，重点不容含混"
+    },
+    "hero": {
+      "emotion_tags": [
+        "豪爽",
+        "自信"
+      ],
+      "delivery": "爽快开阔，带前辈式亲切，输赢都说得干脆"
+    },
+    "wary": {
+      "emotion_tags": [
+        "谨慎",
+        "克制"
+      ],
+      "delivery": "音量适中，停顿审慎，不轻易露底"
+    },
+    "frightened": {
+      "emotion_tags": [
+        "紧张",
+        "不安"
+      ],
+      "delivery": "声音稍轻，短句略急，保持清楚"
+    },
+    "innocent": {
+      "emotion_tags": [
+        "纯真",
+        "含蓄"
+      ],
+      "delivery": "轻声柔和，疑问坦诚，表达不装老成"
+    },
+    "sly": {
+      "emotion_tags": [
+        "玩味",
+        "审慎"
+      ],
+      "delivery": "语气机巧，转折略停，笑意不外露"
+    },
+    "suspicious": {
+      "emotion_tags": [
+        "警觉",
+        "怀疑"
+      ],
+      "delivery": "语速稍缓，疑问重音清楚，留有距离"
+    },
+    "solemn": {
+      "emotion_tags": [
+        "庄重",
+        "稳重"
+      ],
+      "delivery": "节奏沉稳，声音有分量，不摆夸张官腔"
+    },
+    "soft": {
+      "emotion_tags": [
+        "温柔",
+        "平静"
+      ],
+      "delivery": "语声柔和通透，节奏自然，关心有分寸"
+    },
+    "niaoqiao": {
+      "emotion_tags": [
+        "活泼",
+        "温和"
+      ],
+      "delivery": "清亮俏皮，短句利落，笑意自然，认真处收住玩笑"
+    },
+    "qianer": {
+      "emotion_tags": [
+        "活泼",
+        "亲切"
+      ],
+      "delivery": "灵动明快，语气有小小转折，嘴硬处点到为止"
+    },
+    "yunyan": {
+      "emotion_tags": [
+        "沉静",
+        "认真"
+      ],
+      "delivery": "清冷而不生硬，措辞清楚，关心克制而真切"
+    },
+    "taosu": {
+      "emotion_tags": [
+        "平静",
+        "踏实"
+      ],
+      "delivery": "朴实少言，认真直接，谈熟悉事物时自然放松"
+    }
+  },
+  "performances": {
+    "natural": {
+      "emotion_tags": [
+        "平静",
+        "自然"
+      ],
+      "delivery": "按日常交谈自然说出，情绪不过度外露",
+      "intensity": 0.18
+    },
+    "intro": {
+      "emotion_tags": [
+        "平静",
+        "礼貌"
+      ],
+      "delivery": "平实介绍身份，前后语气连贯，收尾自然",
+      "intensity": 0.18
+    },
+    "ask": {
+      "emotion_tags": [
+        "好奇",
+        "询问"
+      ],
+      "delivery": "重点落在所问之处，句尾轻微上扬，不连续逼问",
+      "intensity": 0.23
+    },
+    "welcome": {
+      "emotion_tags": [
+        "温和",
+        "热情"
+      ],
+      "delivery": "像迎接来客一样亲切招呼，邀请处语尾放松",
+      "intensity": 0.3
+    },
+    "care": {
+      "emotion_tags": [
+        "关切",
+        "温和"
+      ],
+      "delivery": "关心落在具体话上，轻柔询问，不演成训斥",
+      "intensity": 0.3
+    },
+    "play": {
+      "emotion_tags": [
+        "轻松",
+        "俏皮"
+      ],
+      "delivery": "略带笑意，转折轻快，包袱处稍停，不故意大笑",
+      "intensity": 0.34
+    },
+    "boast": {
+      "emotion_tags": [
+        "自信",
+        "得意"
+      ],
+      "delivery": "关键本领略作强调，语尾扬起，得意不过火",
+      "intensity": 0.4
+    },
+    "warn": {
+      "emotion_tags": [
+        "认真",
+        "提醒"
+      ],
+      "delivery": "提醒处稍放慢，危险重点说清，不渲染恐怖",
+      "intensity": 0.35
+    },
+    "threat": {
+      "emotion_tags": [
+        "冷峻",
+        "强硬"
+      ],
+      "delivery": "威胁重点压实，句尾冷硬，避免吼叫",
+      "intensity": 0.55
+    },
+    "challenge": {
+      "emotion_tags": [
+        "坚定",
+        "好胜"
+      ],
+      "delivery": "挑战说得利落，末尾有劲，保持点到为止",
+      "intensity": 0.4
+    },
+    "memory": {
+      "emotion_tags": [
+        "怀念",
+        "感慨"
+      ],
+      "delivery": "谈旧事稍放缓，转折留白，情绪收着说",
+      "intensity": 0.3
+    },
+    "think": {
+      "emotion_tags": [
+        "沉思",
+        "认真"
+      ],
+      "delivery": "边想边说，疑问前自然停顿，不故作高深",
+      "intensity": 0.24
+    },
+    "doubt": {
+      "emotion_tags": [
+        "怀疑",
+        "审慎"
+      ],
+      "delivery": "疑点稍作强调，询问克制，语尾留有余地",
+      "intensity": 0.3
+    },
+    "wary": {
+      "emotion_tags": [
+        "警觉",
+        "谨慎"
+      ],
+      "delivery": "音量稍收，重点明确，保持戒心不急促",
+      "intensity": 0.33
+    },
+    "serious": {
+      "emotion_tags": [
+        "认真",
+        "沉着"
+      ],
+      "delivery": "先把事情说清，句间稍停，重音稳定",
+      "intensity": 0.27
+    },
+    "teach": {
+      "emotion_tags": [
+        "耐心",
+        "认真"
+      ],
+      "delivery": "解释清楚，步骤分明，提醒不训人",
+      "intensity": 0.28
+    },
+    "trade": {
+      "emotion_tags": [
+        "从容",
+        "务实"
+      ],
+      "delivery": "自然谈货物与条件，关键要求清楚，不叫卖",
+      "intensity": 0.25
+    },
+    "excited": {
+      "emotion_tags": [
+        "兴奋",
+        "期待"
+      ],
+      "delivery": "节奏明快，重点上扬，清晰而不抢话",
+      "intensity": 0.43
+    },
+    "casual": {
+      "emotion_tags": [
+        "轻松",
+        "平静"
+      ],
+      "delivery": "像熟人随口闲聊，语尾放松，起伏自然",
+      "intensity": 0.22
+    },
+    "admire": {
+      "emotion_tags": [
+        "欣赏",
+        "好奇"
+      ],
+      "delivery": "赞赏真切而克制，追问带兴趣，不一味奉承",
+      "intensity": 0.32
+    },
+    "affection": {
+      "emotion_tags": [
+        "温柔",
+        "亲近"
+      ],
+      "delivery": "轻声坦诚，停顿留给对方，亲近而不撒娇",
+      "intensity": 0.32
+    },
+    "comfort": {
+      "emotion_tags": [
+        "温和",
+        "安慰"
+      ],
+      "delivery": "语速略缓，声音安稳，接住心情不过度煽情",
+      "intensity": 0.3
+    },
+    "grief": {
+      "emotion_tags": [
+        "难过",
+        "惦念"
+      ],
+      "delivery": "放慢语速，难处留短停顿，克制不哭喊",
+      "intensity": 0.38
+    },
+    "urgent": {
+      "emotion_tags": [
+        "急切",
+        "紧张"
+      ],
+      "delivery": "短句稍快，重点清楚，急而不乱",
+      "intensity": 0.48
+    },
+    "curious": {
+      "emotion_tags": [
+        "好奇",
+        "期待"
+      ],
+      "delivery": "追问有兴趣，节奏轻快，句尾自然上扬",
+      "intensity": 0.3
+    },
+    "amused": {
+      "emotion_tags": [
+        "愉悦",
+        "诙谐"
+      ],
+      "delivery": "笑意融在语气里，包袱处略停，不另加笑声",
+      "intensity": 0.33
+    },
+    "shy": {
+      "emotion_tags": [
+        "含蓄",
+        "期待"
+      ],
+      "delivery": "音量稍轻，表达前略停，句尾柔和不结巴",
+      "intensity": 0.3
+    },
+    "frustrated": {
+      "emotion_tags": [
+        "烦恼",
+        "无奈"
+      ],
+      "delivery": "轻叹般收住语尾，困扰说清，不演成愤怒",
+      "intensity": 0.3
+    },
+    "firm": {
+      "emotion_tags": [
+        "坚定",
+        "克制"
+      ],
+      "delivery": "界限说得明确，语尾干脆，不额外挑衅",
+      "intensity": 0.33
+    },
+    "humble": {
+      "emotion_tags": [
+        "谦和",
+        "平静"
+      ],
+      "delivery": "轻描淡写地自述，语气诚恳，不卑躬屈膝",
+      "intensity": 0.2
+    },
+    "respect": {
+      "emotion_tags": [
+        "礼貌",
+        "认真"
+      ],
+      "delivery": "称呼清楚有礼，语气稳当，不夸张奉承",
+      "intensity": 0.24
+    },
+    "thanks": {
+      "emotion_tags": [
+        "感激",
+        "真诚"
+      ],
+      "delivery": "谢意说实，重点稍放慢，情绪克制",
+      "intensity": 0.34
+    },
+    "proud": {
+      "emotion_tags": [
+        "欣慰",
+        "自信"
+      ],
+      "delivery": "成果处语气明亮，收尾笃定，不炫耀叫嚷",
+      "intensity": 0.34
+    },
+    "secret": {
+      "emotion_tags": [
+        "谨慎",
+        "认真"
+      ],
+      "delivery": "声音稍收，重点前停一下，不故作阴森",
+      "intensity": 0.3
+    },
+    "sly": {
+      "emotion_tags": [
+        "玩味",
+        "试探"
+      ],
+      "delivery": "笑意浅，试探处稍停，尾句轻扬而有分寸",
+      "intensity": 0.33
+    },
+    "lonely": {
+      "emotion_tags": [
+        "落寞",
+        "思念"
+      ],
+      "delivery": "语速稍慢，句尾轻落，留一点空白不哭腔",
+      "intensity": 0.34
+    },
+    "tired": {
+      "emotion_tags": [
+        "疲惫",
+        "平静"
+      ],
+      "delivery": "气息稍松，语速略慢，话仍说清楚",
+      "intensity": 0.26
+    },
+    "confess": {
+      "emotion_tags": [
+        "坦诚",
+        "郑重"
+      ],
+      "delivery": "关键心意放慢说清，停顿自然，不夸张煽情",
+      "intensity": 0.35
+    },
+    "regret": {
+      "emotion_tags": [
+        "歉意",
+        "反思"
+      ],
+      "delivery": "承认不足时稍停，声音诚恳，不自怨自艾",
+      "intensity": 0.32
+    },
+    "solemn": {
+      "emotion_tags": [
+        "庄重",
+        "认真"
+      ],
+      "delivery": "说得沉稳有分量，转折清楚，不摆腔",
+      "intensity": 0.32
+    },
+    "philosophy": {
+      "emotion_tags": [
+        "平静",
+        "沉思"
+      ],
+      "delivery": "像谈自己的体会，语速舒缓，提问留白",
+      "intensity": 0.25
+    },
+    "request": {
+      "emotion_tags": [
+        "认真",
+        "期待"
+      ],
+      "delivery": "请求说得直接有礼，末尾给对方回应空间",
+      "intensity": 0.28
+    },
+    "share": {
+      "emotion_tags": [
+        "愉悦",
+        "分享"
+      ],
+      "delivery": "像把好事讲给熟人，语气明亮，细节处有兴致",
+      "intensity": 0.33
+    },
+    "weak": {
+      "emotion_tags": [
+        "疲惫",
+        "克制"
+      ],
+      "delivery": "音量稍轻，停顿适当，痛处收着说不呻吟",
+      "intensity": 0.3
+    },
+    "pet": {
+      "emotion_tags": [
+        "平静",
+        "自然"
+      ],
+      "delivery": "只保留原有短鸣的情绪，不转换成人类对白",
+      "intensity": 0.2
+    },
+    "narration": {
+      "emotion_tags": [
+        "平静",
+        "自然"
+      ],
+      "delivery": "此条为动作或第三人称描述，不当作角色台词朗读",
+      "intensity": 0.1
+    },
+    "silence": {
+      "emotion_tags": [
+        "平静",
+        "自然"
+      ],
+      "delivery": "无可朗读内容，保留记录并跳过合成",
+      "intensity": 0.0
+    },
+    "angry": {
+      "emotion_tags": [
+        "不满",
+        "恼怒"
+      ],
+      "delivery": "不满处重音明确，句尾硬一些，不持续喊叫",
+      "intensity": 0.43
+    },
+    "scared": {
+      "emotion_tags": [
+        "害怕",
+        "求助"
+      ],
+      "delivery": "短句带急切，音量稍抬，求助清晰不失控",
+      "intensity": 0.48
+    },
+    "relief": {
+      "emotion_tags": [
+        "宽慰",
+        "安心"
+      ],
+      "delivery": "先松一口气般放缓，后半句安稳自然",
+      "intensity": 0.3
+    }
+  },
+  "card_assignments": {
+    "C000": "ancient",
+    "C001": "hostess",
+    "C002": "leisure",
+    "C003": "silky",
+    "C004": "waiter",
+    "C005": "official",
+    "C006": "shy",
+    "C007": "child_bright",
+    "C008": "bright",
+    "C009": "quirky",
+    "C010": "pet",
+    "C014": "pet",
+    "C026": "pet",
+    "C011": "rough",
+    "C023": "rough",
+    "C024": "rough",
+    "C012": "tea",
+    "C013": "proud_cold",
+    "C015": "elder",
+    "C016": "student",
+    "C017": "hawker",
+    "C018": "child_puzzled",
+    "C019": "reserved",
+    "C020": "aunt",
+    "C021": "worker",
+    "C022": "cantonese",
+    "C025": "sword",
+    "C027": "encourage",
+    "C028": "blunt",
+    "C029": "ambitious",
+    "C043": "ambitious",
+    "C078": "ambitious",
+    "C098": "ambitious",
+    "C101": "ambitious",
+    "C126": "ambitious",
+    "C129": "ambitious",
+    "C030": "lively_elder",
+    "C031": "guide",
+    "C032": "guide",
+    "C033": "natural",
+    "C034": "earth",
+    "C035": "leader",
+    "C061": "leader",
+    "C083": "leader",
+    "C092": "leader",
+    "C113": "leader",
+    "C036": "clever",
+    "C049": "clever",
+    "C062": "clever",
+    "C081": "clever",
+    "C089": "clever",
+    "C120": "clever",
+    "C037": "sun",
+    "C050": "sun",
+    "C063": "sun",
+    "C069": "sun",
+    "C076": "sun",
+    "C038": "hard",
+    "C051": "hard",
+    "C064": "hard",
+    "C084": "hard",
+    "C086": "hard",
+    "C039": "free",
+    "C052": "free",
+    "C065": "free",
+    "C100": "free",
+    "C112": "free",
+    "C040": "subtle",
+    "C053": "subtle",
+    "C066": "subtle",
+    "C077": "subtle",
+    "C110": "subtle",
+    "C041": "diplomat",
+    "C054": "diplomat",
+    "C070": "diplomat",
+    "C090": "diplomat",
+    "C133": "diplomat",
+    "C042": "patient",
+    "C055": "patient",
+    "C067": "patient",
+    "C071": "patient",
+    "C099": "patient",
+    "C111": "patient",
+    "C044": "sharp",
+    "C056": "sharp",
+    "C079": "sharp",
+    "C082": "sharp",
+    "C085": "sharp",
+    "C131": "sharp",
+    "C045": "kind",
+    "C057": "kind",
+    "C073": "kind",
+    "C091": "kind",
+    "C117": "kind",
+    "C046": "adaptive",
+    "C058": "adaptive",
+    "C087": "adaptive",
+    "C095": "adaptive",
+    "C105": "adaptive",
+    "C072": "veteran",
+    "C075": "veteran",
+    "C088": "veteran",
+    "C093": "veteran",
+    "C103": "veteran",
+    "C104": "veteran",
+    "C108": "veteran",
+    "C114": "veteran",
+    "C116": "veteran",
+    "C121": "veteran",
+    "C122": "veteran",
+    "C124": "veteran",
+    "C125": "veteran",
+    "C134": "veteran",
+    "C047": "wanderer",
+    "C096": "wanderer",
+    "C097": "wanderer",
+    "C106": "wanderer",
+    "C107": "wanderer",
+    "C109": "wanderer",
+    "C115": "wanderer",
+    "C118": "wanderer",
+    "C128": "wanderer",
+    "C048": "bold",
+    "C060": "bold",
+    "C094": "bold",
+    "C102": "bold",
+    "C059": "cold",
+    "C068": "cold",
+    "C074": "cold",
+    "C080": "cold",
+    "C123": "cold",
+    "C132": "cold",
+    "C119": "plain_master",
+    "C127": "plain_master",
+    "C130": "plain_master",
+    "C135": "hero"
+  },
+  "personality_assignments": {
+    "紫微：天生领袖": "leader",
+    "太阴：务实坚韧": "patient",
+    "廉贞：精明内敛": "subtle",
+    "天机：智谋机变": "clever",
+    "贪狼：机敏进取": "ambitious",
+    "天府：稳重圆融": "diplomat",
+    "天同：逍遥乐天": "free",
+    "天梁：调和权变": "adaptive",
+    "武曲：刚毅果决": "hard",
+    "天相：忠诚仁爱": "kind",
+    "七杀：冷静独行": "cold",
+    "巨门：直言好胜": "sharp",
+    "太阳：热情磊落": "sun",
+    "破军：锐意勇进": "bold",
+    "天府：老练稳当": "diplomat",
+    "武曲：直率急切": "bold",
+    "武曲：果断嘴硬": "hard",
+    "巨门：狡辩逐利": "sly",
+    "七杀：谨慎狠决": "wary",
+    "巨门：嘴硬好胜": "sharp",
+    "武曲：直率贪嘴": "bright",
+    "巨门：讥诮多疑": "suspicious",
+    "天同：胆怯随众": "frightened",
+    "巨门：警觉多疑": "suspicious",
+    "武曲：急躁好胜": "bold",
+    "巨门：阴沉执拗": "cold",
+    "天同：纯真怯弱": "innocent",
+    "天相：守序谨慎": "official",
+    "武曲：果断护宗": "hard",
+    "贪狼：狡黠惜命": "sly",
+    "天府：威严持重": "solemn",
+    "天相：温柔通透": "soft"
+  },
+  "greeting_assignments": {
+    "G000": "welcome",
+    "G001": "ask",
+    "G002": "trade",
+    "G003": "play",
+    "G004": "share",
+    "G005": "welcome",
+    "G006": "welcome",
+    "G007": "share",
+    "G008": "frustrated",
+    "G009": "play",
+    "G010": "curious",
+    "G011": "play",
+    "G012": "pet",
+    "G013": "pet",
+    "G014": "pet",
+    "G015": "care",
+    "G016": "share",
+    "G017": "play",
+    "G018": "memory",
+    "G019": "warn",
+    "G020": "welcome",
+    "G021": "care",
+    "G022": "ask",
+    "G023": "ask",
+    "G024": "trade",
+    "G025": "serious",
+    "G026": "welcome",
+    "G027": "pet",
+    "G028": "pet",
+    "G029": "pet",
+    "G030": "pet",
+    "G031": "pet",
+    "G032": "narration",
+    "G033": "ask",
+    "G034": "narration",
+    "G035": "pet",
+    "G036": "pet",
+    "G037": "pet",
+    "G038": "ask",
+    "G039": "casual",
+    "G040": "ask",
+    "G041": "pet",
+    "G042": "pet",
+    "G043": "pet",
+    "G044": "pet",
+    "G045": "pet",
+    "G046": "pet",
+    "G047": "pet",
+    "G048": "pet",
+    "G049": "pet",
+    "G050": "welcome",
+    "G051": "pet",
+    "G052": "pet",
+    "G053": "pet",
+    "G054": "pet",
+    "G055": "pet",
+    "G056": "serious",
+    "G057": "narration",
+    "G058": "pet",
+    "G059": "pet",
+    "G060": "pet",
+    "G061": "pet",
+    "G062": "pet",
+    "G063": "pet",
+    "G064": "pet",
+    "G065": "pet",
+    "G066": "pet",
+    "G067": "curious",
+    "G068": "welcome",
+    "G069": "serious",
+    "G070": "welcome",
+    "G071": "pet",
+    "G072": "pet",
+    "G073": "pet",
+    "G074": "lonely",
+    "G075": "pet",
+    "G076": "ask",
+    "G077": "intro",
+    "G078": "humble",
+    "G079": "humble",
+    "G080": "intro",
+    "G081": "intro",
+    "G082": "intro",
+    "G083": "intro",
+    "G084": "intro",
+    "G085": "intro",
+    "G086": "intro",
+    "G087": "intro",
+    "G088": "intro",
+    "G089": "intro",
+    "G090": "intro",
+    "G091": "memory",
+    "G092": "firm",
+    "G093": "firm",
+    "G094": "intro",
+    "G095": "intro",
+    "G096": "intro",
+    "G097": "intro",
+    "G098": "intro",
+    "G099": "intro",
+    "G100": "intro",
+    "G101": "intro",
+    "G102": "intro",
+    "G103": "intro",
+    "G104": "intro",
+    "G105": "intro",
+    "G106": "intro",
+    "G107": "intro",
+    "G108": "intro",
+    "G109": "intro",
+    "G110": "intro",
+    "G111": "intro",
+    "G112": "intro",
+    "G113": "intro",
+    "G114": "intro",
+    "G115": "intro",
+    "G116": "intro",
+    "G117": "intro",
+    "G118": "intro",
+    "G119": "intro",
+    "G120": "intro",
+    "G121": "intro",
+    "G122": "play",
+    "G123": "play",
+    "G124": "sly",
+    "G125": "intro",
+    "G126": "intro",
+    "G127": "intro",
+    "G128": "intro",
+    "G129": "warn",
+    "G130": "doubt",
+    "G131": "warn",
+    "G132": "intro",
+    "G133": "intro",
+    "G134": "intro",
+    "G135": "intro",
+    "G136": "intro",
+    "G137": "intro",
+    "G138": "intro",
+    "G139": "intro",
+    "G140": "intro",
+    "G141": "intro",
+    "G142": "intro",
+    "G143": "intro",
+    "G144": "intro",
+    "G145": "intro",
+    "G146": "intro",
+    "G147": "intro",
+    "G148": "intro",
+    "G149": "intro",
+    "G150": "intro",
+    "G151": "sly",
+    "G152": "ask",
+    "G153": "threat",
+    "G154": "intro",
+    "G155": "intro",
+    "G156": "intro",
+    "G157": "intro",
+    "G158": "intro",
+    "G159": "intro",
+    "G160": "intro",
+    "G161": "intro",
+    "G162": "intro",
+    "G163": "intro",
+    "G164": "intro",
+    "G165": "intro",
+    "G166": "intro",
+    "G167": "intro",
+    "G168": "intro",
+    "G169": "serious",
+    "G170": "serious",
+    "G171": "firm",
+    "G172": "intro",
+    "G173": "intro",
+    "G174": "intro",
+    "G175": "intro",
+    "G176": "intro",
+    "G177": "intro",
+    "G178": "intro",
+    "G179": "intro",
+    "G180": "intro",
+    "G181": "warn",
+    "G182": "casual",
+    "G183": "threat",
+    "G184": "intro",
+    "G185": "intro",
+    "G186": "intro",
+    "G187": "intro",
+    "G188": "intro",
+    "G189": "intro",
+    "G190": "intro",
+    "G191": "intro",
+    "G192": "intro",
+    "G193": "ask",
+    "G194": "casual",
+    "G195": "firm",
+    "G196": "intro",
+    "G197": "warn",
+    "G198": "trade",
+    "G199": "warn",
+    "G200": "intro",
+    "G201": "intro",
+    "G202": "intro",
+    "G203": "intro",
+    "G204": "intro",
+    "G205": "intro",
+    "G206": "intro",
+    "G207": "intro",
+    "G208": "intro",
+    "G209": "intro",
+    "G210": "intro",
+    "G211": "intro",
+    "G212": "intro",
+    "G213": "intro",
+    "G214": "intro",
+    "G215": "intro",
+    "G216": "intro",
+    "G217": "intro",
+    "G218": "intro",
+    "G219": "intro",
+    "G220": "intro",
+    "G221": "warn",
+    "G222": "casual",
+    "G223": "warn",
+    "G224": "intro",
+    "G225": "intro",
+    "G226": "intro",
+    "G227": "intro",
+    "G228": "intro",
+    "G229": "intro",
+    "G230": "intro",
+    "G231": "intro",
+    "G232": "intro",
+    "G233": "intro",
+    "G234": "intro",
+    "G235": "warn",
+    "G236": "firm",
+    "G237": "warn",
+    "G238": "intro",
+    "G239": "intro",
+    "G240": "intro",
+    "G241": "trade",
+    "G242": "trade",
+    "G243": "warn",
+    "G244": "memory",
+    "G245": "ask",
+    "G246": "casual",
+    "G247": "intro",
+    "G248": "intro",
+    "G249": "intro",
+    "G250": "intro",
+    "G251": "intro",
+    "G252": "firm",
+    "G253": "firm",
+    "G254": "warn",
+    "G255": "intro",
+    "G256": "intro",
+    "G257": "play",
+    "G258": "philosophy",
+    "G259": "play",
+    "G260": "welcome",
+    "G261": "firm",
+    "G262": "firm",
+    "G263": "intro",
+    "G264": "intro",
+    "G265": "warn",
+    "G266": "ask",
+    "G267": "warn",
+    "G268": "intro",
+    "G269": "intro",
+    "G270": "firm",
+    "G271": "firm",
+    "G272": "firm",
+    "G273": "firm",
+    "G274": "firm",
+    "G275": "firm",
+    "G276": "intro",
+    "G277": "comfort",
+    "G278": "think",
+    "G279": "casual",
+    "G280": "intro",
+    "G281": "trade",
+    "G282": "memory",
+    "G283": "firm",
+    "G284": "ask",
+    "G285": "doubt",
+    "G286": "request",
+    "G287": "intro",
+    "G288": "serious",
+    "G289": "serious",
+    "G290": "serious",
+    "G291": "intro",
+    "G292": "intro",
+    "G293": "ask",
+    "G294": "threat",
+    "G295": "intro",
+    "G296": "warn",
+    "G297": "intro",
+    "G298": "warn",
+    "G299": "philosophy",
+    "G300": "philosophy",
+    "G301": "firm",
+    "G302": "care",
+    "G303": "care",
+    "G304": "care",
+    "G305": "casual",
+    "G306": "philosophy",
+    "G307": "casual",
+    "G308": "intro",
+    "G309": "intro",
+    "G310": "intro",
+    "G311": "play",
+    "G312": "play",
+    "G313": "threat",
+    "G314": "casual",
+    "G315": "trade",
+    "G316": "urgent",
+    "G317": "frustrated",
+    "G318": "trade",
+    "G319": "firm",
+    "G320": "firm",
+    "G321": "care",
+    "G322": "intro",
+    "G323": "warn",
+    "G324": "serious",
+    "G325": "threat",
+    "G326": "threat",
+    "G327": "share",
+    "G328": "serious",
+    "G329": "serious",
+    "G330": "scared",
+    "G331": "serious",
+    "G332": "serious",
+    "G333": "intro",
+    "G334": "trade",
+    "G335": "play",
+    "G336": "curious",
+    "G337": "doubt",
+    "G338": "scared",
+    "G339": "confess",
+    "G340": "silence"
+  },
+  "topic_assignments": {
+    "T000": "welcome",
+    "T001": "memory",
+    "T002": "play",
+    "T003": "think",
+    "T004": "philosophy",
+    "T005": "tired",
+    "T006": "shy",
+    "T007": "affection",
+    "T008": "curious",
+    "T009": "share",
+    "T010": "care",
+    "T011": "amused",
+    "T012": "amused",
+    "T013": "firm",
+    "T014": "affection",
+    "T015": "play",
+    "T016": "affection",
+    "T017": "boast",
+    "T018": "think",
+    "T019": "curious",
+    "T020": "welcome",
+    "T021": "amused",
+    "T022": "serious",
+    "T023": "amused",
+    "T024": "curious",
+    "T025": "amused",
+    "T026": "memory",
+    "T027": "serious",
+    "T028": "confess",
+    "T029": "casual",
+    "T030": "think",
+    "T031": "think",
+    "T032": "serious",
+    "T033": "play",
+    "T034": "curious",
+    "T035": "care",
+    "T036": "shy",
+    "T037": "wary",
+    "T038": "serious",
+    "T039": "serious",
+    "T040": "frustrated",
+    "T041": "excited",
+    "T042": "curious",
+    "T043": "curious",
+    "T044": "frustrated",
+    "T045": "proud",
+    "T046": "excited",
+    "T047": "excited",
+    "T048": "excited",
+    "T049": "think",
+    "T050": "think",
+    "T051": "think",
+    "T052": "memory",
+    "T053": "memory",
+    "T054": "memory",
+    "T055": "care",
+    "T056": "thanks",
+    "T057": "think",
+    "T058": "frustrated",
+    "T059": "trade",
+    "T060": "trade",
+    "T061": "trade",
+    "T062": "trade",
+    "T063": "trade",
+    "T064": "confess",
+    "T065": "confess",
+    "T066": "confess",
+    "T067": "serious",
+    "T068": "serious",
+    "T069": "serious",
+    "T070": "share",
+    "T071": "wary",
+    "T072": "firm",
+    "T073": "curious",
+    "T074": "amused",
+    "T075": "play",
+    "T076": "confess",
+    "T077": "affection",
+    "T078": "wary",
+    "T079": "memory",
+    "T080": "secret",
+    "T081": "wary",
+    "T082": "memory",
+    "T083": "secret",
+    "T084": "wary",
+    "T085": "curious",
+    "T086": "secret",
+    "T087": "think",
+    "T088": "proud",
+    "T089": "care",
+    "T090": "memory",
+    "T091": "memory",
+    "T092": "care",
+    "T093": "frustrated",
+    "T094": "thanks",
+    "T095": "memory",
+    "T096": "curious",
+    "T097": "care",
+    "T098": "regret",
+    "T099": "share",
+    "T100": "curious",
+    "T101": "play",
+    "T102": "curious",
+    "T103": "frustrated",
+    "T104": "serious",
+    "T105": "doubt",
+    "T106": "amused",
+    "T107": "trade",
+    "T108": "welcome",
+    "T109": "regret",
+    "T110": "regret",
+    "T111": "regret",
+    "T112": "casual",
+    "T113": "amused",
+    "T114": "amused",
+    "T115": "amused",
+    "T116": "amused",
+    "T117": "wary",
+    "T118": "warn",
+    "T119": "memory",
+    "T120": "shy",
+    "T121": "warn",
+    "T122": "teach",
+    "T123": "care",
+    "T124": "care",
+    "T125": "comfort",
+    "T126": "care",
+    "T127": "frustrated",
+    "T128": "frustrated",
+    "T129": "wary",
+    "T130": "care",
+    "T131": "think",
+    "T132": "curious",
+    "T133": "admire",
+    "T134": "admire",
+    "T135": "think",
+    "T136": "serious",
+    "T137": "care",
+    "T138": "care",
+    "T139": "share",
+    "T140": "welcome",
+    "T141": "tired",
+    "T142": "curious",
+    "T143": "curious",
+    "T144": "casual",
+    "T145": "care",
+    "T146": "weak",
+    "T147": "proud",
+    "T148": "welcome",
+    "T149": "regret",
+    "T150": "proud",
+    "T151": "ask",
+    "T152": "amused",
+    "T153": "shy",
+    "T154": "shy",
+    "T155": "affection",
+    "T156": "care",
+    "T157": "think",
+    "T158": "admire",
+    "T159": "think",
+    "T160": "curious",
+    "T161": "frustrated",
+    "T162": "admire",
+    "T163": "shy",
+    "T164": "firm",
+    "T165": "affection",
+    "T166": "firm",
+    "T167": "frustrated",
+    "T168": "memory",
+    "T169": "proud",
+    "T170": "think",
+    "T171": "doubt",
+    "T172": "casual",
+    "T173": "casual",
+    "T174": "challenge",
+    "T175": "thanks",
+    "T176": "challenge",
+    "T177": "casual",
+    "T178": "care",
+    "T179": "challenge",
+    "T180": "challenge",
+    "T181": "ask",
+    "T182": "teach",
+    "T183": "teach",
+    "T184": "warn",
+    "T185": "warn",
+    "T186": "care",
+    "T187": "challenge",
+    "T188": "teach",
+    "T189": "curious",
+    "T190": "trade",
+    "T191": "care",
+    "T192": "share",
+    "T193": "trade",
+    "T194": "memory",
+    "T195": "memory",
+    "T196": "teach",
+    "T197": "teach",
+    "T198": "teach",
+    "T199": "relief",
+    "T200": "care",
+    "T201": "serious",
+    "T202": "grief",
+    "T203": "wary",
+    "T204": "relief",
+    "T205": "share",
+    "T206": "care",
+    "T207": "serious",
+    "T208": "shy",
+    "T209": "care",
+    "T210": "curious",
+    "T211": "teach",
+    "T212": "warn",
+    "T213": "think",
+    "T214": "welcome",
+    "T215": "ask",
+    "T216": "secret",
+    "T217": "teach",
+    "T218": "request",
+    "T219": "affection",
+    "T220": "trade",
+    "T221": "firm",
+    "T222": "think",
+    "T223": "tired",
+    "T224": "affection",
+    "T225": "amused",
+    "T226": "excited",
+    "T227": "wary",
+    "T228": "think",
+    "T229": "curious",
+    "T230": "curious",
+    "T231": "welcome",
+    "T232": "welcome",
+    "T233": "welcome",
+    "T234": "care",
+    "T235": "care",
+    "T236": "memory",
+    "T237": "share",
+    "T238": "memory",
+    "T239": "curious",
+    "T240": "think",
+    "T241": "think",
+    "T242": "think",
+    "T243": "shy",
+    "T244": "shy",
+    "T245": "shy",
+    "T246": "memory",
+    "T247": "care",
+    "T248": "amused",
+    "T249": "wary",
+    "T250": "curious",
+    "T251": "casual",
+    "T252": "challenge",
+    "T253": "think",
+    "T254": "challenge",
+    "T255": "challenge",
+    "T256": "amused",
+    "T257": "challenge",
+    "T258": "trade",
+    "T259": "wary",
+    "T260": "trade",
+    "T261": "care",
+    "T262": "serious",
+    "T263": "request",
+    "T264": "welcome",
+    "T265": "wary",
+    "T266": "shy",
+    "T267": "affection",
+    "T268": "relief",
+    "T269": "curious",
+    "T270": "request",
+    "T271": "request",
+    "T272": "request",
+    "T273": "request",
+    "T274": "care",
+    "T275": "care",
+    "T276": "care",
+    "T277": "care",
+    "T278": "wary",
+    "T279": "wary",
+    "T280": "wary",
+    "T281": "welcome",
+    "T282": "serious",
+    "T283": "serious",
+    "T284": "shy",
+    "T285": "shy",
+    "T286": "shy",
+    "T287": "care",
+    "T288": "care",
+    "T289": "care",
+    "T290": "play",
+    "T291": "play",
+    "T292": "care",
+    "T293": "care",
+    "T294": "proud",
+    "T295": "casual",
+    "T296": "firm",
+    "T297": "play",
+    "T298": "proud",
+    "T299": "care",
+    "T300": "amused",
+    "T301": "memory",
+    "T302": "confess",
+    "T303": "affection",
+    "T304": "amused",
+    "T305": "frustrated",
+    "T306": "request",
+    "T307": "shy",
+    "T308": "proud",
+    "T309": "curious",
+    "T310": "teach",
+    "T311": "care",
+    "T312": "think",
+    "T313": "wary",
+    "T314": "serious",
+    "T315": "care",
+    "T316": "amused",
+    "T317": "curious",
+    "T318": "shy",
+    "T319": "care",
+    "T320": "think",
+    "T321": "amused",
+    "T322": "warn",
+    "T323": "casual",
+    "T324": "ask",
+    "T325": "relief",
+    "T326": "teach",
+    "T327": "memory",
+    "T328": "think",
+    "T329": "amused",
+    "T330": "welcome",
+    "T331": "memory",
+    "T332": "memory",
+    "T333": "care",
+    "T334": "affection",
+    "T335": "curious",
+    "T336": "serious",
+    "T337": "curious",
+    "T338": "request",
+    "T339": "request",
+    "T340": "weak",
+    "T341": "wary",
+    "T342": "teach",
+    "T343": "humble",
+    "T344": "memory",
+    "T345": "serious",
+    "T346": "teach",
+    "T347": "teach",
+    "T348": "teach",
+    "T349": "teach",
+    "T350": "teach",
+    "T351": "trade",
+    "T352": "wary",
+    "T353": "curious",
+    "T354": "affection",
+    "T355": "welcome",
+    "T356": "care",
+    "T357": "casual",
+    "T358": "care",
+    "T359": "affection",
+    "T360": "think",
+    "T361": "ask",
+    "T362": "think",
+    "T363": "grief",
+    "T364": "trade",
+    "T365": "think",
+    "T366": "teach",
+    "T367": "teach",
+    "T368": "memory",
+    "T369": "curious",
+    "T370": "proud",
+    "T371": "curious",
+    "T372": "request",
+    "T373": "frustrated",
+    "T374": "care",
+    "T375": "memory",
+    "T376": "care",
+    "T377": "firm",
+    "T378": "thanks",
+    "T379": "welcome",
+    "T380": "amused",
+    "T381": "care",
+    "T382": "shy",
+    "T383": "curious",
+    "T384": "affection",
+    "T385": "amused",
+    "T386": "amused",
+    "T387": "share",
+    "T388": "think",
+    "T389": "warn",
+    "T390": "casual",
+    "T391": "affection",
+    "T392": "serious",
+    "T393": "affection",
+    "T394": "shy",
+    "T395": "shy",
+    "T396": "grief",
+    "T397": "play",
+    "T398": "excited",
+    "T399": "amused",
+    "T400": "think",
+    "T401": "philosophy",
+    "T402": "philosophy",
+    "T403": "frustrated",
+    "T404": "relief",
+    "T405": "teach",
+    "T406": "thanks",
+    "T407": "thanks",
+    "T408": "thanks",
+    "T409": "think",
+    "T410": "memory",
+    "T411": "care",
+    "T412": "welcome",
+    "T413": "think",
+    "T414": "care",
+    "T415": "ask",
+    "T416": "think",
+    "T417": "admire",
+    "T418": "amused",
+    "T419": "confess",
+    "T420": "care",
+    "T421": "wary",
+    "T422": "think",
+    "T423": "confess",
+    "T424": "casual",
+    "T425": "memory",
+    "T426": "shy",
+    "T427": "casual",
+    "T428": "amused",
+    "T429": "philosophy",
+    "T430": "play",
+    "T431": "philosophy",
+    "T432": "amused",
+    "T433": "serious",
+    "T434": "memory",
+    "T435": "think",
+    "T436": "amused",
+    "T437": "welcome",
+    "T438": "curious",
+    "T439": "care",
+    "T440": "excited",
+    "T441": "play",
+    "T442": "shy",
+    "T443": "firm",
+    "T444": "respect",
+    "T445": "sly",
+    "T446": "firm",
+    "T447": "curious",
+    "T448": "share",
+    "T449": "curious",
+    "T450": "teach",
+    "T451": "memory",
+    "T452": "teach",
+    "T453": "memory",
+    "T454": "ask",
+    "T455": "care",
+    "T456": "comfort",
+    "T457": "confess",
+    "T458": "think",
+    "T459": "ask",
+    "T460": "ask",
+    "T461": "ask",
+    "T462": "ask",
+    "T463": "ask",
+    "T464": "ask",
+    "T465": "ask",
+    "T466": "ask",
+    "T467": "care",
+    "T468": "care",
+    "T469": "memory",
+    "T470": "think",
+    "T471": "serious",
+    "T472": "memory",
+    "T473": "teach",
+    "T474": "firm",
+    "T475": "teach",
+    "T476": "serious",
+    "T477": "solemn",
+    "T478": "teach",
+    "T479": "curious",
+    "T480": "wary",
+    "T481": "care",
+    "T482": "care",
+    "T483": "think",
+    "T484": "request",
+    "T485": "memory",
+    "T486": "curious",
+    "T487": "memory",
+    "T488": "think",
+    "T489": "ask",
+    "T490": "serious",
+    "T491": "care",
+    "T492": "affection",
+    "T493": "affection",
+    "T494": "wary",
+    "T495": "sly",
+    "T496": "memory",
+    "T497": "wary",
+    "T498": "challenge",
+    "T499": "challenge",
+    "T500": "proud",
+    "T501": "firm",
+    "T502": "firm",
+    "T503": "care",
+    "T504": "shy",
+    "T505": "affection",
+    "T506": "teach",
+    "T507": "sly",
+    "T508": "firm",
+    "T509": "sly",
+    "T510": "sly",
+    "T511": "serious",
+    "T512": "request",
+    "T513": "think",
+    "T514": "teach",
+    "T515": "teach",
+    "T516": "serious",
+    "T517": "memory",
+    "T518": "ask",
+    "T519": "ask",
+    "T520": "doubt",
+    "T521": "firm",
+    "T522": "play",
+    "T523": "affection",
+    "T524": "thanks",
+    "T525": "play",
+    "T526": "request",
+    "T527": "warn",
+    "T528": "confess",
+    "T529": "warn",
+    "T530": "care",
+    "T531": "excited",
+    "T532": "play",
+    "T533": "curious",
+    "T534": "play",
+    "T535": "challenge",
+    "T536": "amused",
+    "T537": "excited",
+    "T538": "play",
+    "T539": "curious",
+    "T540": "play",
+    "T541": "request",
+    "T542": "amused",
+    "T543": "ask",
+    "T544": "philosophy",
+    "T545": "doubt",
+    "T546": "doubt",
+    "T547": "teach",
+    "T548": "confess",
+    "T549": "think",
+    "T550": "care",
+    "T551": "teach",
+    "T552": "challenge",
+    "T553": "confess",
+    "T554": "curious",
+    "T555": "shy",
+    "T556": "play",
+    "T557": "solemn",
+    "T558": "memory",
+    "T559": "think",
+    "T560": "serious",
+    "T561": "care",
+    "T562": "admire",
+    "T563": "excited",
+    "T564": "memory",
+    "T565": "casual",
+    "T566": "share",
+    "T567": "shy",
+    "T568": "proud",
+    "T569": "shy",
+    "T570": "share",
+    "T571": "serious",
+    "T572": "think",
+    "T573": "teach",
+    "T574": "confess",
+    "T575": "welcome",
+    "T576": "respect",
+    "T577": "curious",
+    "T578": "memory",
+    "T579": "think",
+    "T580": "philosophy",
+    "T581": "teach",
+    "T582": "respect",
+    "T583": "care",
+    "T584": "respect",
+    "T585": "care",
+    "T586": "frustrated",
+    "T587": "curious",
+    "T588": "think",
+    "T589": "shy",
+    "T590": "humble",
+    "T591": "confess",
+    "T592": "trade",
+    "T593": "respect",
+    "T594": "amused",
+    "T595": "play",
+    "T596": "sly",
+    "T597": "amused",
+    "T598": "teach",
+    "T599": "respect",
+    "T600": "play",
+    "T601": "amused",
+    "T602": "memory",
+    "T603": "casual",
+    "T604": "welcome",
+    "T605": "serious",
+    "T606": "teach",
+    "T607": "respect",
+    "T608": "serious",
+    "T609": "care",
+    "T610": "memory",
+    "T611": "serious",
+    "T612": "respect",
+    "T613": "firm",
+    "T614": "think",
+    "T615": "frustrated",
+    "T616": "ask",
+    "T617": "teach",
+    "T618": "curious",
+    "T619": "care",
+    "T620": "shy",
+    "T621": "curious",
+    "T622": "care",
+    "T623": "care",
+    "T624": "confess",
+    "T625": "confess",
+    "T626": "solemn",
+    "T627": "shy",
+    "T628": "affection",
+    "T629": "teach",
+    "T630": "grief",
+    "T631": "serious",
+    "T632": "memory",
+    "T633": "shy",
+    "T634": "casual",
+    "T635": "think",
+    "T636": "care",
+    "T637": "respect",
+    "T638": "memory",
+    "T639": "affection",
+    "T640": "welcome",
+    "T641": "respect",
+    "T642": "think",
+    "T643": "share",
+    "T644": "respect",
+    "T645": "confess",
+    "T646": "play",
+    "T647": "wary",
+    "T648": "wary",
+    "T649": "memory",
+    "T650": "wary",
+    "T651": "wary",
+    "T652": "amused",
+    "T653": "teach",
+    "T654": "respect",
+    "T655": "firm",
+    "T656": "respect",
+    "T657": "teach",
+    "T658": "firm",
+    "T659": "serious",
+    "T660": "teach",
+    "T661": "teach",
+    "T662": "respect",
+    "T663": "care",
+    "T664": "trade",
+    "T665": "respect",
+    "T666": "memory",
+    "T667": "welcome",
+    "T668": "respect",
+    "T669": "curious",
+    "T670": "respect",
+    "T671": "confess",
+    "T672": "affection",
+    "T673": "shy",
+    "T674": "memory",
+    "T675": "memory",
+    "T676": "memory",
+    "T677": "affection",
+    "T678": "care",
+    "T679": "amused",
+    "T680": "warn",
+    "T681": "respect",
+    "T682": "memory",
+    "T683": "memory",
+    "T684": "serious",
+    "T685": "respect",
+    "T686": "serious",
+    "T687": "shy",
+    "T688": "confess",
+    "T689": "regret",
+    "T690": "teach",
+    "T691": "memory",
+    "T692": "regret",
+    "T693": "ask",
+    "T694": "respect",
+    "T695": "care",
+    "T696": "teach",
+    "T697": "think",
+    "T698": "memory",
+    "T699": "teach",
+    "T700": "respect",
+    "T701": "memory",
+    "T702": "care",
+    "T703": "memory",
+    "T704": "proud",
+    "T705": "regret",
+    "T706": "affection",
+    "T707": "frustrated",
+    "T708": "serious",
+    "T709": "think",
+    "T710": "think",
+    "T711": "curious",
+    "T712": "serious",
+    "T713": "think",
+    "T714": "confess",
+    "T715": "frustrated",
+    "T716": "excited",
+    "T717": "excited",
+    "T718": "frustrated",
+    "T719": "wary",
+    "T720": "serious",
+    "T721": "think",
+    "T722": "memory",
+    "T723": "confess",
+    "T724": "affection",
+    "T725": "welcome",
+    "T726": "respect",
+    "T727": "teach",
+    "T728": "think",
+    "T729": "memory",
+    "T730": "admire",
+    "T731": "care",
+    "T732": "respect",
+    "T733": "trade",
+    "T734": "respect",
+    "T735": "care",
+    "T736": "share",
+    "T737": "affection",
+    "T738": "serious",
+    "T739": "respect",
+    "T740": "think",
+    "T741": "trade",
+    "T742": "respect",
+    "T743": "regret",
+    "T744": "shy",
+    "T745": "respect",
+    "T746": "shy",
+    "T747": "shy",
+    "T748": "regret",
+    "T749": "share",
+    "T750": "memory",
+    "T751": "memory",
+    "T752": "memory",
+    "T753": "confess",
+    "T754": "teach",
+    "T755": "memory",
+    "T756": "think",
+    "T757": "shy",
+    "T758": "play",
+    "T759": "warn",
+    "T760": "respect",
+    "T761": "think",
+    "T762": "regret",
+    "T763": "care",
+    "T764": "play",
+    "T765": "grief",
+    "T766": "philosophy",
+    "T767": "memory",
+    "T768": "teach",
+    "T769": "teach",
+    "T770": "respect",
+    "T771": "teach",
+    "T772": "respect",
+    "T773": "teach",
+    "T774": "ask",
+    "T775": "respect",
+    "T776": "teach",
+    "T777": "memory",
+    "T778": "think",
+    "T779": "memory",
+    "T780": "care"
+  },
+  "branch_assignments": {
+    "T022:0": "amused",
+    "T022:1": "grief",
+    "T022:2": "grief",
+    "T022:3": "curious",
+    "T027:0": "shy",
+    "T027:1": "serious",
+    "T027:2": "serious",
+    "T032:0": "affection",
+    "T032:1": "serious",
+    "T032:2": "care",
+    "T038:0": "shy",
+    "T038:1": "confess",
+    "T038:2": "shy",
+    "T039:0": "shy",
+    "T039:1": "serious",
+    "T039:2": "confess",
+    "T136:1": "care",
+    "T136:2": "share",
+    "T136:3": "regret",
+    "T136:4": "regret",
+    "T136:5": "care",
+    "T136:6": "care",
+    "T136:7": "share",
+    "T136:8": "regret",
+    "T136:9": "care",
+    "T136:10": "care"
+  },
+  "character_overrides": {
+    "110031": "official",
+    "110033": "official",
+    "140001": "official",
+    "150061": "official",
+    "150081": "official",
+    "190012": "official",
+    "191012": "official",
+    "192011": "official",
+    "192803": "official",
+    "193602": "official",
+    "110032": "sword",
+    "110303": "sword",
+    "110061": "sly",
+    "191031": "sly",
+    "191801": "sly",
+    "110062": "cold",
+    "191101": "cold",
+    "110063": "bold",
+    "191032": "bold",
+    "191803": "bold",
+    "194032": "bold",
+    "110071": "hard",
+    "190101": "hard",
+    "190801": "hard",
+    "191301": "hard",
+    "192101": "hard",
+    "192802": "hard",
+    "194802": "hard",
+    "110072": "worker",
+    "194031": "worker",
+    "110081": "kind",
+    "190802": "kind",
+    "193802": "kind",
+    "110082": "soft",
+    "110201": "soft",
+    "110501": "soft",
+    "192031": "soft",
+    "192201": "soft",
+    "193803": "soft",
+    "194201": "soft",
+    "110083": "tea",
+    "110202": "hostess",
+    "110301": "hostess",
+    "150041": "hostess",
+    "110203": "leisure",
+    "192602": "leisure",
+    "110302": "wary",
+    "190031": "wary",
+    "191601": "wary",
+    "110401": "subtle",
+    "140041": "subtle",
+    "150071": "subtle",
+    "190401": "yunyan",
+    "194602": "subtle",
+    "110402": "diplomat",
+    "190013": "diplomat",
+    "193011": "diplomat",
+    "110502": "child_bright",
+    "140002": "child_bright",
+    "150042": "child_puzzled",
+    "150072": "child_bright",
+    "140003": "rough",
+    "140042": "solemn",
+    "190602": "solemn",
+    "194801": "solemn",
+    "140201": "patient",
+    "190601": "patient",
+    "192102": "patient",
+    "150043": "reserved",
+    "191201": "reserved",
+    "191802": "reserved",
+    "193301": "reserved",
+    "194301": "reserved",
+    "194803": "reserved",
+    "150051": "elder",
+    "150052": "bright",
+    "150101": "niaoqiao",
+    "190102": "bright",
+    "193101": "bright",
+    "193401": "qianer",
+    "150082": "shy",
+    "192032": "shy",
+    "192301": "shy",
+    "150091": "sharp",
+    "190011": "leader",
+    "194011": "leader",
+    "190032": "free",
+    "190103": "proud_cold",
+    "191401": "proud_cold",
+    "193201": "proud_cold",
+    "190201": "student",
+    "190301": "earth",
+    "190803": "sun",
+    "191102": "silky",
+    "192801": "veteran",
+    "193801": "veteran",
+    "193031": "taosu",
+    "193032": "soft",
+    "193601": "clever",
+    "193102": "quirky",
+    "194101": "sword",
+    "194102": "sharp",
+    "194401": "shy",
+    "194601": "subtle"
+  },
+  "entry_overrides": {
+    "topic_opening:150101:1501018": {
+      "emotion_tags": [
+        "愉悦",
+        "关切"
+      ],
+      "delivery": "清亮俏皮，带浅浅笑意；“我可记着呢”稍作强调，末尾轻快询问，保持日常交谈感。",
+      "intensity": 0.35
+    },
+    "base_greeting:100000:0": {
+      "emotion_tags": [
+        "温和",
+        "热情"
+      ],
+      "delivery": "成熟从容地招呼客人，前句关照、后句带浅笑，“管够”说得笃定，语速适中。",
+      "intensity": 0.3
+    },
+    "base_greeting:100000:1": {
+      "emotion_tags": [
+        "平静",
+        "礼貌"
+      ],
+      "delivery": "从容简洁地询问，句尾轻微上扬，不催促，不压低嗓音。",
+      "intensity": 0.15
+    },
+    "base_greeting:100000:2": {
+      "emotion_tags": [
+        "温和",
+        "询问"
+      ],
+      "delivery": "像掌柜自然招呼来客，声音平稳，末尾轻轻上扬，不作叫卖。",
+      "intensity": 0.2
+    }
+  },
+  "source_sha256": {
+    "tbnpcbasecfg.json": "23d7f0ae86aa2c46e778fa4b86ed3c55c53fc9f921b8df8fc7cb1ea780121613",
+    "tbnpctopicchat.json": "8a2eede3980d1c98a83695829bfb59228cc766e6ca878396ecb236c39ad32e4c",
+    "tbnpcaipersona.json": "eb65761c7e48c7f35d24bf4b37f3f7bd8f51910ab17880a7573f879f5ce0db78"
+  }
+}

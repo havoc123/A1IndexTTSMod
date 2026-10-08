@@ -1,5 +1,7 @@
 # 安装、升级与卸载
 
+> **IndexTTS 历史文档，已停止维护。** 当前 v0.7.0 起维护 CosyVoice 与增强情感功能，新装请使用 [CosyVoice 分体安装说明](packaging/INSTALL-COSY-SPLIT.md)。下文包名、默认后端和版本保留历史语境，原因见 [路线归档](docs/archive/INDEXTTS.md)。
+
 当前源码版本：A1IndexTTSMod `v0.7.3`，Windows x64，已验证的《不问凡尘》游戏构建 GUID `0acccbcdb9a14aa3a528bd4d850c3202`。工坊包的安装器步骤见 [工坊安装说明](packaging/INSTALL-WORKSHOP.md)。下文保留历史发行包的下载文件名；请先退出游戏。
 
 ## 1. 安装 BepInEx
@@ -61,7 +63,7 @@ BepInEx/plugins/
     NAudio.Wasapi.dll
 ```
 
-官方仓库当前版本的 Mod Manager 尚不一定包含该接口；本项目的实现基于 `havoc123/WorldApart-ModManager-Public` 的 `codex/bepinex-feature-plugin-api` 功能分支。接口及给作者的提交信息见 [Mod Manager 支持说明](docs/MOD-MANAGER-SUPPORT.md) 与 [作者合并说明](docs/MOD-MANAGER-SUPPORT.md)。
+官方仓库当前版本的 Mod Manager 尚不一定包含该接口；本项目的实现基于 `havoc123/WorldApart-ModManager-Public` 的 `codex/bepinex-feature-plugin-api` 功能分支。接口及给作者的提交信息见 [Mod Manager 支持说明](docs/MOD-MANAGER-SUPPORT.md) 与 [作者合并说明](docs/MOD-MANAGER-AUTHOR-HANDOFF.md)。
 
 在游戏设置页的 MOD 管理页面中，找到“BepInEx 功能插件”区域即可控制 IndexTTS。开关保存 `Stage3Mvp.Enabled` 配置。关闭会取消等待中的合成、停止当前播放，并停止本插件启动的 audio.cpp；再次开启会恢复服务。BepInEx 不会热卸载插件程序集。若 `127.0.0.1:8892` 已有外部服务，插件只连接它，不会替用户关闭该服务。状态显示 `Failed` 时，开关仍表示配置的期望启用状态，旁边的状态文字说明失败原因。
 

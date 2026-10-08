@@ -19,7 +19,7 @@ internal static class SpeechMvp
     private static ManualLogSource? _log;
     private static Uri? _endpoint;
     private static string _referenceId = "demo";
-    private static string _audioCppModelId = "indextts25";
+    private static string _audioCppModelId = "cosyvoice3";
     private static bool _audioCpp;
     private static TtsBackend _backend;
     private static TtsSettings? _settings;

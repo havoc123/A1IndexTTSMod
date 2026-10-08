@@ -1,5 +1,7 @@
 # A1 IndexTTS NPC 语音 MOD v0.7.3
 
+> 历史 IndexTTS 工坊包介绍，已归档。当前使用 [CosyVoice 分体安装](INSTALL-COSY-SPLIT.md)，原因见 [路线归档](../docs/archive/INDEXTTS.md)。
+
 为《不问凡尘》的 NPC AI 回复添加本地 IndexTTS2.5 语音。包内包含插件、audio.cpp Windows CUDA 运行时和社区 Vulkan 服务端、1169 份 NPC 参考音；不包含 BepInEx 加载器与约 3.26 GiB 的 Q8 模型。默认使用 NVIDIA CUDA；AMD 可通过 `Stage3Mvp.GpuBackend = Vulkan` 显式切换。
 
 v0.7.0 增加当句 `voice_style` 情感与表演描述，增强实际对话的提示词和 JSON schema，并将游戏映射时丢弃的样式同步回 `ChatMessage.NpcRawOutput`。默认仍使用 IndexTTS2.5；CosyVoice 指令后端需另行准备兼容运行时与模型，并明确修改后端配置。

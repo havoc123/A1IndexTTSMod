@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace A1IndexTTSMod;
 
-/// <summary>Open, per-utterance voice performance returned by the game's original LLM.</summary>
+/// <summary>Per-utterance voice performance from a reply or a matched offline preset.</summary>
 internal sealed record VoiceStyle(
     [property: JsonPropertyName("emotion_tags")] IReadOnlyList<string> EmotionTags,
     [property: JsonPropertyName("delivery")] string Delivery,

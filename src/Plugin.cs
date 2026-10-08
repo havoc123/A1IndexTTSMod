@@ -26,7 +26,7 @@ public sealed class Plugin : BasePlugin, IManagedFeaturePlugin
     private ConfigEntry<int>? _panelTab;
 
     public string FeatureId => PluginInfo.Guid;
-    public string DisplayName => "IndexTTS NPC 朗读";
+    public string DisplayName => "CosyVoice NPC 朗读";
     public string Description => "朗读游戏内 NPC AI 回复";
     public string FeatureVersion => PluginInfo.Version;
     public bool DesiredEnabled => _managedEnabled?.Value ?? false;
@@ -72,7 +72,7 @@ public sealed class Plugin : BasePlugin, IManagedFeaturePlugin
             var maxChars = Config.Bind("Stage2A", "MaxRecordChars", 120000, "Maximum characters copied from one text field.");
             var dir = Config.Bind("Stage2A", "CaptureDirectory", ".state/stage2a", "Capture path relative to the mod project directory.");
             if (diagnostics.Value) Probe.Start(Log, capture, maxChars, dir);
-            _managedEnabled = Config.Bind("Stage3Mvp", "Enabled", true, "Speak structured NPC AI replies through the local IndexTTS API.");
+            _managedEnabled = Config.Bind("Stage3Mvp", "Enabled", true, "Speak NPC replies and matched preset openings through the local CosyVoice service.");
             _panelVolume = Config.Bind("SpeechPanel", "VolumePercent", 100, "Mod-only playback volume (0-100).");
             _panelVolume.Value = Math.Clamp(_panelVolume.Value, 0, 100);
             _autoRead = Config.Bind("SpeechPanel", "AutoRead", true, "Automatically speak new NPC replies.");
@@ -81,10 +81,12 @@ public sealed class Plugin : BasePlugin, IManagedFeaturePlugin
             _panelTab = Config.Bind("SpeechPanel", "LastTab", 0, "Last open speech panel tab (0-2).");
             _panelTab.Value = Math.Clamp(_panelTab.Value, 0, 2);
             NpcVoiceResolver.Initialize(Log);
+            PresetVoiceStyles.Initialize(Log, Config.Bind("Stage3Mvp", "PresetVoiceStyles", true,
+                "Use the embedded character-specific emotion library for exact preset greetings and topic openings when no valid reply voice_style is available."));
             var ttsUrl = Config.Bind("Stage3Mvp", "TtsUrl", "http://127.0.0.1:8892/v1/audio/speech", "Local TTS endpoint; audio.cpp /v1/audio/speech by default, or legacy /v1/tts.");
             var backendDefinition = new ConfigDefinition("Stage3Mvp", "Backend");
             var backendWasConfigured = Config.ContainsKey(backendDefinition);
-            var backend = Config.Bind(backendDefinition, "IndexTtsAudioCpp", new ConfigDescription("Explicit backend selection: IndexTtsAudioCpp, IndexTtsLegacyApi, or CosyVoiceAudioCpp (requires a verified Cosy audio.cpp server build)."));
+            var backend = Config.Bind(backendDefinition, "CosyVoiceAudioCpp", new ConfigDescription("Maintained backend: CosyVoiceAudioCpp. IndexTtsAudioCpp and IndexTtsLegacyApi are archived compatibility paths."));
             if (BackendConfigMigration.InferLegacyBackend(backendWasConfigured, ttsUrl.Value) is { } migratedBackend)
             {
                 backend.Value = migratedBackend;
@@ -98,7 +100,7 @@ public sealed class Plugin : BasePlugin, IManagedFeaturePlugin
                 _managedEnabled,
                 ttsUrl,
                 Config.Bind("Stage3Mvp", "ReferenceId", "demo", "Reference audio ID under indextts25/voices."),
-                Config.Bind("Stage3Mvp", "AudioCppModelId", "indextts25", "Model ID in the local audio.cpp server config. Model precision is chosen by the server launcher."),
+                Config.Bind("Stage3Mvp", "AudioCppModelId", "cosyvoice3", "Model ID in the local audio.cpp server config; cosyvoice3 for the maintained CosyVoice route."),
                 Config.Bind("Stage3Mvp", "TimeoutSeconds", 180, "Maximum wait for one synthesis request."),
                 Config.Bind("Stage3Mvp", "AutoStartAudioCpp", true, "Start the project audio.cpp service and close it when this game exits."),
                 Config.Bind("Stage3Mvp", "AudioCppPrecision", "q8_0", "Auto-start model precision: q8_0, f16, or orig (model file must already exist)."),
@@ -446,8 +448,8 @@ internal static class Probe
             var hasSchema = !string.IsNullOrEmpty(extension.ResponseFormatJson);
             SpeechPanelData.RecordPromptSnapshot(true, hasSchema ? extension.ResponseFormatJson : null, extension.ContractAddition,
                 hasSchema
-                    ? "已观测：本地拦截到实际 ActualReply 请求增强后的 ResponseFormat；最终供应商网络层未观测"
-                    : "已添加 content 语音帧要求和示例；本轮自定义模型请求未提供 Schema（ResponseFormat 为空），沿用游戏文本输出契约");
+                    ? "已要求有可朗读台词时必须返回语音风格帧；已观测增强后的 ResponseFormat，最终供应商网络层未观测"
+                    : "已要求有可朗读台词时必须返回语音风格帧，并添加示例；本轮自定义模型请求未提供 Schema（ResponseFormat 为空），沿用游戏文本输出契约");
             if (_captureEnabled && _full)
             {
                 var responseFormat = extension.ResponseFormatJson;
@@ -707,19 +709,23 @@ internal static class Probe
                 });
                 if (!synchronized) _speechLog?.LogWarning("Stage3 could not synchronize recovered voice_style into ChatMessage.NpcRawOutput; TTS still uses the recovered style metadata.");
             }
-            // Only structured AI replies are spoken. Notices and player messages stay silent.
+            // This hook creates NPC messages only. A text-only message must additionally
+            // match this character's preset library before it is admitted to speech.
             var reply = __state?.Reply ?? ExtractNpcReply(raw ?? "");
-            if (!string.IsNullOrWhiteSpace(text) && !string.IsNullOrWhiteSpace(reply?.Content))
+            var npcKey = NpcId(__instance);
+            var preset = reply?.VoiceStyle == null ? PresetVoiceStyles.Resolve(npcKey, text, ActiveTopicId(__instance)) : null;
+            if (!string.IsNullOrWhiteSpace(text) && (!string.IsNullOrWhiteSpace(reply?.Content) || preset != null))
             {
-                var npcKey = NpcId(__instance);
                 var identity = DisplayMessageIdentity(__instance, npcKey);
                 if (identity == null) { _speechLog?.LogWarning("Stage3 display reply has no ChatMessage timestamp identity; TTS skipped to avoid duplicate playback."); return; }
                 var spokenText = SpeechTextFilter.RemoveParentheticals(text);
-                SpeechPanelData.RecordReply(identity, npcKey, text, spokenText, reply.Emotion, reply.VoiceStyle,
-                    __state?.RawReplyJson ?? raw, __state?.VoiceStyleStatus ?? "unknown", __state?.VoiceStyleSource,
-                    __state?.VoiceStyleFailureReason);
-                _speechLog?.LogInfo($"Stage3 ordinary display callback identity={identity}");
-                SpeechMvp.OnNpcReply(npcKey, text, reply.Emotion, reply.VoiceStyle, identity);
+                var style = reply?.VoiceStyle ?? preset?.Style;
+                SpeechPanelData.RecordReply(identity, npcKey, text, spokenText, reply?.Emotion, style,
+                    __state?.RawReplyJson ?? raw, preset != null ? "preset_matched" : __state?.VoiceStyleStatus ?? "unknown",
+                    preset != null ? "offline_preset_library" : __state?.VoiceStyleSource,
+                    preset != null ? null : __state?.VoiceStyleFailureReason, preset?.Description);
+                _speechLog?.LogInfo($"Stage3 ordinary display callback identity={identity} preset={preset?.EntryKey ?? "none"}");
+                SpeechMvp.OnNpcReply(npcKey, text, reply?.Emotion, style, identity);
             }
         }); }
         finally { __state?.ExitScope(); }
@@ -762,6 +768,8 @@ internal static class Probe
                 if (!string.Equals(decodedText, text, StringComparison.Ordinal)) textProperty.SetValue(message, decodedText);
                 text = decodedText;
             }
+            var preset = reply.VoiceStyle == null ? PresetVoiceStyles.Resolve(npcKey, text) : null;
+            if (preset != null) reply = reply with { VoiceStyle = preset.Style };
             _speechLog?.LogInfo($"Stage3 persuade NPC response npc={npcKey} chars={text.Length} rawChars={raw?.Length ?? 0}");
             var timestamp = messageType.GetProperty("MSTimestamp")?.GetValue(message)?.ToString();
             if (string.IsNullOrWhiteSpace(timestamp) || timestamp == "0") return;
@@ -769,9 +777,9 @@ internal static class Probe
             if (identity == null) return;
             SpeechPanelData.RecordReply(identity, npcKey, text, SpeechTextFilter.RemoveParentheticals(text),
                 reply.Emotion ?? "normal", reply.VoiceStyle, pending?.RawReply ?? raw,
-                reply.VoiceStyle == null ? pending?.Status ?? separated?.VoiceStyleStatus ?? "unparseable_or_unavailable" : "valid",
-                separated?.VoiceStyle != null ? separated.VoiceStyleSource : pending != null ? "pending_store" : null,
-                separated?.VoiceStyleFailureReason ?? pending?.FailureReason);
+                preset != null ? "preset_matched" : reply.VoiceStyle == null ? pending?.Status ?? separated?.VoiceStyleStatus ?? "unparseable_or_unavailable" : "valid",
+                preset != null ? "offline_preset_library" : separated?.VoiceStyle != null ? separated.VoiceStyleSource : pending != null ? "pending_store" : null,
+                preset != null ? null : separated?.VoiceStyleFailureReason ?? pending?.FailureReason, preset?.Description);
             _speechLog?.LogInfo($"Stage3 persuade display callback identity={identity}");
             SpeechMvp.OnNpcReply(npcKey, text, reply.Emotion ?? "normal", reply.VoiceStyle, identity);
         }
@@ -1004,6 +1012,16 @@ internal static class Probe
         return string.IsNullOrEmpty(ns) ? name : ns + "." + name;
     }
 
+    private static string? ActiveTopicId(object npc)
+    {
+        try
+        {
+            var id = npc.GetType().GetProperty("ActiveTopicId")?.GetValue(npc);
+            return id?.GetType().GetProperty("Value")?.GetValue(id)?.ToString();
+        }
+        catch { return null; }
+    }
+
     private static string? DisplayMessageIdentity(object npc, string npcKey)
     {
         try
@@ -1124,5 +1142,5 @@ internal static class PluginInfo
 {
     public const string Guid = "org.a1indextts.mod";
     public const string Name = "A1-TTS-Mod";
-    public const string Version = "0.7.4";
+    public const string Version = "0.7.5";
 }

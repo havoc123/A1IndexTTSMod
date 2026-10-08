@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
     [ValidateSet('index_tts2', 'cosyvoice3')]
-    [string] $Backend = 'index_tts2',
+    [string] $Backend = 'cosyvoice3',
     [ValidateSet('q8_0', 'f16', 'orig')]
     [string] $Precision = 'q8_0',
     [ValidateSet('Nvidia', 'Vulkan')]

@@ -9,6 +9,11 @@ namespace A1IndexTTSMod;
 internal static class PromptEnhancer
 {
     private const string Marker = "A1_TTS_STYLE_V1";
+    private const string ContentEnvelopeContract = "content：玩家可见正文；只要有可朗读台词，就必须在 content 字符串内部的台词末尾追加且仅追加一个 <a1tts_v1>{JSON}</a1tts_v1> 帧。帧内 JSON 仅含 emotion_tags（1–3 个简短中文标签）、delivery（可听见的说话方式）和 intensity（0–1）。情绪平淡或上下文不足时，生成平静、中性的表达，不推测隐藏情绪，不省略帧；只有没有可朗读台词时才不追加帧。帧内双引号、反斜杠和换行必须按外层 JSON 字符串规则转义，确保整个回复仍是合法 JSON。帧不得放在 content 外或整个回复 JSON 后面，不新增顶层 voice_style，帧后不追加文字。Mod 会剥离帧，帧不进入可见正文。其余游戏字段沿用原契约。";
+    private static readonly JsonSerializerOptions PromptJsonOptions = new()
+    {
+        Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+    };
     internal sealed record Extension(string Tail, string ResponseFormatJson, string ExampleJson, string FieldDescriptions, string ContractAddition);
 
     public static string ReadResponseFormatJson(object value)
@@ -73,7 +78,7 @@ internal static class PromptEnhancer
                 throw new JsonException("The game's response schema has no object properties to extend.");
             if (properties["content"] is not JsonObject contentSchema)
                 throw new JsonException("The game's response schema has no object content property to describe the text envelope.");
-            var envelopeDescription = "玩家可见正文；启用本 Mod 的语音风格传输时，正文末尾可追加一个 <a1tts_v1>{JSON}</a1tts_v1> 帧。帧内 JSON 仅含 emotion_tags（1–3 个简短中文标签）、delivery（可听见的说话方式）和 intensity（0–1）；无风格时不追加帧。Mod 会在显示、历史与下游提示前剥离该帧。";
+            var envelopeDescription = ContentEnvelopeContract;
             var originalContentDescription = contentSchema["description"]?.GetValue<string>();
             contentSchema["description"] = string.IsNullOrWhiteSpace(originalContentDescription)
                 ? envelopeDescription
@@ -82,17 +87,19 @@ internal static class PromptEnhancer
 
         var example = JsonNode.Parse(exampleJson) as JsonObject
             ?? throw new JsonException("The game's response example root must be an object.");
-        var exampleStyle = new VoiceStyle(new[] { "克制的关切", "故作冷淡" }, "声音稍低，语速略慢，句尾收住", 0.4);
-        example["content"] = StyleEnvelopeCodec.EncodeExample(example["content"]?.GetValue<string>() ?? "你来了。", exampleStyle);
-        var descriptions = AppendOnce(fieldDescriptions,
-            "content：玩家可见正文；语音风格若可判断，末尾追加单个 <a1tts_v1>{JSON}</a1tts_v1> 帧，JSON 字段为 emotion_tags、delivery、intensity；没有风格时不追加帧。其余游戏字段沿用原契约。");
-        var contractAddition = "content 可在台词末尾携带独立语音元数据帧 <a1tts_v1>{JSON}</a1tts_v1>；帧仅含 emotion_tags、delivery、intensity，解析后不会进入游戏正文。无风格时不追加帧。";
+        var exampleStyle = new VoiceStyle(new[] { "平静", "自然" }, "以自然语速清晰说话", 0.2);
+        var exampleContent = StyleEnvelopeCodec.Decode(example["content"]?.GetValue<string>() ?? "").Content;
+        example["content"] = string.IsNullOrWhiteSpace(SpeechTextFilter.RemoveParentheticals(exampleContent))
+            ? exampleContent
+            : StyleEnvelopeCodec.EncodeExample(exampleContent, exampleStyle);
+        var descriptions = AppendOnce(fieldDescriptions, ContentEnvelopeContract);
+        var contractAddition = ContentEnvelopeContract;
         var tailAddition = enhancementText.Trim() + "\n\n输出字段说明：\n" + descriptions;
         var enhancedTail = TryExtractReplyExample(tail, out _, out var tailWithExample,
-            JsonNode.Parse(example.ToJsonString()) as JsonObject)
+            JsonNode.Parse(example.ToJsonString(PromptJsonOptions)) as JsonObject)
             ? AppendOnce(tailWithExample, tailAddition)
-            : AppendOnce(tail, tailAddition + "\n\n完整 JSON 示例（沿用原示例字段和值，并在 content 末尾追加语音风格帧）：\n" + example.ToJsonString());
-        return new Extension(enhancedTail, responseFormat?.ToJsonString() ?? "", example.ToJsonString(), descriptions, contractAddition);
+            : AppendOnce(tail, tailAddition + "\n\n完整 JSON 示例（沿用原示例字段和值，有台词时在 content 字符串内部末尾追加语音风格帧；内部双引号已按外层 JSON 转义）：\n" + example.ToJsonString(PromptJsonOptions));
+        return new Extension(enhancedTail, responseFormat?.ToJsonString() ?? "", example.ToJsonString(PromptJsonOptions), descriptions, contractAddition);
     }
 
     public static string LoadInstructions()
@@ -244,7 +251,7 @@ internal static class PromptEnhancer
             if (styleExample["content"] is JsonValue contentValue && contentValue.TryGetValue<string>(out var content))
                 example["content"] = JsonValue.Create(content);
         }
-        exampleJson = example.ToJsonString();
+        exampleJson = example.ToJsonString(PromptJsonOptions);
         updatedContract = contract[..selectedStart] + exampleJson + contract[(selectedStart + selectedLength)..];
         return true;
     }

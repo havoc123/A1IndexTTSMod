@@ -157,13 +157,13 @@ if errorlevel 1 pause
     [IO.File]::WriteAllText((Join-Path $stage '安装补丁.bat'), $launcher, [Text.Encoding]::ASCII)
 
     $instructions = @"
-A1 IndexTTS NPC 语音 MOD 升级补丁：$BasePackageName -> $toVersion
+A1 CosyVoice NPC 语音 MOD 升级补丁：$BasePackageName -> $toVersion
 
 此补丁专用于 $FromVersion（插件程序集版本 $fromAssemblyVersion）。请先正常退出游戏并等待 Steam 云存档同步完成，将本补丁完整解压到任意文件夹，双击“安装补丁.bat”并输入 WorldApart.exe 的路径。
 
 本补丁更新插件 DLL 和三个配套启停脚本。安装器会备份被替换目标的同名文件，并保留配置、模型、参考音及 BepInEx 加载器。补丁不会安装大肥鱼或改写游戏 AI 服务商设置。
 
-主要修复：自定义模型 ResponseFormat 为空时仍添加 content 语音风格帧要求；第三页说明无 Schema 的情况，显示中文契约增补及失败原因；同步 DLL 与监督进程参数，避免新 DLL 配旧脚本导致服务启动失败。
+更新内容：有可朗读台词时要求返回 content 内部语音风格帧，无 Schema 时也增强文本输出契约；默认内置预设问候语和开场白情感库，按角色与实际台词精确匹配，第三页区分模型风格与离线预设来源；源码新装默认使用 CosyVoice。已有配置保留，IndexTTS 用户迁移时需要准备 CosyVoice 模型并核对后端设置。同步 DLL 与监督进程参数，避免新 DLL 配旧脚本导致服务启动失败。
 
 默认 GPU 路由为 Nvidia。安装后完全退出游戏，编辑 BepInEx\config\org.a1indextts.mod.cfg，在 [Stage3Mvp] 设置 GpuBackend = Vulkan 可改用 AMD/Vulkan；多显卡设备可用 GpuDevice 指定 AMD 的序号（默认 0），改回 Nvidia 即恢复 CUDA 默认路线。Vulkan 路线要求显卡驱动提供 Vulkan，服务日志应出现 Vulkan0 才表示模型确实加载在 GPU 上。
 
@@ -171,8 +171,11 @@ A1 IndexTTS NPC 语音 MOD 升级补丁：$BasePackageName -> $toVersion
 
 安装后，BepInEx/LogOutput.log 应显示 Loading [A1-TTS-Mod $($versionMatch.Groups[1].Value)]。原文件备份位置由安装器输出；需要回退时，退出游戏并将备份中 BepInEx、A1IndexTTSMod 两个目录内的文件复制回游戏根目录。
 
-验证范围：此前修复代码已在本机与大肥鱼 2.0 共载，用可控本地上游验证实际 NPC 对话、正文帧剥离和 TTS 播放。真实模型仍可能不遵守帧要求，插件无法恢复上游未生成或已删除的数据。
+验证范围：v0.7.4 的无 Schema 修复已在本机与大肥鱼 2.0 共载，用可控本地上游验证实际 NPC 对话、正文帧剥离和 TTS 播放。当前必填风格契约、预设情感库和 CosyVoice 默认配置已编译；按要求未运行新增测试或游戏试听。真实模型仍可能不遵守帧要求，插件无法恢复上游未生成或已删除的数据；离线库仅补充精确匹配的既有预设台词。
 "@
+    if ([Version]($versionMatch.Groups[1].Value) -ge [Version]'0.7.5') {
+        $instructions += "`r`nv0.7.5 补强：有可朗读台词时，要求同次模型回复必须在 content 字符串内部末尾返回一个风格帧；平淡或上下文不足时生成中性表达。统一提示词、字段说明和 Schema 描述，明确外层 JSON 转义及旧格式约束。第三页区分已要求但未检测到的情况，诊断摘要包含 VoiceStyleRequired。`r`n"
+    }
     if ($legacyPayload) {
         $instructions += "`r`n从早期版本升级的此包额外包含 NAudio.WinMM.dll 和 audiocpp_server-vulkan.exe；独立 Vulkan exe 不覆盖 Nvidia 服务端。`r`n"
     }

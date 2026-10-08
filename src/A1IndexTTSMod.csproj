@@ -4,7 +4,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <AssemblyName>A1IndexTTSMod</AssemblyName>
     <RootNamespace>A1IndexTTSMod</RootNamespace>
-    <Version>0.7.4</Version>
+    <Version>0.7.5</Version>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
@@ -42,6 +42,10 @@
       <Private>false</Private>
     </Reference>
     <ProjectReference Include="managed-feature-api\LocalModManager.Abstractions.csproj" />
+    <EmbeddedResource Include="..\config\preset-voice-styles.zh-CN.json">
+      <LogicalName>A1IndexTTSMod.preset-voice-styles.zh-CN.json</LogicalName>
+      <WithCulture>false</WithCulture>
+    </EmbeddedResource>
     <EmbeddedResource Include="..\docs\prompts\npc-emotion-enhancement.zh-CN.md">
       <LogicalName>A1IndexTTSMod.npc-emotion-enhancement.zh-CN.md</LogicalName>
       <WithCulture>false</WithCulture>

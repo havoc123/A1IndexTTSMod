@@ -1,12 +1,18 @@
 [CmdletBinding()]
 param(
     [string] $SevenZip = 'C:\Program Files\7-Zip\7z.exe',
-    [string] $OutputRoot = (Join-Path (Split-Path -Parent $PSScriptRoot) 'dist\A1IndexTTSMod-v0.7.3-cosy-complete-win64'),
-    [string] $SevenZipVolumeSize = '1540m'
+    [string] $OutputRoot = '',
+    [string] $SevenZipVolumeSize = '1540m',
+    [switch] $SplitModel
 )
 
 $ErrorActionPreference = 'Stop'
 $project = Split-Path -Parent $PSScriptRoot
+$version = ([xml](Get-Content -LiteralPath (Join-Path $project 'src\A1IndexTTSMod.csproj') -Raw)).Project.PropertyGroup.Version | Where-Object { $_ } | Select-Object -First 1
+if (-not $OutputRoot) {
+    $edition = if ($SplitModel) { 'split' } else { 'complete' }
+    $OutputRoot = Join-Path $project "dist\A1IndexTTSMod-v$version-cosy-$edition-win64"
+}
 $output = [IO.Path]::GetFullPath($OutputRoot)
 $archiveBase = Split-Path -Leaf $output
 $archive = Join-Path $output "$archiveBase.7z"
@@ -16,6 +22,8 @@ $loaderZip = Join-Path $project '.cache\6.0.0-be.788+5b766a3\BepInEx-Unity.IL2CP
 $runtime = Join-Path $project '.cache\audiocpp\runtime'
 $cosyModel = Join-Path $project '.cache\audiocpp\models\CosyVoice3-GGUF\cosyvoice3-q8_0.gguf'
 $game = 'E:\Program Files (x86)\Steam\steamapps\common\A1'
+if ([Reflection.AssemblyName]::GetAssemblyName((Join-Path $project 'src\bin\Release\net6.0\A1IndexTTSMod.dll')).Version.ToString() -ne "$version.0") { throw 'Built plugin does not match source version.' }
+if ($SplitModel) { $archive = Join-Path $output "A1IndexTTSMod-v$version-cosy-program-win64.7z" }
 
 foreach ($path in @($SevenZip, $loaderZip, $runtime, $cosyModel, (Join-Path $project '.cache\bepinex\2022.3.43.zip'), (Join-Path $project '.cache\doorstop\winhttp.dll'), (Join-Path $project 'references\npcs\npc_id_name.csv'), (Join-Path $game 'dotnet\coreclr.dll'))) {
     if (-not (Test-Path -LiteralPath $path)) { throw "Required local asset is missing: $path" }
@@ -44,7 +52,7 @@ try {
     $pluginDir = Join-Path $plugins 'A1IndexTTSMod'
     New-Item -ItemType Directory -Path $models, $audioRuntime, $references, $scripts, $pluginDir, (Join-Path $mod 'config'), (Join-Path $payload 'BepInEx\config') -Force | Out-Null
 
-    Copy-Item -LiteralPath $cosyModel -Destination (Join-Path $models 'cosyvoice3-q8_0.gguf')
+    if (-not $SplitModel) { Copy-Item -LiteralPath $cosyModel -Destination (Join-Path $models 'cosyvoice3-q8_0.gguf') }
     Copy-Item -LiteralPath (Join-Path $project 'src\bin\Release\net6.0\A1IndexTTSMod.dll') -Destination $pluginDir
     foreach ($dependency in @('NAudio.Core.dll', 'NAudio.Wasapi.dll', 'NAudio.WinMM.dll')) {
         Copy-Item -LiteralPath (Join-Path $project "src\bin\Release\net6.0\$dependency") -Destination $pluginDir
@@ -73,7 +81,7 @@ try {
     Copy-Item -LiteralPath (Join-Path $runtime 'LICENSE') -Destination $audioRuntime
 
     $pluginConfig = @'
-## Settings file for A1IndexTTSMod v0.7.3 CosyVoice complete edition
+## Settings file for A1IndexTTSMod CosyVoice edition
 ## Plugin GUID: org.a1indextts.mod
 
 [Stage2A]
@@ -109,7 +117,8 @@ GpuDevice = 0
     Copy-Item -LiteralPath (Join-Path $project 'third_party\CosyVoice-LICENSE.txt') -Destination (Join-Path $packageRoot 'third_party-CosyVoice-LICENSE.txt')
     Copy-Item -LiteralPath (Join-Path $project '.state\unitydoorstop-v4.5.0-src\UnityDoorstop-4.5.0\LICENSE') -Destination (Join-Path $packageRoot 'third_party-UnityDoorstop-LICENSE.txt')
     Copy-Item -LiteralPath (Join-Path $project 'packaging\THIRD_PARTY_COSY_COMPLETE.md') -Destination (Join-Path $packageRoot 'THIRD_PARTY_NOTICES.md')
-    Copy-Item -LiteralPath (Join-Path $project 'packaging\INSTALL-COSY-COMPLETE.md') -Destination (Join-Path $packageRoot '安装说明.md')
+    $installDoc = if ($SplitModel) { 'INSTALL-COSY-SPLIT.md' } else { 'INSTALL-COSY-COMPLETE.md' }
+    Copy-Item -LiteralPath (Join-Path $project "packaging\$installDoc") -Destination (Join-Path $packageRoot '安装说明.md')
     @'
 @echo off
 setlocal
@@ -120,6 +129,10 @@ if not "%RESULT%"=="0" echo Installation failed. Error code: %RESULT%
 pause
 exit /b %RESULT%
 '@ | Set-Content -LiteralPath (Join-Path $packageRoot '安装CosyVoice语音MOD.bat') -Encoding ascii
+    if ($SplitModel) {
+        $bat = Join-Path $packageRoot '安装CosyVoice语音MOD.bat'
+        (Get-Content -LiteralPath $bat -Raw).Replace('-GamePath "%~1"', '-AllowMissingModel -GamePath "%~1"') | Set-Content -LiteralPath $bat -Encoding ascii
+    }
 
     $manifest = Get-ChildItem -LiteralPath $payload -File -Recurse | ForEach-Object {
         [IO.Path]::GetRelativePath($packageRoot, $_.FullName).Replace('\', '/')
@@ -131,15 +144,57 @@ exit /b %RESULT%
     $manifest | Set-Content -LiteralPath (Join-Path $packageRoot 'PACKAGE-MANIFEST.txt') -Encoding utf8
     Push-Location $packageRoot
     try {
-        & $SevenZip a -t7z -mx=5 -mmt=on "-v$SevenZipVolumeSize" $archive * | Out-Null
+        $archiveOptions = @('a', '-t7z', '-mx=5', '-mmt=on')
+        if (-not $SplitModel) { $archiveOptions += "-v$SevenZipVolumeSize" }
+        & $SevenZip @archiveOptions $archive * | Out-Null
         if ($LASTEXITCODE -ne 0) { throw "7-Zip packaging failed: $LASTEXITCODE" }
     } finally { Pop-Location }
     Copy-Item -LiteralPath (Join-Path $packageRoot 'PACKAGE-MANIFEST.txt') -Destination (Join-Path $output 'PACKAGE-MANIFEST.txt')
     Copy-Item -LiteralPath (Join-Path $packageRoot '安装说明.md') -Destination (Join-Path $output '安装说明.md')
+    if (-not ([IO.Path]::GetFullPath($stage).StartsWith($output.TrimEnd('\') + '\', [StringComparison]::OrdinalIgnoreCase))) { throw 'Unsafe staging cleanup path.' }
     Remove-Item -LiteralPath $stage -Recurse -Force
 
-    $volumes = @(Get-ChildItem -LiteralPath $output -File -Filter "$archiveBase.7z.*" | Sort-Object Name)
-    if ($volumes.Count -ne 2) { throw "Expected exactly .001/.002 volume files, got $($volumes.Count)." }
+    if ($SplitModel) {
+        $modelStage = Join-Path $output 'model-stage'
+        $modelPayload = Join-Path $modelStage 'A1\A1IndexTTSMod\.cache\audiocpp\models\CosyVoice3-GGUF'
+        New-Item -ItemType Directory -Path $modelPayload -Force | Out-Null
+        Copy-Item -LiteralPath $cosyModel -Destination $modelPayload
+        $modelHash = (Get-FileHash -LiteralPath $cosyModel -Algorithm SHA256).Hash.ToLowerInvariant()
+        $modelHash | Set-Content -LiteralPath (Join-Path $modelStage 'MODEL-SHA256.txt') -Encoding ascii
+        foreach ($name in @('LICENSE', 'third_party-CosyVoice-LICENSE.txt', 'THIRD_PARTY_NOTICES.md', '安装说明.md')) {
+            $source = switch ($name) {
+                'LICENSE' { Join-Path $project 'LICENSE' }
+                'third_party-CosyVoice-LICENSE.txt' { Join-Path $project 'third_party\CosyVoice-LICENSE.txt' }
+                'THIRD_PARTY_NOTICES.md' { Join-Path $project 'packaging\THIRD_PARTY_COSY_COMPLETE.md' }
+                '安装说明.md' { Join-Path $project 'packaging\INSTALL-COSY-SPLIT.md' }
+            }
+            Copy-Item -LiteralPath $source -Destination (Join-Path $modelStage $name)
+        }
+        Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'Install-CosyModel.ps1') -Destination $modelStage
+        @'
+@echo off
+setlocal
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0Install-CosyModel.ps1" -GamePath "%~1"
+set "RESULT=%ERRORLEVEL%"
+echo.
+if not "%RESULT%"=="0" echo Installation failed. Error code: %RESULT%
+pause
+exit /b %RESULT%
+'@ | Set-Content -LiteralPath (Join-Path $modelStage '安装CosyVoice模型.bat') -Encoding ascii
+        $modelArchive = Join-Path $output 'CosyVoice3-q8_0-model-win64.7z'
+        Push-Location $modelStage
+        try {
+            & $SevenZip a -t7z -mx=5 -mmt=on $modelArchive * | Out-Null
+            if ($LASTEXITCODE -ne 0) { throw "Model packaging failed: $LASTEXITCODE" }
+        } finally { Pop-Location }
+        Copy-Item -LiteralPath (Join-Path $modelStage 'MODEL-SHA256.txt') -Destination $output
+        if (-not ([IO.Path]::GetFullPath($modelStage).StartsWith($output.TrimEnd('\') + '\', [StringComparison]::OrdinalIgnoreCase))) { throw 'Unsafe model staging cleanup path.' }
+        Remove-Item -LiteralPath $modelStage -Recurse -Force
+    }
+
+    $pattern = if ($SplitModel) { '*.7z' } else { "$archiveBase.7z.*" }
+    $volumes = @(Get-ChildItem -LiteralPath $output -File -Filter $pattern | Sort-Object Name)
+    if ($volumes.Count -ne 2) { throw "Expected two archive files/volumes, got $($volumes.Count)." }
     if (@($volumes | Where-Object { $_.Length -ge 4GB }).Count) { throw 'Each archive volume must be smaller than 4 GB.' }
     $sumFile = Join-Path $output "SHA256SUMS-$archiveBase.txt"
     $volumes | ForEach-Object {

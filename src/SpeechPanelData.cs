@@ -13,7 +13,9 @@ internal sealed class SpeechPanelTurn
     public string? VoiceStyleJson { get; set; }
     public string VoiceStyleStatus { get; set; } = "未观测";
     public string? VoiceStyleSource { get; set; }
+    public string? PresetVoiceStyleMatch { get; init; }
     public string? VoiceStyleFailureReason { get; set; }
+    public bool VoiceStyleRequired { get; init; }
     public string PromptStatus { get; set; } = "本轮提示扩展未观测";
     public string? OutputSchema { get; set; }
     public string? PromptAddition { get; set; }
@@ -51,7 +53,8 @@ internal static class SpeechPanelData
 
     internal static SpeechPanelTurn RecordReply(string identity, string npcKey, string displayText,
         string spokenText, string? emotion, VoiceStyle? style, string? actualRaw,
-        string voiceStyleStatus = "未观测", string? voiceStyleSource = null, string? voiceStyleFailureReason = null)
+        string voiceStyleStatus = "未观测", string? voiceStyleSource = null, string? voiceStyleFailureReason = null,
+        string? presetVoiceStyleMatch = null)
     {
         lock (Gate)
         {
@@ -67,10 +70,12 @@ internal static class SpeechPanelData
                 VoiceStyleJson = style == null ? null : JsonSerializer.Serialize(style),
                 VoiceStyleStatus = voiceStyleStatus,
                 VoiceStyleSource = voiceStyleSource,
+                PresetVoiceStyleMatch = presetVoiceStyleMatch,
                 VoiceStyleFailureReason = voiceStyleFailureReason,
-                PromptStatus = _promptStatus,
-                OutputSchema = _schema,
-                PromptAddition = _promptAddition,
+                VoiceStyleRequired = presetVoiceStyleMatch == null && _promptAddition != null && !string.IsNullOrWhiteSpace(spokenText),
+                PromptStatus = presetVoiceStyleMatch != null ? "匹配离线预设情感库；本条未依赖模型风格生成" : _promptStatus,
+                OutputSchema = presetVoiceStyleMatch != null ? null : _schema,
+                PromptAddition = presetVoiceStyleMatch != null ? null : _promptAddition,
                 ActualReplyJson = Limit(actualRaw, 20000)
             };
             Turns.AddFirst(turn);
@@ -106,7 +111,9 @@ internal static class SpeechPanelData
                 VoiceStyleJson = source.VoiceStyleJson,
                 VoiceStyleStatus = source.VoiceStyleStatus,
                 VoiceStyleSource = source.VoiceStyleSource,
+                PresetVoiceStyleMatch = source.PresetVoiceStyleMatch,
                 VoiceStyleFailureReason = source.VoiceStyleFailureReason,
+                VoiceStyleRequired = source.VoiceStyleRequired,
                 PromptStatus = source.PromptStatus,
                 OutputSchema = source.OutputSchema,
                 PromptAddition = source.PromptAddition,
