@@ -70,3 +70,26 @@ BepInEx/plugins/
 ## 升级与卸载
 
 升级前退出游戏和 TTS 控制台，备份自己修改过的 `config/emotions.json` 与新增 WAV，再以新版包替换此 MOD 管理的文件。不要覆盖其他 MOD 的 BepInEx 文件。卸载时退出游戏后删除 `BepInEx/plugins/A1IndexTTSMod` 和游戏根目录 `A1IndexTTSMod`；如 BepInEx 由其他 MOD 共用，请保留它。`.state` 是本地运行数据，删除 MOD 目录时也会被删除。
+
+## 中文流式语音输入（当前源码分支）
+
+退出游戏并等待 Steam 云同步完成，构建及安装插件后，按需要安装以下模型。两者可以同时安装，运行时只加载所选的一个：
+
+```powershell
+.\scripts\Install-ASR.ps1 -GameRoot 'E:\你的游戏目录' -Profile lightweight14m
+.\scripts\Install-ASR.ps1 -GameRoot 'E:\你的游戏目录' -Profile accurate160m
+```
+
+轻量档为现有 14M FP32 中文流式模型，三份权重约 55.6 MB；准确档为 2025-06-30 的约 160M FP16 中文流式模型，三份权重约 314.1 MB。这些是磁盘大小。源码新装仍默认轻量；在“语音设置 → 语音输入 → 识别模型”选择已安装的准确档。准备、录音与收尾期间禁止切换。启用后在插件启动时按已保存的档位异步加载、预热，再显示就绪；不等待首次点击麦克风。预热期间仍可键盘输入。空闲、对话关闭和切后台均保留模型；只有关闭 ASR、切换模型或退出才释放。麦克风只在主动开始录音后采集。
+
+默认读取 Windows 系统默认麦克风，WASAPI 输入转为单声道 16 kHz。点击发送键左侧麦克风开始，录音时图标持续高亮，再点停止。录音中临时文字可能调整；停止后排空采集样本、完成尾部解码和整段复核，最终草稿可手工编辑并发送。录音时直接点击发送，会先结束录音，等待终稿后按此次点击发送一次；再点麦克风或达到 60 秒上限只停止并保留草稿。取消、切换 NPC 或手动编辑会撤销待发送操作。设置页的测试不写入 NPC 草稿。
+
+两个模型使用 sherpa-onnx 1.13.8 / ONNX Runtime CUDA、4 路候选搜索。兼容的 NVIDIA 驱动和 CUDA 12.x 运行库须已安装；安装器将官方 sherpa CUDA 运行库和 NVIDIA cuDNN 9.14 CUDA 12 DLL 放在独立 `A1IndexTTSMod\asr\runtime`。全部权重逐文件检查字节数与 SHA256，新模型固定仓库 revision；验证完整后替换模型目录。下载失败不覆盖旧模型。依赖缺失会显示错误。安装后离线识别。UI 的“CUDA 请求”表示配置，完整算子放置与游戏帧时间仍需单独测量。
+
+当前源码分支另有原生热词筛选修复：让热词分数参与候选筛选，并在停止录音时撤回未完成词组的加分。安装基础 ASR 后，使用装有 CMake 和 Visual Studio C++ 工具的登录用户终端，在游戏关闭时执行 `scripts/Build-AsrNative.ps1` 和 `scripts/Install-AsrNative.ps1 -GameRoot 'E:\你的游戏目录'`。两档分别适配权重；v2 在说话期间使用 4 路候选，结束后复用同一识别器，以 8 路候选重新解码完整录音。若复核丢失流式终稿中已完整出现的热词，保留流式终稿；不做强制错字替换。未安装 v2 时只完成原有流式收尾。安装器保留旧 DLL 备份。步骤、离线数据与限制见 [原生修复说明](native/asr/README.md) 和 [正确率对照](docs/ASR-CONTEXTUAL-PRUNING-VALIDATION-20261009.md)。
+
+游戏热词来自仓库中的游戏 NPC 名称表，94 个词及来源记录由 `scripts/Generate-AsrHotwords.ps1` 生成；`Install-Plugin.ps1` 同步两个图标和热词配置。修改 `A1IndexTTSMod\config\asr-hotwords.zh-CN.txt` 后，在识别器重新加载时生效。两档目前均可编码并启用全部 94 个游戏词，包括苏倾盏、焚天宗。准确档新增匹配且校验 SHA256 的 `bpe.model`，安装旧版准确档的用户需要重新运行一次上面的准确档安装命令；不需安装 Python 或额外推理模型。热词按完整 token 路径参与流式解码，准确档同时覆盖句首和句中，未做识别后字符串替换。每档独立生成 `.state\asr-hotwords\<档位>\validated.txt`、`skipped.txt`、`encoded.tsv`，分别用于查看启用词、跳过词和实际编码。准确档另生成供原生接口使用的 token 别名与路径文件。生僻字路径使用较强的权重补偿，并按 token 长度分摊；成功加载不保证每次识别正确，具体离线正负对照见验证记录。
+
+准确档权重许可与运行库许可分别记录，参见 [第三方说明](THIRD_PARTY_NOTICES.md)。当前是源代码分支及本地安装，现有 Release 安装包不会随源码自动升级。实测范围见 [ASR 验证记录](docs/ASR-QUALITY-VALIDATION-20261009.md)。
+
+本次常驻资源实测、启动/发送回归和复核限制见 [启动、发送与整段复核验证](docs/ASR-STARTUP-SEND-REVIEW-20261009.md)。

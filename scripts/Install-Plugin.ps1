@@ -11,10 +11,12 @@ if (-not $BepInExDir) { $BepInExDir = Join-Path $GameRoot 'BepInEx' }
 $BepInExDir = [IO.Path]::GetFullPath($BepInExDir)
 $PluginSource = Join-Path $ProjectRoot 'src\bin\Release\net6.0\A1IndexTTSMod.dll'
 $PluginTarget = Join-Path $BepInExDir 'plugins\A1IndexTTSMod\A1IndexTTSMod.dll'
-$DependencyNames = @('NAudio.Core.dll', 'NAudio.Wasapi.dll', 'NAudio.WinMM.dll')
+$DependencyNames = @('NAudio.Core.dll', 'NAudio.Wasapi.dll', 'NAudio.WinMM.dll', 'sherpa-onnx.dll')
 $SharedDependencyNames = @('LocalModManager.Abstractions.dll')
 $RuntimeScriptNames = @('Run-AudioCppForGame.ps1', 'Start-AudioCpp.ps1', 'Stop-AudioCpp.ps1')
 $RuntimeScriptsTarget = Join-Path $GameRoot 'A1IndexTTSMod\scripts'
+$AsrAssetsSource = Join-Path $ProjectRoot 'assets\asr'
+$AsrAssetsTarget = Join-Path $GameRoot 'A1IndexTTSMod\assets\asr'
 $StateRoot = Join-Path $ProjectRoot '.state'
 $StatePath = Join-Path $StateRoot 'plugin-install.json'
 
@@ -29,6 +31,7 @@ foreach ($name in $RuntimeScriptNames) {
         throw "Plugin runtime script is missing: $name"
     }
 }
+if (-not (Test-Path -LiteralPath $AsrAssetsSource)) { throw "ASR button assets are missing: $AsrAssetsSource" }
 
 if (Test-Path -LiteralPath $PluginTarget) {
     if (-not (Test-Path -LiteralPath $StatePath)) {
@@ -65,6 +68,13 @@ New-Item -ItemType Directory -Path $StateRoot -Force | Out-Null
 New-Item -ItemType Directory -Path $RuntimeScriptsTarget -Force | Out-Null
 foreach ($name in $RuntimeScriptNames) {
     Copy-Item -LiteralPath (Join-Path $PSScriptRoot $name) -Destination (Join-Path $RuntimeScriptsTarget $name) -Force
+}
+New-Item -ItemType Directory -Path $AsrAssetsTarget -Force | Out-Null
+Copy-Item -Path (Join-Path $AsrAssetsSource '*') -Destination $AsrAssetsTarget -Force
+$asrConfigTarget = Join-Path $GameRoot 'A1IndexTTSMod\config'
+New-Item -ItemType Directory -Path $asrConfigTarget -Force | Out-Null
+foreach ($name in @('asr-hotwords.zh-CN.txt','asr-hotwords.sources.json')) {
+    Copy-Item -LiteralPath (Join-Path $ProjectRoot ('config\' + $name)) -Destination (Join-Path $asrConfigTarget $name) -Force
 }
 [pscustomobject]@{
     path = [IO.Path]::GetRelativePath($GameRoot, $PluginTarget)

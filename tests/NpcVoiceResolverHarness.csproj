@@ -9,6 +9,7 @@
     <BepInExCoreDir Condition="'$(BepInExCoreDir)' == ''">E:\Program Files (x86)\Steam\steamapps\common\A1\BepInEx\core</BepInExCoreDir>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="AsrLifecycle/**/*.cs" />
     <Compile Include="..\src\NpcVoiceResolver.cs" Link="NpcVoiceResolver.cs" />
     <Compile Include="..\src\VoiceStyle.cs" Link="VoiceStyle.cs" />
     <Compile Include="..\src\StyleEnvelopeCodec.cs" Link="StyleEnvelopeCodec.cs" />
@@ -16,6 +17,12 @@
     <Compile Include="..\src\SpeechTextFilter.cs" Link="SpeechTextFilter.cs" />
     <Compile Include="..\src\PcmVolumeWaveProvider.cs" Link="PcmVolumeWaveProvider.cs" />
     <Compile Include="..\src\PromptEnhancer.cs" Link="PromptEnhancer.cs" />
+    <Compile Include="..\src\PresetVoiceStyles.cs" Link="PresetVoiceStyles.cs" />
+    <Compile Include="..\src\PersuadeSpeechPolicy.cs" Link="PersuadeSpeechPolicy.cs" />
+    <EmbeddedResource Include="..\config\preset-voice-styles.zh-CN.json">
+      <LogicalName>A1IndexTTSMod.preset-voice-styles.zh-CN.json</LogicalName>
+      <WithCulture>false</WithCulture>
+    </EmbeddedResource>
     <EmbeddedResource Include="..\docs\prompts\npc-emotion-enhancement.zh-CN.md">
       <LogicalName>A1IndexTTSMod.npc-emotion-enhancement.zh-CN.md</LogicalName>
       <WithCulture>false</WithCulture>

@@ -1,0 +1,572 @@
+{
+  "schema": 1,
+  "generator": "scripts/Generate-AsrHotwords.ps1",
+  "sourceSha256": "57edad2ed161f8587d287fa56ab14fee8d3e55f2f84d2392a0247e4cf2099a4e",
+  "count": 94,
+  "entries": [
+    {
+      "word": "焚天宗",
+      "kind": "sect",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "111"
+    },
+    {
+      "word": "镇岳宗",
+      "kind": "sect",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "121"
+    },
+    {
+      "word": "苏倾盏",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "100000"
+    },
+    {
+      "word": "纪澜之",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "100111"
+    },
+    {
+      "word": "纪小蝶",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "100121"
+    },
+    {
+      "word": "江楚弦",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "100211"
+    },
+    {
+      "word": "章籽梦",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "100221"
+    },
+    {
+      "word": "窦苞",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "103112"
+    },
+    {
+      "word": "莲心",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "110201"
+    },
+    {
+      "word": "邵韵秋",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "110202"
+    },
+    {
+      "word": "柳婵",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "110402"
+    },
+    {
+      "word": "念乔",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "150101"
+    },
+    {
+      "word": "陆浩元",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "190012"
+    },
+    {
+      "word": "姜玉衡",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "190013"
+    },
+    {
+      "word": "云嫣",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "190401"
+    },
+    {
+      "word": "应秉规",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "190602"
+    },
+    {
+      "word": "桑烬慈",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "191012"
+    },
+    {
+      "word": "颜执圭",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "192602"
+    },
+    {
+      "word": "芊儿",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "193401"
+    },
+    {
+      "word": "蔺照檀",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "193602"
+    },
+    {
+      "word": "沈桐桐",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "194401"
+    },
+    {
+      "word": "洛衡真",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "194602"
+    },
+    {
+      "word": "赖三刀",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "4000001"
+    },
+    {
+      "word": "柳秀娘",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "100001"
+    },
+    {
+      "word": "苏眠烟",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "100003"
+    },
+    {
+      "word": "王小二",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "100004"
+    },
+    {
+      "word": "纪小花",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "100131"
+    },
+    {
+      "word": "咪咪",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "100231"
+    },
+    {
+      "word": "叶栖露",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "100303"
+    },
+    {
+      "word": "寒玥",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "100304"
+    },
+    {
+      "word": "玄尊",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "100305"
+    },
+    {
+      "word": "杜老栓",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "100411"
+    },
+    {
+      "word": "小皮凳",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "100421"
+    },
+    {
+      "word": "贾道人",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "100431"
+    },
+    {
+      "word": "豹子眼",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "100511"
+    },
+    {
+      "word": "福嫂",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "100521"
+    },
+    {
+      "word": "李铁勾",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "100531"
+    },
+    {
+      "word": "路人甲",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "102011"
+    },
+    {
+      "word": "泡泡",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "102101"
+    },
+    {
+      "word": "牛姐",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "102102"
+    },
+    {
+      "word": "夏天的雨",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "102201"
+    },
+    {
+      "word": "路人丙",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "102301"
+    },
+    {
+      "word": "金毛毛",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "102401"
+    },
+    {
+      "word": "张静宜",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "102411"
+    },
+    {
+      "word": "张静仪",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "102412"
+    },
+    {
+      "word": "可哥",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "102501"
+    },
+    {
+      "word": "路人乙",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "102601"
+    },
+    {
+      "word": "面面",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "102701"
+    },
+    {
+      "word": "芷儿",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "103011"
+    },
+    {
+      "word": "慕云栖",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "103111"
+    },
+    {
+      "word": "谢长风",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "110031"
+    },
+    {
+      "word": "谢锦雪",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "110032"
+    },
+    {
+      "word": "秦誉",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "110033"
+    },
+    {
+      "word": "雷刚",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "110061"
+    },
+    {
+      "word": "商挽",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "110062"
+    },
+    {
+      "word": "任赤炎",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "110063"
+    },
+    {
+      "word": "欧冶青",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "110071"
+    },
+    {
+      "word": "石老虬",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "110072"
+    },
+    {
+      "word": "秦慕和",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "110081"
+    },
+    {
+      "word": "青禾",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "110082"
+    },
+    {
+      "word": "药师岩",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "110083"
+    },
+    {
+      "word": "顾文远",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "110203"
+    },
+    {
+      "word": "陈沽酒",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "110301"
+    },
+    {
+      "word": "许游方",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "110302"
+    },
+    {
+      "word": "岑鸣舟",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "110303"
+    },
+    {
+      "word": "章万全",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "110401"
+    },
+    {
+      "word": "叶知秋",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "110501"
+    },
+    {
+      "word": "阿檀",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "110502"
+    },
+    {
+      "word": "乌岚",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "140001"
+    },
+    {
+      "word": "索图",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "140002"
+    },
+    {
+      "word": "巴格",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "140003"
+    },
+    {
+      "word": "索雅",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "140041"
+    },
+    {
+      "word": "阿古娜",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "140042"
+    },
+    {
+      "word": "霜角",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "140043"
+    },
+    {
+      "word": "托勒",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "140201"
+    },
+    {
+      "word": "霜鬃牦鹿",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "140202"
+    },
+    {
+      "word": "沈秋娘",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "150041"
+    },
+    {
+      "word": "竹生",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "150042"
+    },
+    {
+      "word": "乔叔平",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "150043"
+    },
+    {
+      "word": "霍青蒿",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "150051"
+    },
+    {
+      "word": "白豆蔻",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "150052"
+    },
+    {
+      "word": "阮荷",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "150053"
+    },
+    {
+      "word": "罗栈头",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "150061"
+    },
+    {
+      "word": "卢回春",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "150071"
+    },
+    {
+      "word": "许阿禾",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "150072"
+    },
+    {
+      "word": "许怀仁",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "150081"
+    },
+    {
+      "word": "顾听鹤",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "150082"
+    },
+    {
+      "word": "陶山亭",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "150091"
+    },
+    {
+      "word": "苗砺川",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "160041"
+    },
+    {
+      "word": "乌茉",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "160042"
+    },
+    {
+      "word": "骆逐风",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "160051"
+    },
+    {
+      "word": "苏枣儿",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "160052"
+    },
+    {
+      "word": "白蘅生",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "160061"
+    },
+    {
+      "word": "裴辞归",
+      "kind": "npc",
+      "source": "references/npcs/npc_id_name.csv",
+      "npcId": "160062"
+    }
+  ]
+}

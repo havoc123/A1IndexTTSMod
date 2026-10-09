@@ -19,6 +19,49 @@ void Assert(bool condition, string message)
     if (!condition) throw new Exception(message);
 }
 
+var presetConfig = new BepInEx.Configuration.ConfigFile(Path.Combine(Path.GetTempPath(), "a1-preset-harness.cfg"), false);
+var presetEnabled = presetConfig.Bind("test", "enabled", true);
+PresetVoiceStyles.Initialize(new BepInEx.Logging.ManualLogSource("preset-harness"), presetEnabled);
+const string persuadeOpening = "我手里的灵石够过一阵了，可又有一桩小活舍不得推。你若邀我一起练功，我却说“赚完这单再来”，你信不信我真能停？";
+var openingStyle = PresetVoiceStyles.Resolve("npc:150101", persuadeOpening, "15010101");
+Assert(openingStyle?.Source == "persuade_opening", "persuasion opening has no exact NPC-specific preset performance");
+Assert(PresetVoiceStyles.Resolve("npc:100000", persuadeOpening) == null, "persuasion preset crossed NPC identities");
+Assert(PersuadeSpeechPolicy.Resolve("npc:150101", persuadeOpening, null, null, true, "15010101")?.Preset?.Source == "persuade_opening",
+    "NPC-only text opening was not admitted");
+Assert(PersuadeSpeechPolicy.Resolve("npc:150101", persuadeOpening, null, null, false, "15010101") == null,
+    "player/general callback admitted a text-only opening");
+Assert(PersuadeSpeechPolicy.Resolve("npc:150101", persuadeOpening, null, "system", true, "15010101") == null,
+    "system message entered persuasion speech");
+Assert(PersuadeSpeechPolicy.Resolve("npc:150101", "无匹配预设的普通文字", null, null, true, "15010101") == null,
+    "unmatched text-only message entered persuasion speech");
+Assert(PersuadeSpeechPolicy.Resolve("npc:150101", persuadeOpening, null, null, true, "wrong-topic") == null,
+    "text-only opening crossed persuasion topic context");
+Assert(PersuadeSpeechPolicy.Resolve("npc:150101", "正常文字", "{\"content\":42}", null, false, null) == null,
+    "non-string content was admitted as an NPC reply");
+const string missingStyleReply = """{"content":"（耳尖悄悄红了，故意板着脸瞪你）那我要是真把赚灵石的事都推给你，你可不许嫌我麻烦！","emotion":"smile","control":"none","intent":{"persuasion_delta":15},"mind":"防线全垮了"}""";
+var missingStyle = PersuadeSpeechPolicy.Resolve("npc:150101", JsonDocument.Parse(missingStyleReply).RootElement.GetProperty("content").GetString(),
+    missingStyleReply, null, false, "15010101");
+Assert(missingStyle != null && missingStyle.Emotion == "smile" && missingStyle.Payload?.VoiceStyle == null &&
+    SpeechTextFilter.RemoveParentheticals(missingStyle.Text) == "那我要是真把赚灵石的事都推给你，你可不许嫌我麻烦！",
+    "structured NPC reply without style was dropped or fabricated a captured style");
+presetEnabled.Value = false;
+Assert(PersuadeSpeechPolicy.Resolve("npc:150101", persuadeOpening, null, null, true, "15010101") == null,
+    "disabled preset library still admitted text-only openings");
+Assert(PersuadeSpeechPolicy.Resolve("npc:150101", missingStyle.Text, missingStyleReply, null, false, "15010101") != null,
+    "disabled preset library blocked structured AI replies");
+presetEnabled.Value = true;
+using (var resource = typeof(PresetVoiceStyles).Assembly.GetManifestResourceStream("A1IndexTTSMod.preset-voice-styles.zh-CN.json")!)
+using (var library = JsonDocument.Parse(resource))
+{
+    var persuasionEntries = library.RootElement.GetProperty("entries").EnumerateArray()
+        .Where(e => e.GetProperty("source").GetString() == "persuade_opening").ToArray();
+    Assert(persuasionEntries.Length == 131, "persuasion source table is only partly covered");
+    foreach (var entry in persuasionEntries.Where(e => e.GetProperty("speech_policy").GetString() == "speak"))
+        Assert(PresetVoiceStyles.Resolve("npc:" + entry.GetProperty("npc_id").GetInt32(),
+            entry.GetProperty("text").GetString()!, entry.GetProperty("source_id").GetString())?.Source == "persuade_opening",
+            "a speakable persuasion opening cannot resolve its performance");
+}
+
 var harmonyPath = Path.GetDirectoryName(typeof(Harmony).Assembly.Location)!;
 AssemblyLoadContext.Default.Resolving += (_, name) =>
 {
@@ -119,6 +162,36 @@ var nullStyle = NpcReplyPayload.Separate("""{"content":"台词","voice_style":nu
 Assert(absentStyle.VoiceStyleStatus == "absent" && nullStyle.VoiceStyleStatus == "null", "absent and explicit-null voice_style were conflated");
 
 var frameStyle = new VoiceStyle(new[] { "压低的关切" }, "声音放轻，语速稍缓", 0.3);
+var reversedScreenshotText = """那你凑近点，我只告诉你一个人</a1tts_v1>{"emotion_tags":["撒娇","期待"],"delivery":"语速稍慢，声音娇软，尾音带着试探的甜意","intensity":0.6}""";
+var reversedScreenshot = StyleEnvelopeCodec.Decode(reversedScreenshotText);
+Assert(reversedScreenshot.Content == "那你凑近点，我只告诉你一个人", "screenshot closing-tag-prefixed metadata leaked into NPC dialogue");
+Assert(SpeechTextFilter.RemoveParentheticals(reversedScreenshotText) == "那你凑近点，我只告诉你一个人", "screenshot malformed style leaked into TTS text");
+Assert(reversedScreenshot.Style?.EmotionTags.SequenceEqual(new[] { "撒娇", "期待" }) == true, "screenshot recoverable voice style was lost");
+var reversedScreenshotRaw = JsonSerializer.Serialize(new { content = reversedScreenshotText, emotion = "happy", control = "none" });
+var reversedSeparated = NpcReplyPayload.Separate(reversedScreenshotRaw)!;
+using (var reversedGame = JsonDocument.Parse(reversedSeparated.GameJson))
+    Assert(reversedGame.RootElement.GetProperty("content").GetString() == "那你凑近点，我只告诉你一个人" &&
+        reversedGame.RootElement.GetProperty("emotion").GetString() == "happy" && reversedGame.RootElement.GetProperty("control").GetString() == "none",
+        "screenshot metadata was not stripped at the game payload boundary or game fields changed");
+Assert(reversedSeparated.VoiceStyle != null, "screenshot voice style was not carried separately to TTS");
+var repairedClosed = StyleEnvelopeCodec.Decode(reversedScreenshotText + StyleEnvelopeCodec.CloseTag);
+Assert(repairedClosed.Style != null && repairedClosed.Content == reversedScreenshot.Content, "closing-tag-prefixed frame with an end tag did not recover");
+var repairedOrdered = StyleEnvelopeCodec.Decode("台词</a1tts_v1>{\"delivery\":\"轻声说，停在\\\"这里}\\\"\",\"intensity\":0.2,\"emotion_tags\":[\"平静\"]}");
+Assert(repairedOrdered.Style != null && repairedOrdered.Content == "台词", "property order, escaped quotes or JSON string braces broke recovery");
+var repairedFence = StyleEnvelopeCodec.Decode("台词</a1tts_v1>```json\n{\"emotion_tags\":[\"平静\"],\"delivery\":\"轻声\",\"intensity\":0.2}\n```");
+Assert(repairedFence.Style != null && repairedFence.Content == "台词", "closing-tag-prefixed fenced metadata leaked");
+var repairedInvalid = StyleEnvelopeCodec.Decode("台词</a1tts_v1>{\"emotion_tags\":[\"平静\"],\"delivery\":\"轻声\",\"intensity\":2}");
+Assert(repairedInvalid.Style == null && repairedInvalid.Status == "invalid" && repairedInvalid.Content == "台词", "invalid recovered style was accepted or leaked");
+var repairedTruncated = StyleEnvelopeCodec.Decode("台词</a1tts_v1>{\"emotion_tags\":[\"平静\"");
+Assert(repairedTruncated.Status == "invalid" && repairedTruncated.Content == "台词", "truncated closing-tag-prefixed metadata leaked");
+var repairedTrailing = StyleEnvelopeCodec.Decode(reversedScreenshotText + "后面的对白");
+Assert(repairedTrailing.Status == "invalid" && repairedTrailing.Content == "那你凑近点，我只告诉你一个人后面的对白", "recovery swallowed actual trailing dialogue or accepted nonterminal style");
+var repairedDuplicate = StyleEnvelopeCodec.Decode(reversedScreenshotText + reversedScreenshotText[reversedScreenshotText.IndexOf(StyleEnvelopeCodec.CloseTag, StringComparison.Ordinal)..]);
+Assert(repairedDuplicate.Status == "invalid" && repairedDuplicate.Style == null && repairedDuplicate.Content == reversedScreenshot.Content, "duplicate malformed frames leaked or supplied a style");
+var repairedOversized = StyleEnvelopeCodec.Decode("台词</a1tts_v1>{\"emotion_tags\":[\"平静\"],\"delivery\":\"" + new string('长', StyleEnvelopeCodec.MaximumFrameLength) + "\",\"intensity\":0.2}");
+Assert(repairedOversized.FailureReason == "frame_too_long" && repairedOversized.Content == "台词", "recovered frame bypassed the length limit");
+var ordinaryJson = "普通对白</a1tts_v1>{\"answer\":\"保留这段 JSON\"}";
+Assert(StyleEnvelopeCodec.Decode(ordinaryJson).Content == ordinaryJson, "unrelated JSON after a literal closing tag was removed");
 var screenshotText = "怎么，答不出？ <a1tts_v1>{\"emotion_tags\":[\"略带调侃\",\"温和\"],\"delivery\":\"语速平稳，尾音带着点笑意\",\"intensity\":0.4}</a1tts_v1>";
 Assert(SpeechTextFilter.RemoveParentheticals(screenshotText) == "怎么，答不出？", "TTS filter leaked a content-carried voice-style frame into speech");
 var sourcePcm = new ByteArrayWaveProvider(new WaveFormat(24000, 16, 1), new byte[] { 0x00, 0x40, 0x00, 0xC0 });

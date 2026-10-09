@@ -28,6 +28,7 @@ internal static class SpeechMvp
     private static int _timeoutSeconds = 180;
     private static bool _enabled;
     private static bool _autoRead = true;
+    private static bool _asrRecording;
     private static int _volumePercent = 100;
     private static CancellationTokenSource? _pending;
     private static string? _pendingIdentity;
@@ -45,6 +46,24 @@ internal static class SpeechMvp
     public static FeaturePluginState State { get { lock (Gate) return _state; } }
     public static string StatusMessage { get { lock (Gate) return _statusMessage; } }
     public static bool IsFeatureEnabled { get { lock (Gate) return _enabled; } }
+
+    internal static void SetAsrRecording(bool recording)
+    {
+        var stop = false;
+        lock (Gate)
+        {
+            if (_asrRecording == recording) return;
+            _asrRecording = recording;
+            if (recording)
+            {
+                ++_generation;
+                try { _pending?.Cancel(); } catch (ObjectDisposedException) { }
+                _pending = null; _pendingIdentity = null; _pendingPlaybackStarted = false;
+                stop = true;
+            }
+        }
+        if (stop) StopPlayback();
+    }
 
     public static void SetAutoRead(bool enabled)
     {
@@ -285,7 +304,7 @@ internal static class SpeechMvp
             long generation;
             lock (Gate)
             {
-                if (!_enabled || _endpoint == null) return false;
+                if (!_enabled || _endpoint == null || _asrRecording) return false;
                 current = new CancellationTokenSource(TimeSpan.FromSeconds(_timeoutSeconds));
                 previous = _pending;
                 _pending = current;
@@ -310,7 +329,7 @@ internal static class SpeechMvp
 
     public static void OnNpcReply(string npcKey, string displayText, string? emotion, VoiceStyle? voiceStyle, string displayIdentity)
     {
-        if (!_enabled || _endpoint == null)
+        if (!_enabled || _asrRecording || _endpoint == null)
         {
             SpeechPanelData.UpdateTtsStatus(displayIdentity, "功能总开关关闭，未合成");
             return;
@@ -344,7 +363,7 @@ internal static class SpeechMvp
         var isStyleUpgrade = false;
         lock (Gate)
         {
-            if (!_enabled || !_autoRead || _endpoint == null) return;
+            if (!_enabled || _asrRecording || !_autoRead || _endpoint == null) return;
             if (string.IsNullOrWhiteSpace(displayIdentity)) return;
             if (!RecentDisplayIds.Add(displayIdentity))
             {

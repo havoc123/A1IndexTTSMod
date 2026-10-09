@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType><TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable><ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../src/StreamingAsr.cs" Link="StreamingAsr.cs" />
+    <Compile Include="../../src/AsrModelProfiles.cs" Link="AsrModelProfiles.cs" />
+    <Compile Include="../../src/AsrSendGate.cs" Link="AsrSendGate.cs" />
+    <Compile Include="../../src/AsrFinalSelection.cs" Link="AsrFinalSelection.cs" />
+    <Reference Include="NAudio.Core"><HintPath>../../src/bin/Release/net6.0/NAudio.Core.dll</HintPath></Reference>
+    <Reference Include="NAudio.Wasapi"><HintPath>../../src/bin/Release/net6.0/NAudio.Wasapi.dll</HintPath></Reference>
+    <Reference Include="NAudio.WinMM"><HintPath>../../src/bin/Release/net6.0/NAudio.WinMM.dll</HintPath></Reference>
+  </ItemGroup>
+</Project>

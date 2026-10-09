@@ -74,6 +74,33 @@ internal sealed class SpeechPanelUi : MonoBehaviour
     private static GUIStyle? _buttonStyle;
     private static GUIStyle? _primaryButtonStyle;
     private static GUIStyle? _tabStyle;
+    private static ConfigEntry<bool>? _asrEnabled;
+    private static ConfigEntry<string>? _asrDevice;
+    private static ConfigEntry<string>? _asrModel;
+    private GameObject? _micVisual;
+    private int _micSourceId;
+    private UnityEngine.UI.Image? _micImage;
+    private CanvasGroup? _submitGuard;
+    private UIButton? _submitButton;
+    private Il2CppSystem.Action? _submitOriginalClick, _submitWrappedClick;
+    private readonly AsrSendGate _asrSend = new();
+    private bool _wasFocused;
+    private TMPro.TMP_InputField? _layoutInput;
+    private RectTransform? _layoutInputRect;
+    private Vector2 _inputOffsetMax;
+    private float _inputReservedWidth;
+    private GameObject? _inputFeedback;
+    private UnityEngine.UI.Image[] _inputEdges = Array.Empty<UnityEngine.UI.Image>();
+    private TMPro.TextMeshProUGUI? _inputHint;
+    private static Texture2D? _micNormalTexture, _micHotTexture;
+    private static Sprite? _micNormalSprite, _micHotSprite;
+    private static TMPro.TMP_InputField? _asrInput;
+    private static string _asrOriginal = "", _asrExpected = "";
+    private static bool _asrWriting;
+    private static int _asrCaret;
+    private static int _asrSelectionStart, _asrSelectionEnd, _asrExpectedCaret;
+    private static List<(string Id, string Name)> _asrDevices = new();
+    private static DateTime _asrDevicesUpdated;
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
     private struct OpenFileName
@@ -125,9 +152,18 @@ internal sealed class SpeechPanelUi : MonoBehaviour
         _interfaceScale = interfaceScale;
         _lastTab = lastTab;
         _interfaceScale.Value = Mathf.Clamp(_interfaceScale.Value, 75, 175);
-        _lastTab.Value = Mathf.Clamp(_lastTab.Value, 0, 2);
+        _lastTab.Value = Mathf.Clamp(_lastTab.Value, 0, 3);
         if (_instance != null) _instance._tab = _lastTab.Value;
         _autoReadValue = autoRead.Value;
+    }
+
+    internal static void ConfigureAsr(ConfigEntry<bool> enabled, ConfigEntry<string> device, ConfigEntry<string> model)
+    {
+        _asrEnabled = enabled; _asrDevice = device; _asrModel = model;
+        StreamingAsr.SetDevice(device.Value);
+        StreamingAsr.SetProfile(model.Value);
+        StreamingAsr.SetEnabled(enabled.Value);
+        model.Value = StreamingAsr.Profile.Id;
     }
 
     internal static void SetFeatureStatus(FeaturePluginState state, string message)
@@ -140,18 +176,21 @@ internal sealed class SpeechPanelUi : MonoBehaviour
     {
         try
         {
+            if (_dialoguePanel != null && !ReferenceEquals(_dialoguePanel, instance)) { StreamingAsr.Cancel(); if (_instance != null) RestoreAsrDraft(false); }
             EnsureInstance();
             _dialoguePanel = instance;
             _npcId = ReadNpcId(instance);
             _npcName = ReadNpcName(instance) ?? NpcVoiceResolver.GetNpcName(_npcId);
             _instance?.LoadVoiceSelection();
             _instance?.RefreshEntryPosition();
+            if (_asrEnabled?.Value == true) StreamingAsr.WarmUp();
         }
         catch (Exception e) { _log?.LogWarning("Speech panel context update failed: " + e.GetType().Name); }
     }
 
     internal static void OnDialogueHidden(object instance)
     {
+        StreamingAsr.Cancel(); RestoreAsrDraft(false);
         if (_instance != null)
         {
             _instance._open = false;
@@ -177,6 +216,7 @@ internal sealed class SpeechPanelUi : MonoBehaviour
                      value?.GetType().GetField("Value", flags)?.GetValue(value) ?? value;
         var candidate = nested?.ToString()?.Trim();
         if (!int.TryParse(candidate, out var id) || id <= 0) return;
+        if (_npcId != null && _npcId != id.ToString()) { StreamingAsr.Cancel(); RestoreAsrDraft(false); }
         _dialoguePanel = panel;
         EnsureInstance();
         if (_instance != null) _instance.gameObject.SetActive(true);
@@ -240,6 +280,7 @@ internal sealed class SpeechPanelUi : MonoBehaviour
             GUI.Label(new Rect(_window.x + 20, _window.y + 9, _window.width - 76, 28), "语音设置 · " + _npcName, _titleStyle);
             if (GUI.Button(new Rect(_window.xMax - 48, _window.y + 8, 34, 30), "×", _buttonStyle))
             {
+                if (StreamingAsr.TestMode) StreamingAsr.Stop();
                 _open = false;
                 _pendingSpeechEnabled = null;
             }
@@ -258,7 +299,8 @@ internal sealed class SpeechPanelUi : MonoBehaviour
             if (confirming && _open) DrawSpeechConfirmation();
             if (Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.Escape)
             {
-                if (_pendingSpeechEnabled.HasValue) _pendingSpeechEnabled = null;
+                if (StreamingAsr.IsActive) { StreamingAsr.Cancel(); RestoreAsrDraft(true); }
+                else if (_pendingSpeechEnabled.HasValue) _pendingSpeechEnabled = null;
                 else _open = false;
                 Event.current.Use();
             }
@@ -271,6 +313,152 @@ internal sealed class SpeechPanelUi : MonoBehaviour
     }
 
     private void LateUpdate() => RefreshEntryPosition();
+
+    private void Update()
+    {
+        if (_wasFocused != Application.isFocused)
+        { _wasFocused = Application.isFocused; StreamingAsr.SetForeground(_wasFocused); }
+        if (StreamingAsr.IsActive && !Application.isFocused) { _log?.LogInfo("ASR input cancelled: game lost focus."); StreamingAsr.Cancel(); RestoreAsrDraft(false); }
+        var asr = StreamingAsr.Snapshot;
+        if (asr.IsActive)
+        {
+            if (asr.TestMode) { }
+            else {
+            var input = FindDialogueInput();
+            if (input == null || _asrInput == null || input.GetInstanceID() != _asrInput.GetInstanceID())
+            { _log?.LogInfo($"ASR input cancelled: dialogue input changed (current={input?.GetInstanceID()}, session={_asrInput?.GetInstanceID()})."); StreamingAsr.Cancel(); RestoreAsrDraft(false); return; }
+            var text = ReadInputText(input);
+            var field = input as TMPro.TMP_InputField;
+            // TMP can reset its caret when the microphone takes selection, even while
+            // isFocused is stale for that frame. Require an actual editing gesture.
+            var editing = field != null && field.isFocused &&
+                ((Input.anyKeyDown && !Input.GetMouseButtonDown(0)) ||
+                 (Input.GetMouseButton(0) && RectTransformUtility.RectangleContainsScreenPoint(field.GetComponent<RectTransform>(), Input.mousePosition, null)));
+            var moved = editing && field != null && (field.caretPosition != _asrExpectedCaret || field.selectionAnchorPosition != field.selectionFocusPosition);
+            if (!_asrWriting && (text != _asrExpected || moved || !string.IsNullOrEmpty(Input.compositionString)))
+            { _log?.LogInfo($"ASR input cancelled: draftChanged={text != _asrExpected}, selectionEdited={moved}, composing={!string.IsNullOrEmpty(Input.compositionString)}."); StreamingAsr.Cancel(); _asrExpected = text; RestoreAsrDraft(false); return; }
+            var recognized = asr.Text;
+            var start = Math.Clamp(_asrSelectionStart, 0, _asrOriginal.Length);
+            var end = Math.Clamp(_asrSelectionEnd, start, _asrOriginal.Length);
+            var next = _asrOriginal[..start] + recognized + _asrOriginal[end..];
+            if (next != _asrExpected) { _asrWriting = true; _asrExpectedCaret = start + recognized.Length; WriteInputText(input, next, _asrExpectedCaret); _asrExpected = next; _asrWriting = false; }
+            if (asr.State.StartsWith("错误", StringComparison.Ordinal)) StreamingAsr.Cancel();
+            }
+        }
+        else if (!asr.TestMode && _asrInput != null)
+        {
+            var inputId = FindDialogueInput()?.GetInstanceID() ?? 0;
+            var unchanged = inputId == _asrInput.GetInstanceID() && ReadInputText(_asrInput) == _asrExpected;
+            var send = _asrSend.Poll(asr, inputId, unchanged);
+            if (unchanged && asr.State == "就绪")
+            {
+                var start = Math.Clamp(_asrSelectionStart, 0, _asrOriginal.Length);
+                var end = Math.Clamp(_asrSelectionEnd, start, _asrOriginal.Length);
+                var finalText = _asrOriginal[..start] + asr.Text + _asrOriginal[end..];
+                if (finalText != _asrExpected) WriteInputText(_asrInput, finalText, start + asr.Text.Length);
+            }
+            RestoreAsrDraft(false);
+            var currentInput = FindDialogueInput();
+            if (send == AsrSendDecision.Send && currentInput?.GetInstanceID() == inputId && !string.IsNullOrWhiteSpace(currentInput.text))
+            {
+                SpeechMvp.SetAsrRecording(false);
+                if (_submitGuard != null) _submitGuard.interactable = true;
+                if (_submitButton != null && _submitButton.interactable && _submitButton.gameObject.activeInHierarchy)
+                {
+                    _log?.LogInfo($"ASR finalized draft sent once: session={asr.SessionId}, input={inputId}.");
+                    _submitOriginalClick?.Invoke();
+                }
+                else _log?.LogInfo("ASR final draft retained: the game's submit button is unavailable.");
+            }
+        }
+        SpeechMvp.SetAsrRecording(StreamingAsr.IsActive && !StreamingAsr.TestMode);
+        if (_micVisual != null && _micImage != null)
+        {
+            var button = _micVisual.GetComponent<UIButton>();
+            var hot = !StreamingAsr.TestMode && (StreamingAsr.State is "录音中" or "收尾中");
+            var desired = hot ? _micHotSprite : _micNormalSprite;
+            if (_micImage.sprite != desired) { _micImage.sprite = desired; _micImage.overrideSprite = desired; }
+            var available = _asrEnabled?.Value == true && !(StreamingAsr.TestMode && StreamingAsr.IsActive) && StreamingAsr.State != "收尾中";
+            if (button != null && button.interactable != available) button.SetInteractable(available);
+            _micImage.color = available ? Color.white : new Color(1f, 1f, 1f, .45f);
+        }
+        // A separate interaction gate preserves the game's own empty-draft/cooldown state.
+        if (_submitGuard != null) _submitGuard.interactable = !(StreamingAsr.State == "收尾中" && !StreamingAsr.TestMode);
+    }
+
+    private TMPro.TMP_InputField? FindDialogueInput()
+    {
+        try
+        {
+            // Interop can return a base wrapper even when the native object is derived.
+            // Search the native component hierarchy instead of reflecting that wrapper.
+            var dialogue = GetMember(_dialoguePanel, "DialogueInput") as Il2CppInterop.Runtime.InteropTypes.Il2CppObjectBase;
+            var native = dialogue?.TryCast<Component>();
+            var nativeInput = native?.GetComponentInChildren<TMPro.TMP_InputField>(true);
+            if (nativeInput != null) return nativeInput;
+            var common = GetMember(GetMember(_dialoguePanel, "DialogueInput"), "InputFieldMain");
+            if (common == null) return null;
+            if (GetMember(common, "InputFieldMain") is TMPro.TMP_InputField direct) return direct;
+            if (common is Component component)
+            {
+                var nested = component.GetComponentInChildren<TMPro.TMP_InputField>(true);
+                if (nested != null) return nested;
+            }
+            return common.GetType().GetProperties(BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance)
+                .Select(p => { try { return p.GetValue(common); } catch { return null; } })
+                .Concat(common.GetType().GetFields(BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance).Select(f => { try { return f.GetValue(common); } catch { return null; } }))
+                .FirstOrDefault(v => v is TMPro.TMP_InputField) as TMPro.TMP_InputField;
+        } catch { return null; }
+    }
+    private static string ReadInputText(object input) => (input as TMPro.TMP_InputField)?.text ?? "";
+    private static void WriteInputText(object input, string text, int caret = -1)
+    {
+        if (input is TMPro.TMP_InputField field) { field.text = text; field.caretPosition = caret < 0 ? text.Length : Math.Clamp(caret, 0, text.Length); }
+    }
+    private static void RestoreAsrDraft(bool restore)
+    {
+        _instance?._asrSend.Cancel();
+        if (restore && _asrInput != null && ReadInputText(_asrInput) == _asrExpected)
+        {
+            WriteInputText(_asrInput, _asrOriginal, _asrCaret);
+            if (_asrInput is TMPro.TMP_InputField field) { field.selectionAnchorPosition = _asrSelectionStart; field.selectionFocusPosition = _asrSelectionEnd; }
+        }
+        _asrInput = null; _asrOriginal = _asrExpected = ""; _asrCaret = _asrSelectionStart = _asrSelectionEnd = _asrExpectedCaret = 0;
+    }
+    private void ToggleMic()
+    {
+        if (StreamingAsr.TestMode && StreamingAsr.IsActive) return;
+        if (StreamingAsr.State == "收尾中") return;
+        if (StreamingAsr.State == "准备中") { StreamingAsr.Cancel(); RestoreAsrDraft(true); return; }
+        if (StreamingAsr.IsActive) { StreamingAsr.Stop(); return; }
+        if (_asrEnabled?.Value != true || _dialoguePanel == null) return;
+        _asrInput = FindDialogueInput(); if (_asrInput == null) { _uiMessage = "找不到对话输入框"; _log?.LogWarning("ASR microphone: dialogue input binding unavailable."); return; }
+        _open = false;
+        _asrOriginal = _asrExpected = ReadInputText(_asrInput);
+        if (_asrInput is TMPro.TMP_InputField field)
+        {
+            _asrCaret = field.caretPosition;
+            _asrSelectionStart = Math.Min(field.selectionAnchorPosition, field.selectionFocusPosition);
+            _asrSelectionEnd = Math.Max(field.selectionAnchorPosition, field.selectionFocusPosition);
+        }
+        else { _asrCaret = _asrOriginal.Length; _asrSelectionStart = _asrSelectionEnd = _asrCaret; }
+        _asrExpectedCaret = _asrCaret;
+        _log?.LogInfo($"ASR dialogue recording requested: input={_asrInput.GetInstanceID()}.");
+        StreamingAsr.Start(false);
+    }
+
+    private void SubmitOrFinalize()
+    {
+        var snapshot = StreamingAsr.Snapshot;
+        if (!snapshot.IsActive || snapshot.TestMode) { _submitOriginalClick?.Invoke(); return; }
+        var input = FindDialogueInput();
+        if (_open || input == null || _asrInput == null || input.GetInstanceID() != _asrInput.GetInstanceID()) return;
+        if (_asrSend.Request(snapshot, input.GetInstanceID()))
+        {
+            _log?.LogInfo($"ASR send requested: finalize before submit, session={snapshot.SessionId}.");
+            StreamingAsr.Stop();
+        }
+    }
 
     internal static bool ShouldBlockGameInput()
     {
@@ -317,6 +505,8 @@ internal sealed class SpeechPanelUi : MonoBehaviour
             if (submitRect == null && submitComponent != null) submitRect = submitComponent.GetComponent<RectTransform>();
             if (submitRect == null || submitComponent == null) return;
             EnsureEntryVisual(submitComponent, submitRect);
+            EnsureMicVisual(submitComponent, submitRect);
+            PositionMicAndInput(submitRect);
             if (_entryVisual == null) return;
             var entryTransform = _entryVisual.transform;
             var entryRectTransform = entryTransform as RectTransform ?? entryTransform.GetComponent<RectTransform>();
@@ -376,6 +566,209 @@ internal sealed class SpeechPanelUi : MonoBehaviour
         _log?.LogInfo("Speech settings entry cloned the game's submit-button prefab for matching size and visual style.");
     }
 
+    private void EnsureMicVisual(Component submitButton, RectTransform submitRect)
+    {
+        var sourceId = submitButton.GetInstanceID();
+        if (_micVisual != null && _micSourceId == sourceId) return;
+        DestroyMicVisual();
+        var visual = UnityEngine.Object.Instantiate(submitButton.gameObject, submitButton.transform.parent);
+        visual.name = "A1IndexTTS.MicrophoneButton";
+        var rect = visual.transform as RectTransform ?? visual.GetComponent<RectTransform>();
+        if (rect == null) { UnityEngine.Object.Destroy(visual); return; }
+        var layout = visual.GetComponent<UnityEngine.UI.LayoutElement>() ?? visual.AddComponent<UnityEngine.UI.LayoutElement>();
+        layout.ignoreLayout = true;
+        rect.anchorMin = submitRect.anchorMin; rect.anchorMax = submitRect.anchorMax; rect.pivot = submitRect.pivot;
+        rect.localScale = submitRect.localScale;
+        var button = visual.GetComponent<UIButton>();
+        if (button == null) { UnityEngine.Object.Destroy(visual); return; }
+        button.OnClick = DelegateSupport.ConvertDelegate<Il2CppSystem.Action>((Action)ToggleMic);
+        button.OnDoubleClick = null; button.OnClickPointerPos = null; button.OnBtnDown = null; button.OnBtnUp = null;
+        button.OnLongTouch = null; button.OnLongTouchRepeat = null; button.OnRightClick = null;
+        button.enabled = true; button.SetInteractable(true);
+        var nav = button.navigation; nav.mode = UnityEngine.UI.Navigation.Mode.None; button.navigation = nav;
+        foreach (var label in visual.GetComponentsInChildren<TMPro.TMP_Text>(true))
+        {
+            var gameText = label.TryCast<UIText>();
+            if (gameText != null) gameText.m_LocalizationId = 0;
+            label.text = ""; label.raycastTarget = false; label.enabled = false;
+        }
+        // The native submit background uses its own material and visual callbacks. Do not
+        // paint ASR sprites into that layer: keep a new Image with Unity's default material.
+        foreach (var inherited in visual.GetComponentsInChildren<UnityEngine.UI.Image>(true))
+        { inherited.raycastTarget = false; inherited.enabled = false; }
+        var icon = new GameObject("MicrophoneIcon");
+        icon.AddComponent<RectTransform>();
+        icon.transform.SetParent(visual.transform, false);
+        var iconRect = icon.GetComponent<RectTransform>();
+        iconRect.anchorMin = Vector2.zero; iconRect.anchorMax = Vector2.one;
+        iconRect.offsetMin = iconRect.offsetMax = Vector2.zero;
+        var image = icon.AddComponent<UnityEngine.UI.Image>();
+        image.material = null; image.color = Color.white; image.raycastTarget = true;
+        button.targetGraphic = image;
+        button.transition = UnityEngine.UI.Selectable.Transition.None;
+        LoadMicSprites();
+        image.sprite = _micNormalSprite; image.overrideSprite = _micNormalSprite;
+        image.type = UnityEngine.UI.Image.Type.Simple; image.preserveAspect = true;
+        _micVisual = visual; _micImage = image; _micSourceId = sourceId;
+        _submitGuard = submitButton.gameObject.AddComponent<CanvasGroup>();
+        _submitButton = submitButton.TryCast<UIButton>();
+        if (_submitButton != null)
+        {
+            _submitOriginalClick = _submitButton.OnClick;
+            _submitWrappedClick = DelegateSupport.ConvertDelegate<Il2CppSystem.Action>((Action)SubmitOrFinalize);
+            _submitButton.OnClick = _submitWrappedClick;
+        }
+        PositionMicAndInput(submitRect);
+        _log?.LogInfo($"ASR microphone configured: independentImage=True, spritesReady={_micNormalSprite != null && _micHotSprite != null}, size={rect.rect.size}.");
+    }
+
+    private void PositionMicAndInput(RectTransform submitRect)
+    {
+        if (_micVisual == null) return;
+        var micRect = _micVisual.GetComponent<RectTransform>();
+        var side = Mathf.Max(24f, submitRect.rect.height);
+        micRect.anchorMin = submitRect.anchorMin; micRect.anchorMax = submitRect.anchorMax;
+        micRect.pivot = submitRect.pivot; micRect.localScale = submitRect.localScale;
+        micRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, side);
+        micRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, side);
+        micRect.anchoredPosition = submitRect.anchoredPosition - new Vector2(
+            submitRect.pivot.x * submitRect.rect.width + (1f - micRect.pivot.x) * side + 8f, 0f);
+        micRect.SetAsLastSibling();
+
+        var input = FindDialogueInput();
+        if (input == null) return;
+        if (_layoutInput == null || _layoutInput.Pointer != input.Pointer)
+        {
+            RestoreInputLayout();
+            _layoutInput = input;
+            _layoutInputRect = input.GetComponent<RectTransform>();
+            // Do not resize an ancestor that also contains the native send control.
+            if (submitRect.IsChildOf(_layoutInputRect)) _layoutInputRect = input.textViewport;
+            if (_layoutInputRect == null) return;
+            _inputOffsetMax = _layoutInputRect.offsetMax;
+            _inputReservedWidth = 0f;
+            CreateInputFeedback();
+            _log?.LogInfo($"ASR dialogue input bound: {input.name}, active={input.gameObject.activeInHierarchy}.");
+        }
+        if (_layoutInputRect == null) return;
+        var expected = _inputOffsetMax - new Vector2(_inputReservedWidth, 0f);
+        if (Vector2.Distance(_layoutInputRect.offsetMax, expected) > .01f)
+            _inputOffsetMax = _layoutInputRect.offsetMax; // The native UI changed resolution/layout.
+        _inputReservedWidth = side + 8f;
+        _layoutInputRect.offsetMax = _inputOffsetMax - new Vector2(_inputReservedWidth, 0f);
+        if (_inputFeedback != null)
+        {
+            var frame = _inputFeedback.GetComponent<RectTransform>();
+            frame.anchorMin = _layoutInputRect.anchorMin; frame.anchorMax = _layoutInputRect.anchorMax;
+            frame.pivot = _layoutInputRect.pivot; frame.localScale = _layoutInputRect.localScale;
+            frame.sizeDelta = _layoutInputRect.sizeDelta; frame.anchoredPosition = _layoutInputRect.anchoredPosition;
+        }
+        UpdateInputFeedback();
+    }
+
+    private void CreateInputFeedback()
+    {
+        _inputFeedback = new GameObject("A1IndexTTS.InputFeedback");
+        var root = _inputFeedback.AddComponent<RectTransform>();
+        // Keep feedback outside TMP's viewport mask, including its status line below.
+        root.SetParent(_layoutInputRect!.parent, false);
+        root.anchorMin = Vector2.zero; root.anchorMax = Vector2.one;
+        root.offsetMin = root.offsetMax = Vector2.zero;
+        _inputEdges = new UnityEngine.UI.Image[4];
+        for (var i = 0; i < 4; i++)
+        {
+            var edge = new GameObject("FocusBorder" + i);
+            var rect = edge.AddComponent<RectTransform>(); rect.SetParent(root, false);
+            rect.anchorMin = i == 1 ? new Vector2(0, 1) : i == 3 ? new Vector2(1, 0) : Vector2.zero;
+            rect.anchorMax = i < 2 ? new Vector2(1, rect.anchorMin.y) : new Vector2(rect.anchorMin.x, 1);
+            rect.pivot = i == 1 ? new Vector2(.5f, 1) : i == 3 ? new Vector2(1, .5f) : Vector2.zero;
+            rect.sizeDelta = i < 2 ? new Vector2(0, 1.5f) : new Vector2(1.5f, 0);
+            rect.anchoredPosition = Vector2.zero;
+            var image = edge.AddComponent<UnityEngine.UI.Image>();
+            image.raycastTarget = false; image.maskable = false;
+            _inputEdges[i] = image;
+        }
+        var hint = new GameObject("InputStatus");
+        var hintRect = hint.AddComponent<RectTransform>(); hintRect.SetParent(root, false);
+        hintRect.anchorMin = Vector2.zero; hintRect.anchorMax = new Vector2(1, 0);
+        hintRect.pivot = new Vector2(0, 1); hintRect.sizeDelta = new Vector2(0, 20);
+        hintRect.anchoredPosition = new Vector2(0, -3);
+        _inputHint = hint.AddComponent<TMPro.TextMeshProUGUI>();
+        _inputHint.font = _layoutInput!.textComponent.font;
+        _inputHint.fontSharedMaterial = _layoutInput.textComponent.font.material;
+        _inputHint.fontSize = 12; _inputHint.alignment = TMPro.TextAlignmentOptions.TopLeft;
+        _inputHint.raycastTarget = false; _inputHint.maskable = false;
+        _inputHint.enableWordWrapping = false;
+    }
+
+    private void UpdateInputFeedback()
+    {
+        if (_layoutInput == null || _inputFeedback == null || _inputHint == null) return;
+        var recording = StreamingAsr.IsActive && !StreamingAsr.TestMode;
+        var focused = _layoutInput.isFocused && !_open;
+        var color = recording ? new Color(.95f, .73f, .30f, 1f)
+            : focused ? new Color(.94f, .88f, .70f, 1f) : new Color(.55f, .48f, .35f, .75f);
+        foreach (var edge in _inputEdges) edge.color = color;
+        var message = recording ? StreamingAsr.State switch
+        {
+            "准备中" => "语音输入准备中 · 再次点击麦克风取消",
+            "收尾中" => _asrSend.Pending ? "正在校验整段语音 · 完成后自动发送" : "正在校验整段语音 · 完成后可编辑并发送",
+            _ => "语音输入中，文字可能调整 · 点击发送结束并发送，点击麦克风仅停止"
+        } : _open ? "关闭语音设置后可输入对话"
+            : _asrEnabled?.Value != true ? "点击输入框打字 · 语音输入已关闭"
+            : StreamingAsr.State == "预热中" ? "语音模型预热中 · 可继续键盘输入"
+            : StreamingAsr.State.StartsWith("错误", StringComparison.Ordinal) ? StreamingAsr.State
+            : focused ? "键盘输入 · 点击麦克风可开始语音输入"
+            : "点击输入框打字 · 点击麦克风说话";
+        _inputHint.text = message;
+        _inputHint.color = color;
+        _inputFeedback.transform.SetAsLastSibling();
+    }
+
+    private void RestoreInputLayout()
+    {
+        if (_layoutInputRect != null)
+        {
+            var expected = _inputOffsetMax - new Vector2(_inputReservedWidth, 0f);
+            if (Vector2.Distance(_layoutInputRect.offsetMax, expected) < .01f)
+                _layoutInputRect.offsetMax = _inputOffsetMax;
+        }
+        _layoutInput = null; _layoutInputRect = null; _inputReservedWidth = 0f;
+        if (_inputFeedback != null) UnityEngine.Object.Destroy(_inputFeedback);
+        _inputFeedback = null; _inputHint = null;
+        _inputEdges = Array.Empty<UnityEngine.UI.Image>();
+    }
+
+    private void DestroyMicVisual()
+    {
+        _asrSend.Cancel();
+        if (_submitButton != null && _submitWrappedClick != null && _submitButton.OnClick?.Pointer == _submitWrappedClick.Pointer)
+            _submitButton.OnClick = _submitOriginalClick;
+        _submitButton = null; _submitOriginalClick = null; _submitWrappedClick = null;
+        RestoreInputLayout();
+        if (_submitGuard != null) { _submitGuard.interactable = true; UnityEngine.Object.Destroy(_submitGuard); }
+        _submitGuard = null;
+        if (_micVisual != null) UnityEngine.Object.Destroy(_micVisual);
+        _micVisual = null; _micImage = null; _micSourceId = 0;
+    }
+
+    private void OnDestroy() => DestroyEntryVisual();
+
+    private static void LoadMicSprites()
+    {
+        if (_micNormalSprite != null) return;
+        var root = Path.Combine(Paths.GameRootPath, "A1IndexTTSMod", "assets", "asr");
+        _micNormalTexture = LoadTexture(Path.Combine(root, "microphone-normal.png"));
+        _micHotTexture = LoadTexture(Path.Combine(root, "microphone-highlight.png"));
+        if (_micNormalTexture != null) _micNormalSprite = Sprite.Create(_micNormalTexture, new Rect(0,0,_micNormalTexture.width,_micNormalTexture.height), new Vector2(.5f,.5f));
+        if (_micHotTexture != null) _micHotSprite = Sprite.Create(_micHotTexture, new Rect(0,0,_micHotTexture.width,_micHotTexture.height), new Vector2(.5f,.5f));
+    }
+    private static Texture2D? LoadTexture(string path)
+    {
+        try { var bytes = File.ReadAllBytes(path); var texture = new Texture2D(2,2,TextureFormat.RGBA32,false); return ImageConversion.LoadImage(texture, bytes) ? texture : null; }
+        catch (Exception e) { _log?.LogWarning($"ASR button texture could not load: {Path.GetFileName(path)} ({e.GetType().Name}: {e.Message})"); return null; }
+    }
+
     private void ConfigureEntryButton(GameObject visual)
     {
         // Game UIButton derives from Selectable, not UnityEngine.UI.Button. Base Component
@@ -416,6 +809,7 @@ internal sealed class SpeechPanelUi : MonoBehaviour
 
     private void DestroyEntryVisual()
     {
+        DestroyMicVisual();
         if (_entryVisual != null) UnityEngine.Object.Destroy(_entryVisual);
         _entryVisual = null;
         _entrySourceInstanceId = 0;
@@ -453,13 +847,15 @@ internal sealed class SpeechPanelUi : MonoBehaviour
         if (GUILayout.Toggle(_tab == 0, "音色与参数", _tabStyle)) SetTab(0);
         if (GUILayout.Toggle(_tab == 1, "最近语音", _tabStyle)) SetTab(1);
         if (GUILayout.Toggle(_tab == 2, "本轮数据", _tabStyle)) SetTab(2);
+        if (GUILayout.Toggle(_tab == 3, "语音输入", _tabStyle)) SetTab(3);
         GUILayout.EndHorizontal();
         GUILayout.Space(12);
         switch (_tab)
         {
             case 0: DrawVoiceTab(); break;
             case 1: DrawRecentTab(); break;
-            default: DrawDataTab(); break;
+            case 2: DrawDataTab(); break;
+            default: DrawAsrTab(); break;
         }
         if (!string.IsNullOrWhiteSpace(_uiMessage))
         {
@@ -531,6 +927,77 @@ internal sealed class SpeechPanelUi : MonoBehaviour
         GUILayout.BeginHorizontal();
         if (GUILayout.Button("停止当前语音", _buttonStyle)) SpeechMvp.StopFromPanel();
         GUILayout.EndHorizontal();
+    }
+
+    private void DrawAsrTab()
+    {
+        GUILayout.Label("语音输入", _sectionStyle);
+        if (_asrEnabled != null)
+        {
+            var enabled = GUILayout.Toggle(_asrEnabled.Value, "启用语音输入", GUI.skin.toggle);
+            if (enabled != _asrEnabled.Value) { _asrEnabled.Value = enabled; SaveConfig(); StreamingAsr.SetEnabled(enabled); if (!enabled) RestoreAsrDraft(false); }
+        }
+        GUILayout.Label("WASAPI 输入 · 单声道 16 kHz", _mutedStyle);
+        if (_asrDevice != null)
+        {
+            try
+            {
+                if (DateTime.UtcNow - _asrDevicesUpdated > TimeSpan.FromSeconds(5)) RefreshAsrDevices();
+                var current = _asrDevices.FindIndex(d => string.Equals(d.Id, _asrDevice.Value, StringComparison.OrdinalIgnoreCase));
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("输入设备", _mutedStyle, GUILayout.Width(72));
+                GUILayout.Label(current < 0 ? "系统默认麦克风" : _asrDevices[current].Name, _bodyStyle, GUILayout.ExpandWidth(true));
+                GUI.enabled = !StreamingAsr.IsActive;
+                if (GUILayout.Button("‹", _buttonStyle, GUILayout.Width(32))) current = (Math.Max(0, current - 1) + _asrDevices.Count) % _asrDevices.Count;
+                if (GUILayout.Button("›", _buttonStyle, GUILayout.Width(32))) current = (current + 1 + _asrDevices.Count) % _asrDevices.Count;
+                if (current >= 0 && !string.Equals(_asrDevices[current].Id, _asrDevice.Value, StringComparison.OrdinalIgnoreCase))
+                { _asrDevice.Value = _asrDevices[current].Id; StreamingAsr.SetDevice(_asrDevice.Value); SaveConfig(); }
+                GUI.enabled = true;
+                GUILayout.EndHorizontal();
+            }
+            catch { GUILayout.Label("无法读取麦克风设备列表", _mutedStyle); }
+        }
+        GUILayout.Label("输入电平  " + (StreamingAsr.IsActive ? (StreamingAsr.Level * 100f).ToString("0") + "%" : "未采集"), _bodyStyle);
+        GUILayout.Label("识别结果（测试不写入对话）：", _bodyStyle);
+        GUILayout.TextArea(StreamingAsr.Text, GUILayout.MinHeight(76));
+        GUILayout.BeginHorizontal();
+        GUI.enabled = _asrEnabled?.Value == true && !StreamingAsr.IsActive;
+        if (GUILayout.Button("测试麦克风与识别", _primaryButtonStyle)) StreamingAsr.Start(true);
+        GUI.enabled = StreamingAsr.IsActive;
+        if (GUILayout.Button("停止测试", _buttonStyle)) StreamingAsr.Stop();
+        GUI.enabled = true;
+        GUILayout.EndHorizontal();
+        GUILayout.Label("运行状态 · " + StreamingAsr.State, _mutedStyle);
+        GUILayout.Label("识别模型", _bodyStyle);
+        GUILayout.BeginHorizontal();
+        foreach (var profile in AsrModelProfiles.All)
+        {
+            var installed = profile.IsInstalled(StreamingAsr.GameRoot);
+            GUI.enabled = installed && !StreamingAsr.IsActive;
+            if (GUILayout.Button(profile.Label + (installed ? "" : "（未安装）"),
+                StreamingAsr.Profile.Id == profile.Id ? _primaryButtonStyle : _buttonStyle) && StreamingAsr.SetProfile(profile.Id))
+            { if (_asrModel != null) _asrModel.Value = profile.Id; SaveConfig(); }
+        }
+        GUI.enabled = true;
+        GUILayout.EndHorizontal();
+        GUILayout.Label(StreamingAsr.EngineDescription, _mutedStyle);
+        GUILayout.Label("录音中文字可能调整；停止后定稿并手动发送。", _bodyStyle);
+        GUILayout.Label("CUDA 执行状态会与依赖检查结果分开报告；未验证时不会显示为显卡已运行。", _bodyStyle);
+        GUILayout.Label("测试结果不会进入 NPC 草稿。", _bodyStyle);
+        GUILayout.Label("对话录音中暂停 NPC 朗读；再次点击停止后检查草稿并手动发送。60 秒上限，ESC 取消。", _bodyStyle);
+    }
+
+    private static void RefreshAsrDevices()
+    {
+        using var enumerator = new NAudio.CoreAudioApi.MMDeviceEnumerator();
+        var devices = enumerator.EnumerateAudioEndPoints(NAudio.CoreAudioApi.DataFlow.Capture, NAudio.CoreAudioApi.DeviceState.Active);
+        var result = new List<(string Id, string Name)> { ("", "系统默认麦克风") };
+        foreach (var device in devices)
+        {
+            result.Add((device.ID, device.FriendlyName));
+            device.Dispose();
+        }
+        _asrDevices = result; _asrDevicesUpdated = DateTime.UtcNow;
     }
 
     private void DrawReferenceControls()
@@ -743,10 +1210,12 @@ internal sealed class SpeechPanelUi : MonoBehaviour
                     : "无法解析为 NPC 回复 JSON。原因：响应缺失、格式损坏或没有 content 字段。请展开原始响应快照查看。"
                 : "干净游戏回复（已剥离本 Mod 协议帧与旧版 voice_style 字段）：\n" +
                   (FormatJsonForDisplay(separated.GameJson) ?? separated.GameJson) +
-                  "\n\n独立语音风格：\n" + (turn.VoiceStyleJson == null ? "未捕获合法风格。" : FormatJsonForDisplay(turn.VoiceStyleJson)) +
+                  "\n\n独立语音风格：\n" + (turn.VoiceStyleJson == null ? "未捕获合法风格；可朗读台词仍使用当前后端的默认表达。" : FormatJsonForDisplay(turn.VoiceStyleJson)) +
                   "\n\n解析状态：" + TurnStyleStatusLabel(turn) +
                   "\n风格来源：" + StyleSourceLabel(turn.VoiceStyleSource) +
-                  "\n原游戏 emotion：" + (turn.Emotion ?? "未观测");
+                  "\n原游戏 emotion：" + (turn.Emotion ?? "未观测") +
+                  "\nTTS 状态：" + turn.TtsStatus +
+                  (string.IsNullOrWhiteSpace(turn.Error) ? "" : "\nTTS 错误：" + turn.Error);
             _dataScrollPosition = GUILayout.BeginScrollView(_dataScrollPosition, false, true,
                 GUILayout.Height(_showRawReply ? 220 : 340), GUILayout.ExpandWidth(true));
             GUILayout.TextArea(parsedView, _bodyStyle, GUILayout.MinHeight(240), GUILayout.ExpandWidth(true));
@@ -942,7 +1411,9 @@ internal sealed class SpeechPanelUi : MonoBehaviour
 
     private void SetTab(int tab)
     {
+        tab = Mathf.Clamp(tab, 0, 3);
         if (_tab == tab) return;
+        if (_tab == 3 && tab != 3 && StreamingAsr.TestMode && StreamingAsr.IsActive) StreamingAsr.Stop();
         _tab = tab;
         if (_lastTab != null) { _lastTab.Value = tab; SaveConfig(); }
     }

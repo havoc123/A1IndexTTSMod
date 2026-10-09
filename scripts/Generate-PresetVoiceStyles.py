@@ -30,11 +30,14 @@ def main():
             raise ValueError(f"Source snapshot changed; re-author decisions before generating: {name}")
     base = read(args.tables / "tbnpcbasecfg.json")
     topics = read(args.tables / "tbnpctopicchat.json")
+    persuade_topics = read(args.tables / "tbnpcpersuadetopic.json")
     personas = read(args.tables / "tbnpcaipersona.json")
     by_npc = {r["id"]: r for r in base}
     by_persona = {r["npcId"]: r for r in personas}
     backgrounds = {}
     for topic in topics:
+        backgrounds.setdefault(topic["npcId"], []).append(topic.get("backgroundPrompt", {}).get("zh-Hans", ""))
+    for topic in persuade_topics:
         backgrounds.setdefault(topic["npcId"], []).append(topic.get("backgroundPrompt", {}).get("zh-Hans", ""))
     cards = list(dict.fromkeys(r.get("speakStyle", {}).get("zh-Hans", "").strip() for r in personas))
     greeting_texts = list(dict.fromkeys(g.get("zh-Hans", "").strip() for r in base for g in r.get("greetings", []) if g.get("zh-Hans", "").strip()))
@@ -131,15 +134,23 @@ def main():
                 add(topic["npcId"], "topic_opening_branch", f"{topic['id']}:{branch}", fragment, choice,
                     topic_name=topic["topicName"].get("zh-Hans", ""), branch_condition=match.group(1), context_sha256=sha(background))
 
-    counts = {source: sum(r["source"] == source for r in records) for source in ("base_greeting", "topic_opening", "topic_opening_branch")}
+    for topic in persuade_topics:
+        text = topic.get("firstNpcMessage", {}).get("zh-Hans", "").strip()
+        if not text:
+            continue
+        performance = decisions["persuade_assignments"][str(topic["id"])]
+        add(topic["npcId"], "persuade_opening", str(topic["id"]), text, performance,
+            topic_name=topic["topic"].get("zh-Hans", ""),
+            context_sha256=sha(topic.get("backgroundPrompt", {}).get("zh-Hans", "")))
+    counts = {source: sum(r["source"] == source for r in records) for source in ("base_greeting", "topic_opening", "topic_opening_branch", "persuade_opening")}
     library = {
         "schema_version": 1,
-        "library_version": "2026-10-08.1",
+        "library_version": "2026-10-09.1",
         "language": "zh-Hans",
         "generation_method": "offline_ai_authored_per_utterance_decisions_with_character_card_profiles",
         "runtime_status": "embedded_default_enabled",
         "matching": "npc_id + exact trimmed text; active topic ID disambiguates identical text; conflicting performances remain unmatched; never match across characters or reuse previous-turn style",
-        "source_sha256": {name: hashlib.sha256((args.tables / name).read_bytes()).hexdigest() for name in ("tbnpcbasecfg.json", "tbnpctopicchat.json", "tbnpcaipersona.json")},
+        "source_sha256": {name: hashlib.sha256((args.tables / name).read_bytes()).hexdigest() for name in decisions["source_sha256"]},
         "counts": {**counts, "characters": len(character_styles), "total_records": len(records)},
         "characters": character_styles,
         "entries": records,

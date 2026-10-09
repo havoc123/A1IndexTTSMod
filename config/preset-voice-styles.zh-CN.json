@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "library_version": "2026-10-08.1",
+  "library_version": "2026-10-09.1",
   "language": "zh-Hans",
   "generation_method": "offline_ai_authored_per_utterance_decisions_with_character_card_profiles",
   "runtime_status": "embedded_default_enabled",
@@ -8,14 +8,16 @@
   "source_sha256": {
     "tbnpcbasecfg.json": "23d7f0ae86aa2c46e778fa4b86ed3c55c53fc9f921b8df8fc7cb1ea780121613",
     "tbnpctopicchat.json": "8a2eede3980d1c98a83695829bfb59228cc766e6ca878396ecb236c39ad32e4c",
-    "tbnpcaipersona.json": "eb65761c7e48c7f35d24bf4b37f3f7bd8f51910ab17880a7573f879f5ce0db78"
+    "tbnpcaipersona.json": "eb65761c7e48c7f35d24bf4b37f3f7bd8f51910ab17880a7573f879f5ce0db78",
+    "tbnpcpersuadetopic.json": "56f1678e9bb76bb486e48296bb8d515f449253c19e9bbef65ede47ab4ef8d7e1"
   },
   "counts": {
     "base_greeting": 3373,
     "topic_opening": 781,
     "topic_opening_branch": 26,
-    "characters": 1232,
-    "total_records": 4180
+    "persuade_opening": 131,
+    "characters": 1278,
+    "total_records": 4311
   },
   "characters": {
     "100000": {
@@ -24,7 +26,7 @@
       "delivery": "中等语速，成熟从容，停顿有分寸",
       "card_sha256": "4bcc0113eee99a7ae100cd51debc0e4a30c93c910c8206335a1654e3da3703ea",
       "personality": "廉贞：精明内敛",
-      "topic_context_sha256": "9677c37fd63dcecb39a5cd222e2c231799756207ba8094092dfe024e3135c788",
+      "topic_context_sha256": "5185bb3c38e7199b6be4914e9c0245a5283b1a36e1ee46e23fffe67908ad0b21",
       "basis": "speakStyle"
     },
     "100001": {
@@ -33,7 +35,7 @@
       "delivery": "语速稍慢，松弛随性，反问不尖刻",
       "card_sha256": "343b5178969ea12eaa667dcb1d4b440357c32a75573556381bd08f071f10878d",
       "personality": "天同：逍遥乐天",
-      "topic_context_sha256": "f96206f240d0e56fb5b9a0b02b55c4e19ff9fd786fa60f1e029e4c26a8daf11d",
+      "topic_context_sha256": "75aab3e1d6789ab5f96a3a779cdf4d7c164d2ae2de6842c2ae79574782726c87",
       "basis": "speakStyle"
     },
     "100004": {
@@ -51,7 +53,7 @@
       "delivery": "短句稳当，清楚直接，停顿后再落重点",
       "card_sha256": "ea296b382880da84501cb49c9217eadac3dcf6029e2b9a1b539762e0be68194b",
       "personality": "紫微：天生领袖",
-      "topic_context_sha256": "0de05d97495147600efde8039549582621ce63ec1a97c93b9f85869a536cd181",
+      "topic_context_sha256": "f37cfb40e45edbd664c55b9bae094e51433ee63dd9483677f89dfa4111a1dbab",
       "basis": "speakStyle"
     },
     "100121": {
@@ -60,7 +62,7 @@
       "delivery": "轻声稍慢，表达清楚，停顿自然不故意结巴",
       "card_sha256": "7c0de6c853d7e1312cdc78622a1a8f23b911032e6c254984aa76b3d7cec7ee0d",
       "personality": "太阴：务实坚韧",
-      "topic_context_sha256": "66bce498b90e29315f367d24c1905bc217fbbef11627d882c0dfac1a8b44f5d6",
+      "topic_context_sha256": "f471a495fb27e63ca43d76ae9bd19e1a7eb60adceaf1af27f4909ca46bb3320b",
       "basis": "speakStyle"
     },
     "100131": {
@@ -69,7 +71,7 @@
       "delivery": "清脆明亮，短句轻快，保持孩子式直率",
       "card_sha256": "db9e94b1929ac6c34c92c9e2f465bbc1b09dd27cbc64007437ae19769d19818e",
       "personality": "贪狼：机敏进取",
-      "topic_context_sha256": "10419dee721e60268767e103784c33cd9d2386b9cfe4a557a4e2b847d22ae3d5",
+      "topic_context_sha256": "0b87288cea9b032b7a545bf7896ffd739ad9c0cddf42969157d5c920e7e60cf3",
       "basis": "speakStyle"
     },
     "100211": {
@@ -78,7 +80,7 @@
       "delivery": "声音明亮，语速稍快，落字清楚利落",
       "card_sha256": "03bc3df9a54e0fedd2fd41df13193fea109371d7947715a880f946a50343019e",
       "personality": "破军：锐意勇进",
-      "topic_context_sha256": "9dce6c693cfc5cea8354d300dc9c0da963c283af8212b0a1ac230eaafb09c427",
+      "topic_context_sha256": "b4ca4e15f5614cbc659e821cb1609bed956935414c9ac42df966b4f08b931a28",
       "basis": "speakStyle"
     },
     "100221": {
@@ -87,7 +89,7 @@
       "delivery": "节奏灵动，转折自然，带轻微笑意",
       "card_sha256": "642b45b376f255f2532333165ec39c8c2ed1eb3668fa675f0ab3349bbdf8c704",
       "personality": "贪狼：机敏进取",
-      "topic_context_sha256": "1f468bfa1092659c336402f5747d478287d391c61ae48c8ad911af1077c9fc1c",
+      "topic_context_sha256": "562c61412f5b94808598976c6ae9fa3272a54955a866849f2ec7569b39e38843",
       "basis": "speakStyle"
     },
     "100231": {
@@ -105,7 +107,7 @@
       "delivery": "语速稍慢，朴实亲切，停顿后再接下句",
       "card_sha256": "5a0c577aa8712ba1acac78ae16dadfbebf1d36ebe82045c690d7102162483833",
       "personality": "天梁：调和权变",
-      "topic_context_sha256": "23f192d2996b2aa77871440e79159a123b75294c38bcdfb46a60b60af6bedfc8",
+      "topic_context_sha256": "ffdd5a7eebfbca64d3383a1da1fb506c7908cfb741d43c7f1d431442942255d9",
       "basis": "speakStyle"
     },
     "100421": {
@@ -123,7 +125,7 @@
       "delivery": "招呼声响亮，节奏有起伏，夸张适度",
       "card_sha256": "9c567da75acb245389388abaaf375fabc5dc2f2957251feac07f707f8904398b",
       "personality": "天同：逍遥乐天",
-      "topic_context_sha256": "d5c4b8955afc860dcb25c1a58688b6655e99879a0e682ae4b48f414aaf68fd02",
+      "topic_context_sha256": "c95a70187af2fb752e2172c3bf28a76afd4f2e3c7b9a86c9b3a29780eb2654eb",
       "basis": "speakStyle"
     },
     "100511": {
@@ -141,7 +143,7 @@
       "delivery": "声音爽利，关切有力度，日常交谈不喊叫",
       "card_sha256": "7c2371de74de9da32ce5929e2d0f20f7345882e8d9d4c66a4a138bc4e904ef75",
       "personality": "巨门：直言好胜",
-      "topic_context_sha256": "57b8c69ca101e08c548546a10cbd612c4275c198ff67f98fc633781ed02c808f",
+      "topic_context_sha256": "d6b7a3765c1abcab1e03afed1cf56c848e28c56022a66fd52e265c84caf501f8",
       "basis": "speakStyle"
     },
     "100531": {
@@ -168,7 +170,7 @@
       "delivery": "简洁直切，重音明确，声音稳而不硬喊",
       "card_sha256": null,
       "personality": "破军：锐意勇进",
-      "topic_context_sha256": "a096ce8f66e35370de160076cad87e3a2d3eb2a20237b9d6e998f9d52bf69801",
+      "topic_context_sha256": "62475070ba0b64399778062683cdb9350587f46d9123771837eb709df5cca253",
       "basis": "topic_character_context"
     },
     "110033": {
@@ -186,7 +188,7 @@
       "delivery": "语气机巧，转折略停，笑意不外露",
       "card_sha256": null,
       "personality": "贪狼：机敏进取",
-      "topic_context_sha256": "ce0636d2c3296e3a587e2f7dc10052369fbe28e09b28bcbe13b5d26d1989ecc6",
+      "topic_context_sha256": "58e212e801418b4419177bc99236c8cc1f5d06cdb2dd1e836afafa4c3eccd884",
       "basis": "topic_character_context"
     },
     "110062": {
@@ -195,7 +197,7 @@
       "delivery": "声音平稳偏冷，短句克制，不额外示好",
       "card_sha256": null,
       "personality": "七杀：冷静独行",
-      "topic_context_sha256": "cf1de34300504e8b1514e53ca21488c89c978c3e84f8275d2c347e7119e0390d",
+      "topic_context_sha256": "c17197829716e5198734308078769d08ff74acac33a04a2ab9fb3da9fee11a1a",
       "basis": "topic_character_context"
     },
     "110063": {
@@ -258,7 +260,7 @@
       "delivery": "中等语速，成熟从容，停顿有分寸",
       "card_sha256": null,
       "personality": "廉贞：精明内敛",
-      "topic_context_sha256": "950fd41853df7bd5cc4cba49e874ebfffa789cd04eaaf55863f43137d69c7123",
+      "topic_context_sha256": "b1e2df83e7882ee79d640a6379f76578fd42d575c8b3ad6f4998f828159f5a9e",
       "basis": "topic_character_context"
     },
     "110302": {
@@ -285,7 +287,7 @@
       "delivery": "语气温和克制，重点轻落，留有余地",
       "card_sha256": null,
       "personality": "廉贞：精明内敛",
-      "topic_context_sha256": "83448d8e8d2ff650a54b60dd24160f7ea7c0bbf78643da71ab8292fe8db14f53",
+      "topic_context_sha256": "6c9c700e62a72f77bd9c32260cb81848edc2b9f3b2a73c8b0be861f41c15506a",
       "basis": "topic_character_context"
     },
     "110404": {
@@ -303,7 +305,7 @@
       "delivery": "语气温和克制，重点轻落，留有余地",
       "card_sha256": null,
       "personality": "太阴：务实坚韧",
-      "topic_context_sha256": "4b06dcce74e803fabf3397003790014041f7bea97398e7b18b096dc39dd4a89a",
+      "topic_context_sha256": "2fd8b7992050060bbbcfe02bc4709d021fe18a2bb6f8d2890956146b63f37e2d",
       "basis": "topic_character_context"
     },
     "140042": {
@@ -312,7 +314,7 @@
       "delivery": "节奏沉稳，声音有分量，不摆夸张官腔",
       "card_sha256": null,
       "personality": "紫微：天生领袖",
-      "topic_context_sha256": "54d576f07fa26d63bb3a650167309931ee5523c7e5f0039010a494804fe2a37d",
+      "topic_context_sha256": "71464a2219e485a157b9b4d0ddb658a681978dc2e84907dc988ff7b418d95a93",
       "basis": "topic_character_context"
     },
     "140043": {
@@ -330,7 +332,7 @@
       "delivery": "短句稳当，清楚直接，停顿后再落重点",
       "card_sha256": null,
       "personality": "天梁：调和权变",
-      "topic_context_sha256": "1e7d45792490004147b0b033d27ce409fc23234d5c97e40e11365d34dbae29ab",
+      "topic_context_sha256": "06bf6461b1d5e777d10535a6a543befdf2ca65bdc18bcf2e7aa474f9d3e5d8e3",
       "basis": "topic_character_context"
     },
     "140002": {
@@ -375,7 +377,7 @@
       "delivery": "中等语速，成熟从容，停顿有分寸",
       "card_sha256": null,
       "personality": "太阴：务实坚韧",
-      "topic_context_sha256": "aa0f21bb8f1115b34b2fb0423eb9bd82031ce913c91d63bb0a051f599f0f1d30",
+      "topic_context_sha256": "5b2f80a1c6cd6751c71bb0e761e4076252491c565bb18db6830ed4ab829b0d51",
       "basis": "topic_character_context"
     },
     "150042": {
@@ -384,7 +386,7 @@
       "delivery": "清亮朴实，疑问自然，不装成熟",
       "card_sha256": null,
       "personality": "天机：智谋机变",
-      "topic_context_sha256": "154be66b4c537292f5f01ff74933b1a3c1d56c14358ef1b1763672b52fc62907",
+      "topic_context_sha256": "2c6ecd9c9281bf4e1a2eeda16fe5b77a8dfc1ce06805ee2b39abfbf67f2e2b20",
       "basis": "topic_character_context"
     },
     "150043": {
@@ -411,7 +413,7 @@
       "delivery": "声音明亮，语速稍快，落字清楚利落",
       "card_sha256": null,
       "personality": "贪狼：机敏进取",
-      "topic_context_sha256": "118227dba092c00e8ce4f27f8214069dfbb2b0b86f49b986e7109d06291b9f4c",
+      "topic_context_sha256": "d4a102fe84ee6914ac57bec27dd5ffeedace7a3d08b9cb1d20bec213ff04c68e",
       "basis": "topic_character_context"
     },
     "150053": {
@@ -420,7 +422,7 @@
       "delivery": "轻快松弛，语尾自然，不强加笑声",
       "card_sha256": null,
       "personality": "天同：逍遥乐天",
-      "topic_context_sha256": "45b844be66c3097b109d5e475fd3b6eb067602df1721ae40ffb28ecd466ebe9b",
+      "topic_context_sha256": "7935422f5862024923a7bbe990364e286433569530f4ea54293c515b6ba76651",
       "basis": "PersonalityDesc"
     },
     "150061": {
@@ -465,7 +467,7 @@
       "delivery": "轻声稍慢，表达清楚，停顿自然不故意结巴",
       "card_sha256": null,
       "personality": "天相：忠诚仁爱",
-      "topic_context_sha256": "b05776f6b39c364c6b50339b4ef0afd79bd43705e9d01ed9e4a92fe8c176b163",
+      "topic_context_sha256": "87dec540b0bd64fea1a0840413b412795f86e4833b55cfe521153376f36ff0b4",
       "basis": "topic_character_context"
     },
     "150091": {
@@ -483,7 +485,7 @@
       "delivery": "节奏沉稳，重点笃定，保持掌控感不压声",
       "card_sha256": null,
       "personality": "廉贞：精明内敛",
-      "topic_context_sha256": "206b94cd8117e4780380ab0059df05992e53020fd1990a3e20db2144d8e42209",
+      "topic_context_sha256": "a19b81146cf006b98cde7b96598d5102cb04257e8beae8526c64d2a71223e71b",
       "basis": "topic_character_context"
     },
     "190012": {
@@ -519,7 +521,7 @@
       "delivery": "声音明亮，语速稍快，落字清楚利落",
       "card_sha256": null,
       "personality": "天同：逍遥乐天",
-      "topic_context_sha256": "86ac0a446993de85d886c38bbd0707840ed5d33addb73921546ee3c5795e43ad",
+      "topic_context_sha256": "1fd824a1dc404d464f60cf92cfdd22ac474ca20e2cf2baa85f066b628f40f647",
       "basis": "topic_character_context"
     },
     "190103": {
@@ -555,7 +557,7 @@
       "delivery": "音量适中，停顿审慎，不轻易露底",
       "card_sha256": null,
       "personality": "七杀：冷静独行",
-      "topic_context_sha256": "c7255a50117c4069b74b2969ff620350ce710c1f432fd64ff4586465c54a7889",
+      "topic_context_sha256": "15bafd25a2393b879b69be3ebe791ede16a0e5e55143d109c55c20540588b0d8",
       "basis": "topic_character_context"
     },
     "190032": {
@@ -564,7 +566,7 @@
       "delivery": "轻快松弛，语尾自然，不强加笑声",
       "card_sha256": null,
       "personality": "天同：逍遥乐天",
-      "topic_context_sha256": "ad1ab818f37d28242e41321416bd4f5471825063ac0f02c1150dd8175ae60d86",
+      "topic_context_sha256": "aa719643a0f1f43fb23cc2526a60fbf4492e855a3cb78046c949bb7e8ef57b5d",
       "basis": "topic_character_context"
     },
     "190531": {
@@ -600,7 +602,7 @@
       "delivery": "仁厚平实，关切具体，语尾安稳",
       "card_sha256": null,
       "personality": "天梁：调和权变",
-      "topic_context_sha256": "a19516cedd48428a905a4a76eb9aa3596b12a11a8ca2d72ec945c108188a70da",
+      "topic_context_sha256": "7208a398e7462813912adc6dc5e287670b9fd03689689c63545c424aece5b2c8",
       "basis": "topic_character_context"
     },
     "190803": {
@@ -627,7 +629,7 @@
       "delivery": "声音平稳偏冷，短句克制，不额外示好",
       "card_sha256": null,
       "personality": "廉贞：精明内敛",
-      "topic_context_sha256": "2f96b665589bf0f4186894022bd8c4109f1284870ceb00bde82d331999e20fa1",
+      "topic_context_sha256": "02b5cf51d5889a5814e14b56aeb129d7146e99e38e5f77bfb3c62fc81b1f83db",
       "basis": "topic_character_context"
     },
     "191102": {
@@ -636,7 +638,7 @@
       "delivery": "声音柔和，尾音轻扬，笑意含蓄不拖腔",
       "card_sha256": null,
       "personality": "廉贞：精明内敛",
-      "topic_context_sha256": "a569d64a4aaba1cc56a7e922bf191d51a110d190c2193eea2cd772eb23e14017",
+      "topic_context_sha256": "eb4539d8e64af13c6c234d975a97a49238856371f9512e324ba72f6dcd1c91ba",
       "basis": "topic_character_context"
     },
     "191201": {
@@ -663,7 +665,7 @@
       "delivery": "语气机巧，转折略停，笑意不外露",
       "card_sha256": null,
       "personality": "贪狼：机敏进取",
-      "topic_context_sha256": "89017520114c3847e1d2041180b5412077e77678dbc204742aae9ff39d7e9a8c",
+      "topic_context_sha256": "cdde222964f56380722f779ff17797f1e8c8ae01b9d5dafb23413a7b9a0c9901",
       "basis": "topic_character_context"
     },
     "191032": {
@@ -726,7 +728,7 @@
       "delivery": "节奏向前，落字果断，热度适中",
       "card_sha256": null,
       "personality": "武曲：刚毅果决",
-      "topic_context_sha256": "06b2e5d812bc08c6680e0e5f461d77457a0a969f3d11de5d6dc9f9fc000eb50e",
+      "topic_context_sha256": "69b5db74df8fa42126c557f555dc4bf7e0af0faed3e2318f9d159aa3f76b63bb",
       "basis": "topic_character_context"
     },
     "192011": {
@@ -762,7 +764,7 @@
       "delivery": "声音柔和，语速舒缓，说明循序渐进",
       "card_sha256": null,
       "personality": "太阴：务实坚韧",
-      "topic_context_sha256": "05fd3bd441573820ca7122cce7b72faec27800dbbb28787945a37ff773a2aa56",
+      "topic_context_sha256": "9a9f6fe53beb59aaf30df39bac6d0da481d0bc9a855a01deced515194ee4feed",
       "basis": "topic_character_context"
     },
     "192201": {
@@ -771,7 +773,7 @@
       "delivery": "语声柔和通透，节奏自然，关心有分寸",
       "card_sha256": null,
       "personality": "太阴：务实坚韧",
-      "topic_context_sha256": "b6e1bae2179e64939092427effaa04f514b391178a055e5819d092a77f56516d",
+      "topic_context_sha256": "00168300c5ac09345d48aaf0ed4685e68b3db06a044f7e07e55c5f60d973c6af",
       "basis": "topic_character_context"
     },
     "192301": {
@@ -789,7 +791,7 @@
       "delivery": "语声柔和通透，节奏自然，关心有分寸",
       "card_sha256": null,
       "personality": "太阴：务实坚韧",
-      "topic_context_sha256": "45fc6eab16f44542211f3b120948ebdb1016e13da8450c1aeeb998a6646557d9",
+      "topic_context_sha256": "8f90a4b5d49de12f7d49d5d9fb648a478cf4057a166ef7f55764e1e9be4ff901",
       "basis": "topic_character_context"
     },
     "192032": {
@@ -798,7 +800,7 @@
       "delivery": "轻声稍慢，表达清楚，停顿自然不故意结巴",
       "card_sha256": null,
       "personality": "太阴：务实坚韧",
-      "topic_context_sha256": "3936d37d750ea8a90440e9e1bd0a3fb3be70512c8c8b4a8913dd9d9d3a591da6",
+      "topic_context_sha256": "ca32a98deabc4c01d83e90d47093fac0ed3a4ed0c11ba6ccca33ee28dfdba558",
       "basis": "topic_character_context"
     },
     "192531": {
@@ -834,7 +836,7 @@
       "delivery": "话少干脆，落字有力，语气不绕弯",
       "card_sha256": null,
       "personality": "廉贞：精明内敛",
-      "topic_context_sha256": "28cb3f7e493d3ef54211406bbaab57adf63951b8d66a6c6a2869c91c63396bf1",
+      "topic_context_sha256": "af598778bb6a775d2ba3a9adb3816f165b830712598d31595304442c9cd6a168",
       "basis": "topic_character_context"
     },
     "192803": {
@@ -843,7 +845,7 @@
       "delivery": "短句稳当，清楚直接，停顿后再落重点",
       "card_sha256": null,
       "personality": "天机：智谋机变",
-      "topic_context_sha256": "919569e59c2878560084387eb6a43578cfbf6198f440decb7a73c41e82d0adde",
+      "topic_context_sha256": "d4bdfe553e2df51bf40682e881c00d82278212405e2066d8a3e2648fbc654d75",
       "basis": "topic_character_context"
     },
     "193011": {
@@ -852,7 +854,7 @@
       "delivery": "节奏稳当圆融，语尾舒展，给人留余地",
       "card_sha256": null,
       "personality": "天府：稳重圆融",
-      "topic_context_sha256": "23b0891059db7248fa8f1b4c4d3663e3bf3c736d003df302288d46ad170d45f4",
+      "topic_context_sha256": "7f7617d6c7f858d30a9c695685ef9f727a6a5694227b2290e7f3cf7b698ba763",
       "basis": "topic_character_context"
     },
     "193101": {
@@ -861,7 +863,7 @@
       "delivery": "声音明亮，语速稍快，落字清楚利落",
       "card_sha256": null,
       "personality": "太阳：热情磊落",
-      "topic_context_sha256": "cb67980f4e3b4b9cbf75fdeb008b223238a6b39a15157f1f7f52c56f1539cfb5",
+      "topic_context_sha256": "4363d7b0418ae2760224d5c2e28ccb8f2283e63aec9447f11f6e5dfdb2400d28",
       "basis": "topic_character_context"
     },
     "193102": {
@@ -888,7 +890,7 @@
       "delivery": "语气清冷，收尾笃定，锋芒克制",
       "card_sha256": null,
       "personality": "巨门：直言好胜",
-      "topic_context_sha256": "88f3dd4f3070572825702f05a179994b78a88be08c149701dd480e6335266689",
+      "topic_context_sha256": "f7cc758958b8b0014580b34259f0db8cb5b87f7a0ded6fe74a8d4dd821c72f0b",
       "basis": "topic_character_context"
     },
     "193301": {
@@ -906,7 +908,7 @@
       "delivery": "朴实少言，认真直接，谈熟悉事物时自然放松",
       "card_sha256": null,
       "personality": "太阴：务实坚韧",
-      "topic_context_sha256": "68563cfec357cedbd070c667b1290df5e643fe94114106f465bc1c3c7ee04345",
+      "topic_context_sha256": "f7b8f271a94e4627ae9531998b23167f5bed79d68c8e03b6f7e46ece26559848",
       "basis": "topic_character_context"
     },
     "193032": {
@@ -915,7 +917,7 @@
       "delivery": "语声柔和通透，节奏自然，关心有分寸",
       "card_sha256": null,
       "personality": "天相：忠诚仁爱",
-      "topic_context_sha256": "f95a9e8d7ddd8e6f8307fb68333749b63825c19e0ddd00c4ec930a216c4c202f",
+      "topic_context_sha256": "e4e788df41d9069b32d11401fd07065efdf462e3ece2891dcb675c099806d5ae",
       "basis": "topic_character_context"
     },
     "193531": {
@@ -960,7 +962,7 @@
       "delivery": "语声柔和通透，节奏自然，关心有分寸",
       "card_sha256": null,
       "personality": "天相：忠诚仁爱",
-      "topic_context_sha256": "cb7aefa12568887650dd13eee60a90a9983077eb0eb7b7a98e56872f67e39b34",
+      "topic_context_sha256": "5aded37678579cd0179be7393a83e2c6684552e02c416d48b519305ec49f1eaa",
       "basis": "topic_character_context"
     },
     "194011": {
@@ -978,7 +980,7 @@
       "delivery": "简洁直切，重音明确，声音稳而不硬喊",
       "card_sha256": null,
       "personality": "廉贞：精明内敛",
-      "topic_context_sha256": "0c293880ff898dbbcb2fa369c9501de37ca69feda3fe88331009d9feecfe9aa6",
+      "topic_context_sha256": "f0c4a1b0b969c0540190743c1202816cea9c59545a19776bff1295f6b8ff0f52",
       "basis": "topic_character_context"
     },
     "194102": {
@@ -987,7 +989,7 @@
       "delivery": "字句清楚锋利，反问利落，不尖叫",
       "card_sha256": null,
       "personality": "巨门：直言好胜",
-      "topic_context_sha256": "beef2a4aef3003c6bfa5395021899d7914a5b31ec9136603ddfae6ea7625d15a",
+      "topic_context_sha256": "1839c0e5735ba9d02218d97829fbc37d26b02aa9a613dd13d108d1d04c5c59a6",
       "basis": "topic_character_context"
     },
     "194105": {
@@ -1005,7 +1007,7 @@
       "delivery": "语声柔和通透，节奏自然，关心有分寸",
       "card_sha256": null,
       "personality": "天府：稳重圆融",
-      "topic_context_sha256": "3719c027346ae80be0b4009380308ec63540e984bce84238c6e0f2ccf162b97f",
+      "topic_context_sha256": "5cac9340511c769950fd9de7ae24f058e0700dbb97484001ece08e92bd40464e",
       "basis": "topic_character_context"
     },
     "194301": {
@@ -1023,7 +1025,7 @@
       "delivery": "语速适中，措辞质朴，语尾踏实",
       "card_sha256": null,
       "personality": "廉贞：精明内敛",
-      "topic_context_sha256": "09572c610fca882155cb8bd545056a615adf09d330c5f44f194f794c5c53ca11",
+      "topic_context_sha256": "6b2af2df3d8139119c2fb2b9d86c8f95f9bc64909b7b2c0572a2843916314068",
       "basis": "topic_character_context"
     },
     "194032": {
@@ -1032,7 +1034,7 @@
       "delivery": "节奏向前，落字果断，热度适中",
       "card_sha256": null,
       "personality": "贪狼：机敏进取",
-      "topic_context_sha256": "24be7c76810050bf5f4d6689b52758bc733b78a9b9e3cd0f3f8e3f89c145ed86",
+      "topic_context_sha256": "c0123e5dbfefc59bf795ec17797e6ab006d01f9a2a83d29cdffcdfc110398e51",
       "basis": "topic_character_context"
     },
     "194531": {
@@ -1050,7 +1052,7 @@
       "delivery": "语气温和克制，重点轻落，留有余地",
       "card_sha256": null,
       "personality": "太阴：务实坚韧",
-      "topic_context_sha256": "f6302d5451c4ebc2c637c8a8b46805832267a1bc56b8651b8153a7099af5738b",
+      "topic_context_sha256": "a584cf80753ed1f10e2b6834f3f17a40b9046709d900116e20dc57eeb1fd7517",
       "basis": "topic_character_context"
     },
     "194801": {
@@ -1077,7 +1079,7 @@
       "delivery": "惜字如金，先短暂停顿，再答重点",
       "card_sha256": null,
       "personality": "天相：忠诚仁爱",
-      "topic_context_sha256": "7240dd67e052ce8d259faa3496964d6132f695ba6bfaf26e302c07cba6d67155",
+      "topic_context_sha256": "2f140044a9a87176d3e7b42b6626b318d8761d15de27123b0983e94f8218d100",
       "basis": "topic_character_context"
     },
     "203203": {
@@ -1113,7 +1115,7 @@
       "delivery": "节奏稳当圆融，语尾舒展，给人留余地",
       "card_sha256": null,
       "personality": "天府：稳重圆融",
-      "topic_context_sha256": null,
+      "topic_context_sha256": "ac03301550044e1fe3db5a39fe79a9295a0a00e204e7e30f02cfabf2b7f8e69f",
       "basis": "PersonalityDesc"
     },
     "160042": {
@@ -1122,7 +1124,7 @@
       "delivery": "语速稍快，目标明确，重音灵活",
       "card_sha256": null,
       "personality": "贪狼：机敏进取",
-      "topic_context_sha256": null,
+      "topic_context_sha256": "b2540a533c09aa747c6e895d0d1d5819cfd90454ef1592eca6412cac7a99d34e",
       "basis": "PersonalityDesc"
     },
     "160051": {
@@ -1140,7 +1142,7 @@
       "delivery": "明朗直接，声音开阔，热心但不喧哗",
       "card_sha256": null,
       "personality": "太阳：热情磊落",
-      "topic_context_sha256": null,
+      "topic_context_sha256": "f2771eb54aa46f88d4a365c24316194e1aa232ed08cf779f435c3f8cd756c79a",
       "basis": "PersonalityDesc"
     },
     "160061": {
@@ -1158,7 +1160,7 @@
       "delivery": "声音柔和，语速舒缓，说明循序渐进",
       "card_sha256": null,
       "personality": "太阴：务实坚韧",
-      "topic_context_sha256": null,
+      "topic_context_sha256": "db93e2153ab1ea966f56bc0484155dbf3b28d28b26cfe74eae7d84199cfbbb88",
       "basis": "PersonalityDesc"
     },
     "160071": {
@@ -1167,7 +1169,7 @@
       "delivery": "话少干脆，落字有力，语气不绕弯",
       "card_sha256": null,
       "personality": "武曲：刚毅果决",
-      "topic_context_sha256": null,
+      "topic_context_sha256": "d4346e3a9eda995ce996de78cc6ebb8fefbe29dc66b7835b1a12c2cdc565b103",
       "basis": "PersonalityDesc"
     },
     "160081": {
@@ -1185,7 +1187,7 @@
       "delivery": "声音柔和，语速舒缓，说明循序渐进",
       "card_sha256": null,
       "personality": "太阴：务实坚韧",
-      "topic_context_sha256": null,
+      "topic_context_sha256": "97e83cc8984d7bd40fbba85d68d5a2f3e97a55793a87c2e123ce735ed5aa8d8c",
       "basis": "PersonalityDesc"
     },
     "160091": {
@@ -1203,7 +1205,7 @@
       "delivery": "语气温和克制，重点轻落，留有余地",
       "card_sha256": null,
       "personality": "廉贞：精明内敛",
-      "topic_context_sha256": null,
+      "topic_context_sha256": "e70fffaff2db9fa62e145a886e0697a8eb4010e37e3958497a0bbdd858c26439",
       "basis": "PersonalityDesc"
     },
     "170042": {
@@ -1212,7 +1214,7 @@
       "delivery": "转折灵活，试探处稍停，判断说清楚",
       "card_sha256": null,
       "personality": "天机：智谋机变",
-      "topic_context_sha256": null,
+      "topic_context_sha256": "d08cc4c26ede4d3ccb95e8523449c4f69e00d19780c68166830217b0b9c01191",
       "basis": "PersonalityDesc"
     },
     "170051": {
@@ -1221,7 +1223,7 @@
       "delivery": "语气温和克制，重点轻落，留有余地",
       "card_sha256": null,
       "personality": "廉贞：精明内敛",
-      "topic_context_sha256": null,
+      "topic_context_sha256": "a1cc7741bf163ee1ed9dfbf53f861162b6106451b27678b73c1bc85ff4abe9ee",
       "basis": "PersonalityDesc"
     },
     "170052": {
@@ -1248,7 +1250,7 @@
       "delivery": "声音柔和，语速舒缓，说明循序渐进",
       "card_sha256": null,
       "personality": "太阴：务实坚韧",
-      "topic_context_sha256": null,
+      "topic_context_sha256": "19820bd448f006cec97a6c6256170b574158f65337aa7edc13c510c8c85777f1",
       "basis": "PersonalityDesc"
     },
     "170071": {
@@ -1266,7 +1268,7 @@
       "delivery": "声音柔和，语速舒缓，说明循序渐进",
       "card_sha256": null,
       "personality": "太阴：务实坚韧",
-      "topic_context_sha256": null,
+      "topic_context_sha256": "d44d7238e8d256b5eacc73883bf8746f97144ee31ac5cb08f2df2c0ec62f447f",
       "basis": "PersonalityDesc"
     },
     "170081": {
@@ -1329,7 +1331,7 @@
       "delivery": "语气清冷，收尾笃定，锋芒克制",
       "card_sha256": "838c271c3bdc6c2f42496830c7da48e02c672de950ee621a83ebac4dbe381022",
       "personality": "七杀：冷静独行",
-      "topic_context_sha256": null,
+      "topic_context_sha256": "07c2799d4c00b45c25f1a7bdefabe3a03c6609c28cf9cb29ced6a6bb0de0a00d",
       "basis": "speakStyle"
     },
     "195531": {
@@ -1617,7 +1619,7 @@
       "delivery": "温润舒缓，留出自然停顿，重音轻而稳",
       "card_sha256": "ac01a33b4a7274b7b29c404270bc7c9b9fd4db4fd7fc660e43e0415725caee15",
       "personality": "",
-      "topic_context_sha256": "21cb115e0852349dd8c17072aedaff77cadd7915e8b8c940e5eb8a4821c0ae54",
+      "topic_context_sha256": "97258bd96e7716fba681e92f176c73337e2405d2e27e2b49cc5f6628547819fc",
       "basis": "speakStyle"
     },
     "100305": {
@@ -10950,7 +10952,7 @@
       "delivery": "平实地说明，语速适中，询问不催促",
       "card_sha256": "88b8a5365d65bfc0885fc3d63cbc11a334d7276714416e4014fa47ba3f9fc7db",
       "personality": "天机：智谋机变",
-      "topic_context_sha256": "b078f56c25494b5937e3184c5c1568050e4174b4b0ee6b24a396d286e0563c81",
+      "topic_context_sha256": "d50d232d514fda47403a98956d45fb177a95fcb2adc4f6ceaf1ad5f669f3b591",
       "basis": "speakStyle"
     },
     "110201": {
@@ -10959,7 +10961,7 @@
       "delivery": "语声柔和通透，节奏自然，关心有分寸",
       "card_sha256": null,
       "personality": "天机：智谋机变",
-      "topic_context_sha256": "d5fedc552ce2c228c14eff13423e4ad34d37868bc96be2160fbe88a4abbb3c83",
+      "topic_context_sha256": "28f079d075b5e95688e848613d1c84fd033f6e6e005a63a4ca7ce4d282700034",
       "basis": "topic_character_context"
     },
     "110202": {
@@ -10968,7 +10970,7 @@
       "delivery": "中等语速，成熟从容，停顿有分寸",
       "card_sha256": null,
       "personality": "贪狼：机敏进取",
-      "topic_context_sha256": "bee786c00e30428a0e6926662144985550755edf194bf405fb8ff9a771e85579",
+      "topic_context_sha256": "03116d9126fbb68b9c8106bb2eeee634c8ec213cbf3122e8a189a7a0f0d582da",
       "basis": "topic_character_context"
     },
     "110203": {
@@ -10986,7 +10988,7 @@
       "delivery": "节奏稳当圆融，语尾舒展，给人留余地",
       "card_sha256": null,
       "personality": "天府：稳重圆融",
-      "topic_context_sha256": "0a16af57d7d137c26fd3949e2a88c349c525fb4ca5787245216c6ea554de4809",
+      "topic_context_sha256": "7b51ec361a07292cacddba0ec2af0ff0daee882f84387ab0c4ec56548520b8fa",
       "basis": "topic_character_context"
     },
     "110501": {
@@ -10995,7 +10997,7 @@
       "delivery": "语声柔和通透，节奏自然，关心有分寸",
       "card_sha256": null,
       "personality": "天梁：调和权变",
-      "topic_context_sha256": "9831c429481e5797fe7ec7cffee8325d171e027dff2084f7200d1836cf3b2abc",
+      "topic_context_sha256": "ef274a6fd56a9e7adcba8b44e9128d7f31eb246b342162188a8c966e7d6210a8",
       "basis": "topic_character_context"
     },
     "110502": {
@@ -11013,7 +11015,7 @@
       "delivery": "清亮俏皮，短句利落，笑意自然，认真处收住玩笑",
       "card_sha256": null,
       "personality": "贪狼：机敏进取",
-      "topic_context_sha256": "4d2cb8f59a082078fc844b8eb43661dde2d126a4a943a8a835fff27d239a9489",
+      "topic_context_sha256": "5ae1e582514295be9ddb3184a0e6c0fdb2c87362da961199b123ad0b94ae91b2",
       "basis": "topic_character_context"
     },
     "190013": {
@@ -11049,7 +11051,7 @@
       "delivery": "短句稳当，清楚直接，停顿后再落重点",
       "card_sha256": null,
       "personality": "天府：稳重圆融",
-      "topic_context_sha256": "a5329d3cb17332146d4fda891bce47a6a981ada4adc827c47f5825b1fcaae567",
+      "topic_context_sha256": "1e66f5068f5a40b50bdbdab2245cb882be4433f29ea8903827b00220034cb0e6",
       "basis": "topic_character_context"
     },
     "191401": {
@@ -11058,7 +11060,7 @@
       "delivery": "语气清冷，收尾笃定，锋芒克制",
       "card_sha256": null,
       "personality": "七杀：冷静独行",
-      "topic_context_sha256": "b85507df3e5a109d30e4c44dbb1c8c35161d17d8f97f952639c4adadfb082b07",
+      "topic_context_sha256": "c6c5f5ee2a518bf4816a78e24b2018203f03bd70d6921e687df08726bc0d0a94",
       "basis": "topic_character_context"
     },
     "192602": {
@@ -11067,7 +11069,7 @@
       "delivery": "语速稍慢，松弛随性，反问不尖刻",
       "card_sha256": null,
       "personality": "天府：稳重圆融",
-      "topic_context_sha256": "609d40bb9bca5eee3d3386fb4d1936a5c4bbe0736e7b21719c4411201f3d6856",
+      "topic_context_sha256": "3d50ca4f8ed786820f5e3b96a78f8ed551b17ec15347b125587a1f72ea5746d1",
       "basis": "topic_character_context"
     },
     "193401": {
@@ -11076,7 +11078,7 @@
       "delivery": "灵动明快，语气有小小转折，嘴硬处点到为止",
       "card_sha256": null,
       "personality": "贪狼：机敏进取",
-      "topic_context_sha256": "4770d1f1782d7427d0624228ad1998b1e6d522e722f4f61e71eec581b7a3041b",
+      "topic_context_sha256": "c9e68b199bfa5768c43a9c668f8a4e6352c08d443c10befe9213b24aec3d83cc",
       "basis": "topic_character_context"
     },
     "193602": {
@@ -11085,7 +11087,7 @@
       "delivery": "短句稳当，清楚直接，停顿后再落重点",
       "card_sha256": null,
       "personality": "天府：稳重圆融",
-      "topic_context_sha256": "282f1ebfa545d7443c6d450adf0df0bde6c5b0b040c5e465ca4d893606e0c94b",
+      "topic_context_sha256": "f4ae66b138c7e56825367312d3860216e0d9d6eb6a7202abf5cf82a98f988b0c",
       "basis": "topic_character_context"
     },
     "194401": {
@@ -11094,7 +11096,7 @@
       "delivery": "轻声稍慢，表达清楚，停顿自然不故意结巴",
       "card_sha256": null,
       "personality": "太阴：务实坚韧",
-      "topic_context_sha256": "584e75faf6dfa579733e2f72a0daaa51259edc28f1f17032203f817b34c75ae0",
+      "topic_context_sha256": "648e02f62fe227f560726426403c5306a42102d6540546d3602168a31db690c9",
       "basis": "topic_character_context"
     },
     "194602": {
@@ -11103,8 +11105,422 @@
       "delivery": "语气温和克制，重点轻落，留有余地",
       "card_sha256": null,
       "personality": "天相：忠诚仁爱",
-      "topic_context_sha256": "bdb3560bb60e49902f50413fdf2bad36c913baea8f6f536d1b03124e12a1a7e3",
+      "topic_context_sha256": "406c1164d88a72fc78a4e170d9784fbfdeb23c34a17eeb8c3967eb93307413a1",
       "basis": "topic_character_context"
+    },
+    "120081": {
+      "npc_name": "简和明",
+      "actor_profile": "hard",
+      "delivery": "话少干脆，落字有力，语气不绕弯",
+      "card_sha256": null,
+      "personality": "武曲：刚毅果决",
+      "topic_context_sha256": "b1605631e774e57164c37fba68bb1b578b4eb878aa364b2f5f2b8f53cc8cb8db",
+      "basis": "PersonalityDesc"
+    },
+    "120082": {
+      "npc_name": "茉禾",
+      "actor_profile": "patient",
+      "delivery": "声音柔和，语速舒缓，说明循序渐进",
+      "card_sha256": null,
+      "personality": "太阴：务实坚韧",
+      "topic_context_sha256": "16196713b2a86eecb04eb4eb8caa34eaeb82d850bf6b9ae8daf0efebea3e0332",
+      "basis": "PersonalityDesc"
+    },
+    "120101": {
+      "npc_name": "慕云栖",
+      "actor_profile": "clever",
+      "delivery": "转折灵活，试探处稍停，判断说清楚",
+      "card_sha256": null,
+      "personality": "天机：智谋机变",
+      "topic_context_sha256": "c4a4ad8a67ffbda2d7de592bd0407c3edc4b3bac740d12a9231b648a25f9478d",
+      "basis": "PersonalityDesc"
+    },
+    "120304": {
+      "npc_name": "楚弦霜",
+      "actor_profile": "diplomat",
+      "delivery": "节奏稳当圆融，语尾舒展，给人留余地",
+      "card_sha256": null,
+      "personality": "天府：稳重圆融",
+      "topic_context_sha256": "051efae1a1d4d34533b6fbd366f33a5e278f7e2cda07f82ef4c5be691eb93471",
+      "basis": "PersonalityDesc"
+    },
+    "120305": {
+      "npc_name": "何栖棠",
+      "actor_profile": "clever",
+      "delivery": "转折灵活，试探处稍停，判断说清楚",
+      "card_sha256": null,
+      "personality": "天机：智谋机变",
+      "topic_context_sha256": "31aba3ea9c09ac2e4bf6df8c811d075c584acbd5c841abad29272c55df2ad33b",
+      "basis": "PersonalityDesc"
+    },
+    "120401": {
+      "npc_name": "池知璧",
+      "actor_profile": "hard",
+      "delivery": "话少干脆，落字有力，语气不绕弯",
+      "card_sha256": null,
+      "personality": "武曲：刚毅果决",
+      "topic_context_sha256": "dd02b9df86f51d222dfd52b206c4fe06afc4cae1505cc590843e2ec41c94e48c",
+      "basis": "PersonalityDesc"
+    },
+    "120402": {
+      "npc_name": "路蘅",
+      "actor_profile": "clever",
+      "delivery": "转折灵活，试探处稍停，判断说清楚",
+      "card_sha256": null,
+      "personality": "天机：智谋机变",
+      "topic_context_sha256": "f6ba1d5c3bf335fdbbdcea2eb053893e2788a6bb2322111a63d97dfcf461eadb",
+      "basis": "PersonalityDesc"
+    },
+    "120501": {
+      "npc_name": "卫琴芷",
+      "actor_profile": "diplomat",
+      "delivery": "节奏稳当圆融，语尾舒展，给人留余地",
+      "card_sha256": null,
+      "personality": "天府：稳重圆融",
+      "topic_context_sha256": "1f2fa7e981d24e33d3e44c26692dd937c765ad4954fc042887a4712835e0525b",
+      "basis": "PersonalityDesc"
+    },
+    "120502": {
+      "npc_name": "应桐音",
+      "actor_profile": "free",
+      "delivery": "轻快松弛，语尾自然，不强加笑声",
+      "card_sha256": null,
+      "personality": "天同：逍遥乐天",
+      "topic_context_sha256": "6d6b0539fdc07470471b82a308e9aeec294679e9b380b972dfae417cee26e538",
+      "basis": "PersonalityDesc"
+    },
+    "120703": {
+      "npc_name": "季婉",
+      "actor_profile": "clever",
+      "delivery": "转折灵活，试探处稍停，判断说清楚",
+      "card_sha256": null,
+      "personality": "天机：智谋机变",
+      "topic_context_sha256": "6b6047404c958b0b8411da821cfc2cc17a38758aa649fda2c7e047574f631631",
+      "basis": "PersonalityDesc"
+    },
+    "130301": {
+      "npc_name": "忘忧",
+      "actor_profile": "leader",
+      "delivery": "节奏沉稳，重点笃定，保持掌控感不压声",
+      "card_sha256": null,
+      "personality": "紫微：天生领袖",
+      "topic_context_sha256": "6c5297e728abac98d4777b5ce31dd296ad4629b90b29a6bb24161e42f798a924",
+      "basis": "PersonalityDesc"
+    },
+    "160101": {
+      "npc_name": "墨巧巧(废弃)",
+      "actor_profile": "subtle",
+      "delivery": "语气温和克制，重点轻落，留有余地",
+      "card_sha256": null,
+      "personality": "廉贞：精明内敛",
+      "topic_context_sha256": "d82c79efdea1135f3301c741bf400f69d52cfae24c4b3b37236cb24e81e3ed9d",
+      "basis": "PersonalityDesc"
+    },
+    "202000": {
+      "npc_name": "宋照砂",
+      "actor_profile": "subtle",
+      "delivery": "语气温和克制，重点轻落，留有余地",
+      "card_sha256": null,
+      "personality": "廉贞：精明内敛",
+      "topic_context_sha256": "1407db8f7f2ecc4d9c1a5f90af5b31aaabdb482d031e79e2dfa9ddbf9ec9f239",
+      "basis": "PersonalityDesc"
+    },
+    "202101": {
+      "npc_name": "严秋燕",
+      "actor_profile": "adaptive",
+      "delivery": "节奏有收放，重点清楚，态度有分寸",
+      "card_sha256": null,
+      "personality": "天梁：调和权变",
+      "topic_context_sha256": "f107db4f99012561dd6e8e50c7d7be6518bf1dafe383d236a60e4bdce6b91aa3",
+      "basis": "PersonalityDesc"
+    },
+    "202102": {
+      "npc_name": "柳画沙",
+      "actor_profile": "kind",
+      "delivery": "仁厚平实，关切具体，语尾安稳",
+      "card_sha256": null,
+      "personality": "天相：忠诚仁爱",
+      "topic_context_sha256": "0bfd0f0a9e1379091908be9d737376cdc8d568b3e0cdba5b5bd3afdbeeed2542",
+      "basis": "PersonalityDesc"
+    },
+    "202203": {
+      "npc_name": "沙栖云",
+      "actor_profile": "adaptive",
+      "delivery": "节奏有收放，重点清楚，态度有分寸",
+      "card_sha256": null,
+      "personality": "天梁：调和权变",
+      "topic_context_sha256": "5b9b883493724b4821ccf8335e3820e39d348c574cb058195f5c2af5bf564aa5",
+      "basis": "PersonalityDesc"
+    },
+    "203131": {
+      "npc_name": "麦穗宁",
+      "actor_profile": "patient",
+      "delivery": "声音柔和，语速舒缓，说明循序渐进",
+      "card_sha256": null,
+      "personality": "太阴：务实坚韧",
+      "topic_context_sha256": "430c3da2a3f48a0523230433b29ca8098e9aba2ce8d182323b4a217044ae79df",
+      "basis": "PersonalityDesc"
+    },
+    "203201": {
+      "npc_name": "麦青桥",
+      "actor_profile": "kind",
+      "delivery": "仁厚平实，关切具体，语尾安稳",
+      "card_sha256": null,
+      "personality": "天相：忠诚仁爱",
+      "topic_context_sha256": "e045b435dad9c5a8f1c13c61955a3a7af745a9188f0d9256bbb553ab23f0d0ed",
+      "basis": "PersonalityDesc"
+    },
+    "203301": {
+      "npc_name": "周晒娘",
+      "actor_profile": "sharp",
+      "delivery": "字句清楚锋利，反问利落，不尖叫",
+      "card_sha256": null,
+      "personality": "巨门：直言好胜",
+      "topic_context_sha256": "acef781a46313fe3be332beed4fc76921a37c8390b23a319d6d566e5b502a24e",
+      "basis": "PersonalityDesc"
+    },
+    "203601": {
+      "npc_name": "苗双禾",
+      "actor_profile": "patient",
+      "delivery": "声音柔和，语速舒缓，说明循序渐进",
+      "card_sha256": null,
+      "personality": "太阴：务实坚韧",
+      "topic_context_sha256": "e662504da35d344e1957d811497e79bf1ac62300e0d0361e1d361557ebdf71e5",
+      "basis": "PersonalityDesc"
+    },
+    "255901": {
+      "npc_name": "紫鸢",
+      "actor_profile": "leader",
+      "delivery": "节奏沉稳，重点笃定，保持掌控感不压声",
+      "card_sha256": null,
+      "personality": "紫微：天生领袖",
+      "topic_context_sha256": "41e88cdcc4126a5ae0ae355280f7c84b07cc1f85ae2f20eb12a7aa0189d13760",
+      "basis": "PersonalityDesc"
+    },
+    "195101": {
+      "npc_name": "岑照微",
+      "actor_profile": "natural",
+      "delivery": "自然清晰，中等语速，不夸张表演",
+      "card_sha256": null,
+      "personality": "天梁：正直护弱",
+      "topic_context_sha256": "6fc5a03b32bc2cd0b474a0b7c57a4b1429896ddcca8e83be806bb2a419e5622f",
+      "basis": "PersonalityDesc"
+    },
+    "195201": {
+      "npc_name": "任知暖",
+      "actor_profile": "natural",
+      "delivery": "自然清晰，中等语速，不夸张表演",
+      "card_sha256": null,
+      "personality": "天相：谨慎担责",
+      "topic_context_sha256": "6604bbaf525448b6376a4b28ff1282a91843100c9373365d26edcc5d1348f954",
+      "basis": "PersonalityDesc"
+    },
+    "195501": {
+      "npc_name": "寒纪原",
+      "actor_profile": "natural",
+      "delivery": "自然清晰，中等语速，不夸张表演",
+      "card_sha256": null,
+      "personality": "廉贞：执拗功利",
+      "topic_context_sha256": "d7b55d3e980432aab003ab506966cf41afd533e57b101c482a5c2db33dee1e36",
+      "basis": "PersonalityDesc"
+    },
+    "195502": {
+      "npc_name": "虞清砚",
+      "actor_profile": "natural",
+      "delivery": "自然清晰，中等语速，不夸张表演",
+      "card_sha256": null,
+      "personality": "天机：敏锐求证",
+      "topic_context_sha256": "558988ec3116046b2a846e525e29e57714f2a70ab0f3fd1d088dba50df53a038",
+      "basis": "PersonalityDesc"
+    },
+    "195802": {
+      "npc_name": "容雪龄",
+      "actor_profile": "natural",
+      "delivery": "自然清晰，中等语速，不夸张表演",
+      "card_sha256": null,
+      "personality": "天梁：重义守界",
+      "topic_context_sha256": "ec18d480867e9f6161bb239814fe2c3f713ac0f6dee9349c8778db71e43f1e14",
+      "basis": "PersonalityDesc"
+    },
+    "196102": {
+      "npc_name": "谢澄晖",
+      "actor_profile": "bold",
+      "delivery": "节奏向前，落字果断，热度适中",
+      "card_sha256": null,
+      "personality": "破军：锐意勇进",
+      "topic_context_sha256": "3e31fbd41cad14dc97880426aa6dc5c9836b76305ca67a253fea8884be2fcd4d",
+      "basis": "PersonalityDesc"
+    },
+    "196201": {
+      "npc_name": "尹绛衡",
+      "actor_profile": "clever",
+      "delivery": "转折灵活，试探处稍停，判断说清楚",
+      "card_sha256": null,
+      "personality": "天机：智谋机变",
+      "topic_context_sha256": "28e0a982c9569e3af27024741eb1948b4d64c8ee91875d8fed119f29cbdf2e7f",
+      "basis": "PersonalityDesc"
+    },
+    "196301": {
+      "npc_name": "费承烁",
+      "actor_profile": "hard",
+      "delivery": "话少干脆，落字有力，语气不绕弯",
+      "card_sha256": null,
+      "personality": "武曲：刚毅果决",
+      "topic_context_sha256": "69215994e1e3a8cd32fc5294dd64020450273df69ea11a565108d94d0f26d496",
+      "basis": "PersonalityDesc"
+    },
+    "196501": {
+      "npc_name": "戚惊翎",
+      "actor_profile": "ambitious",
+      "delivery": "语速稍快，目标明确，重音灵活",
+      "card_sha256": null,
+      "personality": "贪狼：机敏进取",
+      "topic_context_sha256": "133e271511d4da8e5920fee02ac7343238b711aaf238e931d077eef97b17ecc6",
+      "basis": "PersonalityDesc"
+    },
+    "196502": {
+      "npc_name": "阮清蘅",
+      "actor_profile": "sun",
+      "delivery": "明朗直接，声音开阔，热心但不喧哗",
+      "card_sha256": null,
+      "personality": "太阳：热情磊落",
+      "topic_context_sha256": "22bb7f279dbc69c37df1f83a6e6be1ac633e242d8f332acf5c9a6014c7f17ee4",
+      "basis": "PersonalityDesc"
+    },
+    "196801": {
+      "npc_name": "步晞和",
+      "actor_profile": "cold",
+      "delivery": "声音平稳偏冷，短句克制，不额外示好",
+      "card_sha256": null,
+      "personality": "七杀：冷静独行",
+      "topic_context_sha256": "f5112344db7aca2cfd0f935c037192426320f707cfb3152615c5d5f9dfb07f09",
+      "basis": "PersonalityDesc"
+    },
+    "197201": {
+      "npc_name": "宁葵真",
+      "actor_profile": "patient",
+      "delivery": "声音柔和，语速舒缓，说明循序渐进",
+      "card_sha256": null,
+      "personality": "太阴：务实坚韧",
+      "topic_context_sha256": "94760ca94f0bf117c7afa213059a7f739fd9d73ade8fd0b3857341579e9e43f5",
+      "basis": "PersonalityDesc"
+    },
+    "197501": {
+      "npc_name": "阚引霓",
+      "actor_profile": "ambitious",
+      "delivery": "语速稍快，目标明确，重音灵活",
+      "card_sha256": null,
+      "personality": "贪狼：机敏进取",
+      "topic_context_sha256": "b1aae37612b261463c11642536366b72bf601e5408cb400005d8718079c747ff",
+      "basis": "PersonalityDesc"
+    },
+    "197502": {
+      "npc_name": "郁听澜",
+      "actor_profile": "sun",
+      "delivery": "明朗直接，声音开阔，热心但不喧哗",
+      "card_sha256": null,
+      "personality": "太阳：热情磊落",
+      "topic_context_sha256": "d49dacf74e8a04498b4d947746bee85c75070ccc5d8db535668e20e38ae74a21",
+      "basis": "PersonalityDesc"
+    },
+    "197803": {
+      "npc_name": "沙霁岚",
+      "actor_profile": "bold",
+      "delivery": "节奏向前，落字果断，热度适中",
+      "card_sha256": null,
+      "personality": "破军：锐意勇进",
+      "topic_context_sha256": "e63151b7ddbce4601ed660f2b2c462246dff696d1ec3eb84358f538bf69ae1f6",
+      "basis": "PersonalityDesc"
+    },
+    "198102": {
+      "npc_name": "沈听砂",
+      "actor_profile": "ambitious",
+      "delivery": "语速稍快，目标明确，重音灵活",
+      "card_sha256": null,
+      "personality": "贪狼：机敏进取",
+      "topic_context_sha256": "5e7621538ac100d5845c59e8c36735b15b8cbb105a9ed4cc07640a98faf96dfc",
+      "basis": "PersonalityDesc"
+    },
+    "198201": {
+      "npc_name": "黎疏月",
+      "actor_profile": "patient",
+      "delivery": "声音柔和，语速舒缓，说明循序渐进",
+      "card_sha256": null,
+      "personality": "太阴：务实坚韧",
+      "topic_context_sha256": "9bbf9931a7c062b56548be0796b36fde5f8677ef605dc6c378ddc8a59e2d6221",
+      "basis": "PersonalityDesc"
+    },
+    "198501": {
+      "npc_name": "桑知还",
+      "actor_profile": "free",
+      "delivery": "轻快松弛，语尾自然，不强加笑声",
+      "card_sha256": null,
+      "personality": "天同：逍遥乐天",
+      "topic_context_sha256": "3d2b6dccabfe9ba4d7d2bbf57391c862b1a5b07852b7f2eadcea3cf559f2a6f6",
+      "basis": "PersonalityDesc"
+    },
+    "198803": {
+      "npc_name": "顾敛雪",
+      "actor_profile": "natural",
+      "delivery": "自然清晰，中等语速，不夸张表演",
+      "card_sha256": null,
+      "personality": "天梁：清高守正",
+      "topic_context_sha256": "c0a151628c9b90a05d54b45543f9a561c922dbfceef683e07286aa8bea7e512b",
+      "basis": "PersonalityDesc"
+    },
+    "199011": {
+      "npc_name": "温宛央",
+      "actor_profile": "subtle",
+      "delivery": "语气温和克制，重点轻落，留有余地",
+      "card_sha256": null,
+      "personality": "廉贞：精明内敛",
+      "topic_context_sha256": "e7c1642219e75c9dbf9239305c8a999db4226e5d94366476149fab4990c8fb97",
+      "basis": "PersonalityDesc"
+    },
+    "199101": {
+      "npc_name": "苏引绡",
+      "actor_profile": "subtle",
+      "delivery": "语气温和克制，重点轻落，留有余地",
+      "card_sha256": null,
+      "personality": "廉贞：精明内敛",
+      "topic_context_sha256": "9a56e6ca13c6d1e5ec59ce4e3ce0fb00cd7354bfe74e313ebf58a26860cbb802",
+      "basis": "PersonalityDesc"
+    },
+    "199201": {
+      "npc_name": "韩露葳",
+      "actor_profile": "patient",
+      "delivery": "声音柔和，语速舒缓，说明循序渐进",
+      "card_sha256": null,
+      "personality": "太阴：务实坚韧",
+      "topic_context_sha256": "5c9c90fce545b9a05a86abfc0533c87f2300b0509ea7af84fae6415082a2112e",
+      "basis": "PersonalityDesc"
+    },
+    "199801": {
+      "npc_name": "裴沉璧",
+      "actor_profile": "cold",
+      "delivery": "声音平稳偏冷，短句克制，不额外示好",
+      "card_sha256": null,
+      "personality": "七杀：冷静独行",
+      "topic_context_sha256": "a78efbc44c0d4ca5e1761e9179d529a2f3e3f52e0ae0214e8ffc7b5d8eaae3f8",
+      "basis": "PersonalityDesc"
+    },
+    "199802": {
+      "npc_name": "曲绛容",
+      "actor_profile": "sharp",
+      "delivery": "字句清楚锋利，反问利落，不尖叫",
+      "card_sha256": null,
+      "personality": "巨门：直言好胜",
+      "topic_context_sha256": "33b900c320519f1a73f262ecf9ff82d6b3f2682c6154fa991a7b06c2d69d61e6",
+      "basis": "PersonalityDesc"
+    },
+    "203521": {
+      "npc_name": "陶晚芦",
+      "actor_profile": "subtle",
+      "delivery": "语气温和克制，重点轻落，留有余地",
+      "card_sha256": null,
+      "personality": "廉贞：精明内敛",
+      "topic_context_sha256": "da9e553d33a758b9ac8f2fcbbe4fe200cd99afe9d7fb95c76b8e1753ce499335",
+      "basis": "PersonalityDesc"
     }
   },
   "entries": [
@@ -104706,6 +105122,3150 @@
       "style_source": "offline_ai_authored",
       "topic_name": "那件小事后来呢",
       "context_sha256": "0b9dcf4f57f7bc7398a971a2e0520435889822e6aeaffba1fab8761e140b706f",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:100521:10052101",
+      "npc_id": 100521,
+      "npc_name": "福嫂",
+      "source": "persuade_opening",
+      "source_id": "10052101",
+      "language": "zh-Hans",
+      "text": "我想盘间小饭馆，可一交租，面摊攒的钱就剩不下多少了。你来吃饭，会更在意有个屋檐，还是我这碗面的味道？这钱值不值得先花？",
+      "text_sha256": "cff164446416aa512300887ad7d9033367eb1055e4abf354f7edd0b4ccf0791b",
+      "actor_profile": "aunt",
+      "performance_profile": "ask",
+      "voice_style": {
+        "emotion_tags": [
+          "好奇",
+          "询问"
+        ],
+        "delivery": "声音爽利，关切有力度，日常交谈不喊叫；重点落在所问之处，句尾轻微上扬，不连续逼问",
+        "intensity": 0.23
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "饭馆这一步，要不要迈",
+      "context_sha256": "d0e412747670ebfc18ee2b829f86ba257523479770984e1bdb31b253bc7dd394",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:100001:10000101",
+      "npc_id": 100001,
+      "npc_name": "柳秀娘",
+      "source": "persuade_opening",
+      "source_id": "10000101",
+      "language": "zh-Hans",
+      "text": "我想再歇一阵，可攒下的钱总要花完。你若是我，会先找点活做，还是先算算还能歇多久？我可先说好：别一开口就把我送回绣坊。",
+      "text_sha256": "c8371a5bb10dee0f9f2ee98e072c5bae495cbc073d1eb63e906fce7d33df36ff",
+      "actor_profile": "leisure",
+      "performance_profile": "frustrated",
+      "voice_style": {
+        "emotion_tags": [
+          "烦恼",
+          "无奈"
+        ],
+        "delivery": "语速稍慢，松弛随性，反问不尖刻；轻叹般收住语尾，困扰说清，不演成愤怒",
+        "intensity": 0.3
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "算一笔账，不等于回绣坊",
+      "context_sha256": "e4e9eddfa1835aee6c04b23e3f85fba849232980295936eb40bfdf4f44ceb189",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:100131:10013101",
+      "npc_id": 100131,
+      "npc_name": "纪小花",
+      "source": "persuade_opening",
+      "source_id": "10013101",
+      "language": "zh-Hans",
+      "text": "师父又让我站稳练这一招，我想先学个能跳起来的！你帮我说句话好不好？还是你也觉得，我就该一直站着？",
+      "text_sha256": "88cd3352a4b39500d06b6d908bff087f3ad2544e28a2e01218a66d3ab8d55404",
+      "actor_profile": "child_bright",
+      "performance_profile": "request",
+      "voice_style": {
+        "emotion_tags": [
+          "认真",
+          "期待"
+        ],
+        "delivery": "清脆明亮，短句轻快，保持孩子式直率；请求说得直接有礼，末尾给对方回应空间",
+        "intensity": 0.28
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "还要站到什么时候",
+      "context_sha256": "e314e5c078001146bbb552b41f9c51a6ace9c816807e0a2d13a016b5a9561746",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:100411:10041103",
+      "npc_id": 100411,
+      "npc_name": "杜老栓",
+      "source": "persuade_opening",
+      "source_id": "10041103",
+      "language": "zh-Hans",
+      "text": "风是凉，可我进了屋，万一承志恰好从这条街过，谁替我看见他？你若劝我歇，就告诉我，这件事该怎么放心得下。",
+      "text_sha256": "be3bb7cb423298b01384ac6d5bb24f18a2d29be123de228586a0db1e9914db11",
+      "actor_profile": "elder",
+      "performance_profile": "lonely",
+      "voice_style": {
+        "emotion_tags": [
+          "落寞",
+          "思念"
+        ],
+        "delivery": "语速稍慢，朴实亲切，停顿后再接下句；语速稍慢，句尾轻落，留一点空白不哭腔",
+        "intensity": 0.34
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "进屋坐，也还在等他",
+      "context_sha256": "9457b107c27daa78c85060c0b9c37c63c4cb4657ec30207d6d5fcd2ccf404242",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:100431:10043104",
+      "npc_id": 100431,
+      "npc_name": "贾道人",
+      "source": "persuade_opening",
+      "source_id": "10043104",
+      "language": "zh-Hans",
+      "text": "道友，先别嚷……河边那包东西，是我拿的。我那时看你没动静，就……唉，你容老道说两句。",
+      "text_sha256": "89b4bfcbe92302551a62c193296b4320dbaf73d7169158f0f6cab53e9f0f2c84",
+      "actor_profile": "hawker",
+      "performance_profile": "regret",
+      "voice_style": {
+        "emotion_tags": [
+          "歉意",
+          "反思"
+        ],
+        "delivery": "招呼声响亮，节奏有起伏，夸张适度；承认不足时稍停，声音诚恳，不自怨自艾",
+        "intensity": 0.32
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "河边拿走的东西",
+      "context_sha256": "a6448a22fdd48766a11d995ebdd6ad11ac179d9ef5f94c4e6aafca22cb3ab535",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:100111:10011101",
+      "npc_id": 100111,
+      "npc_name": "纪澜之",
+      "source": "persuade_opening",
+      "source_id": "10011101",
+      "language": "zh-Hans",
+      "text": "我想把旧剑法再练起来，每日只练半个时辰。可我当年就是从“再试一回”熬成了不肯停……你觉得，这回我真能守住这半个时辰么？",
+      "text_sha256": "f1f63f3bed626358777b1f883cd7eb362e84270bfd7433cb5be67a77be06fcc1",
+      "actor_profile": "official",
+      "performance_profile": "doubt",
+      "voice_style": {
+        "emotion_tags": [
+          "怀疑",
+          "审慎"
+        ],
+        "delivery": "短句稳当，清楚直接，停顿后再落重点；疑点稍作强调，询问克制，语尾留有余地",
+        "intensity": 0.3
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "旧功法，还能慢慢练么",
+      "context_sha256": "110d6598a881136dc118d4ab1b25b7f42c3464573bbb3c3aea6ff45c4f55bdb4",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:100121:10012101",
+      "npc_id": 100121,
+      "npc_name": "纪小蝶",
+      "source": "persuade_opening",
+      "source_id": "10012101",
+      "language": "zh-Hans",
+      "text": "我想给自己留一个下午，什么家里的事也不张罗。可娘若问我去做什么，我说“还没想好”，是不是就没道理出门了？",
+      "text_sha256": "ea920b26f6059ba08e9fb53bf5942a65e6ed6df4225d6c9ad540a453498760d9",
+      "actor_profile": "shy",
+      "performance_profile": "think",
+      "voice_style": {
+        "emotion_tags": [
+          "沉思",
+          "认真"
+        ],
+        "delivery": "轻声稍慢，表达清楚，停顿自然不故意结巴；边想边说，疑问前自然停顿，不故作高深",
+        "intensity": 0.24
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "这一句，想照自己的意思说",
+      "context_sha256": "9808037eb934312131b99f9158257f2b6dd1bc2f0cc9eb522b58f912ecfc7d7d",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:100211:10021101",
+      "npc_id": 100211,
+      "npc_name": "江楚弦",
+      "source": "persuade_opening",
+      "source_id": "10021101",
+      "language": "zh-Hans",
+      "text": "我练这一个动作练了好几日，还是磕绊。你看，我是该换一招找找手感，还是继续磨它？别只说“多练”，那三个字我听得耳朵都起茧了。",
+      "text_sha256": "36857edd35bec72c5eeb1ec1eabbd100146b6aec70c08f54055df86bfbcd18a9",
+      "actor_profile": "bright",
+      "performance_profile": "frustrated",
+      "voice_style": {
+        "emotion_tags": [
+          "烦恼",
+          "无奈"
+        ],
+        "delivery": "声音明亮，语速稍快，落字清楚利落；轻叹般收住语尾，困扰说清，不演成愤怒",
+        "intensity": 0.3
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "慢一些，还算在学剑么",
+      "context_sha256": "b841239f648ec9ae82a271cc27832349a0334d122081bb703b27effc40f4d80c",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:100221:10022101",
+      "npc_id": 100221,
+      "npc_name": "章籽梦",
+      "source": "persuade_opening",
+      "source_id": "10022101",
+      "language": "zh-Hans",
+      "text": "这三样货我都喜欢，可钱只够进一小批。若你来逛我的铺子，是愿意看样样都有一点，还是一种好东西摆得足足的？",
+      "text_sha256": "a678b9e8c0ec579160cedfb2efb4fd89598ce53bd0554f305dbb3cbc8ec76049",
+      "actor_profile": "quirky",
+      "performance_profile": "ask",
+      "voice_style": {
+        "emotion_tags": [
+          "好奇",
+          "询问"
+        ],
+        "delivery": "节奏灵动，转折自然，带轻微笑意；重点落在所问之处，句尾轻微上扬，不连续逼问",
+        "intensity": 0.23
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "喜欢的货，该不该都进",
+      "context_sha256": "3646006b0675e2affde165dc7e14300dee47c1d95e3523a399cd714388e136d8",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:100303:10030301",
+      "npc_id": 100303,
+      "npc_name": "叶栖露",
+      "source": "persuade_opening",
+      "source_id": "10030301",
+      "language": "zh-Hans",
+      "text": "唉，有件事实在不好意思开口……以前玄一门的一个师弟找到镇上来了，说要请我回去。我好不容易才离开那个地方，实在不想再跟他们有牵扯。你能不能帮我……就说我不在，或者随便找个理由把他打发走？",
+      "text_sha256": "4c6976debbc2e8fc2065c1fa863b3970482d7f9c513c55b8a04f5f7271072090",
+      "actor_profile": "tea",
+      "performance_profile": "request",
+      "voice_style": {
+        "emotion_tags": [
+          "认真",
+          "期待"
+        ],
+        "delivery": "温润舒缓，留出自然停顿，重音轻而稳；请求说得直接有礼，末尾给对方回应空间",
+        "intensity": 0.28
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "有个以前的同门找到这里来了，我不想见他，你帮我挡一挡",
+      "context_sha256": "ca319c210847034954e4fdd5b638558c94a237054808eae09ea26869b21ca22c",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:100303:10030302",
+      "npc_id": 100303,
+      "npc_name": "叶栖露",
+      "source": "persuade_opening",
+      "source_id": "10030302",
+      "language": "zh-Hans",
+      "text": "前几天镇上张屠户家着火，我差点就用灵力灭火了……手都抬起来了，又硬生生收回去。你说我是不是太自私了？明明有能力却眼睁睁看着人家遭难。可要是暴露了，那些人肯定会找来……我该怎么办？",
+      "text_sha256": "20225b15b6d82d416b43573f4e9f7764ae1ebde240660166ba856b40bdb2ff2b",
+      "actor_profile": "tea",
+      "performance_profile": "regret",
+      "voice_style": {
+        "emotion_tags": [
+          "歉意",
+          "反思"
+        ],
+        "delivery": "温润舒缓，留出自然停顿，重音轻而稳；承认不足时稍停，声音诚恳，不自怨自艾",
+        "intensity": 0.32
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "我藏了这么多年修为，到底该不该在镇上人面前用出来",
+      "context_sha256": "7fb09de0ff26ff61f22a2526ca673504f52b94e5ee6b38977904d27395cc5d29",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:100303:10030303",
+      "npc_id": 100303,
+      "npc_name": "叶栖露",
+      "source": "persuade_opening",
+      "source_id": "10030303",
+      "language": "zh-Hans",
+      "text": "你去帮我给倾盏姐带句话好不好？就说……她那青梅竹马的事，过去这么多年了，该放下的不是她，是他。还有，她最近客栈进的那批云雾茶，火候不对，让她别拿出来招待客人，砸招牌。",
+      "text_sha256": "0a663ca4b0609e759b1d3afc896de3a7e616c19a9ff72f0ffe7fdea5e582dbc7",
+      "actor_profile": "tea",
+      "performance_profile": "request",
+      "voice_style": {
+        "emotion_tags": [
+          "认真",
+          "期待"
+        ],
+        "delivery": "温润舒缓，留出自然停顿，重音轻而稳；请求说得直接有礼，末尾给对方回应空间",
+        "intensity": 0.28
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "我跟倾盏姐说了好几次让她别太拼，她就是不听，你帮我带句话",
+      "context_sha256": "3e3363300091c590f4f86f150c80c18e8605e34228df3214d6c4a0d87186a0af",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:100000:10000001",
+      "npc_id": 100000,
+      "npc_name": "苏倾盏",
+      "source": "persuade_opening",
+      "source_id": "10000001",
+      "language": "zh-Hans",
+      "text": "我想请你明晚只陪我一个人，喝杯茶，什么事也不办。可话说出口，又怕你只是不好意思推辞……你来，会是为了什么？",
+      "text_sha256": "f59347df30978cb37962937c6aa26636da6094c9675d27339c24350387ebe8bc",
+      "actor_profile": "hostess",
+      "performance_profile": "shy",
+      "voice_style": {
+        "emotion_tags": [
+          "含蓄",
+          "期待"
+        ],
+        "delivery": "中等语速，成熟从容，停顿有分寸；音量稍轻，表达前略停，句尾柔和不结巴",
+        "intensity": 0.3
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "你来，是因为想见我么",
+      "context_sha256": "f58bc7c4fe931bac09fd93a7d03a79dde399c6e9a3967cb119ad20a0e5a73c0e",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:100304:10030401",
+      "npc_id": 100304,
+      "npc_name": "寒玥",
+      "source": "persuade_opening",
+      "source_id": "10030401",
+      "language": "zh-Hans",
+      "text": "我想把练功的时辰加回来，伤处却还没全养稳。若我再等，旁人都往前走了……你会劝我等，还是陪我想个不必硬撑的练法？",
+      "text_sha256": "ff952af8db3160567b93605bb61d702417c385c8d5114e84ba8ea5dffd1f0092",
+      "actor_profile": "proud_cold",
+      "performance_profile": "weak",
+      "voice_style": {
+        "emotion_tags": [
+          "疲惫",
+          "克制"
+        ],
+        "delivery": "语气清冷，收尾笃定，锋芒克制；音量稍轻，停顿适当，痛处收着说不呻吟",
+        "intensity": 0.3
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "这一息，先养稳",
+      "context_sha256": "07c2799d4c00b45c25f1a7bdefabe3a03c6609c28cf9cb29ced6a6bb0de0a00d",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:103112:10311201",
+      "npc_id": 103112,
+      "npc_name": "窦苞",
+      "source": "persuade_opening",
+      "source_id": "10311201",
+      "language": "zh-Hans",
+      "text": "你说一句“今日天色好”给我听，随便说，别像念书。我一唱就把字咬得死紧——究竟是先顾字清楚，还是先顾听着自然？",
+      "text_sha256": "0b7ebd35c284a9ae5193ab515d57d559a350bf374327ffb5b19155ecc5108623",
+      "actor_profile": "guide",
+      "performance_profile": "ask",
+      "voice_style": {
+        "emotion_tags": [
+          "好奇",
+          "询问"
+        ],
+        "delivery": "平实地说明，语速适中，询问不催促；重点落在所问之处，句尾轻微上扬，不连续逼问",
+        "intensity": 0.23
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "明知道怎么唱，偏唱不顺",
+      "context_sha256": "7c2b504e8e5655ca07ea74bb0744e219ede09abf6916671c2e21f73081c92860",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:110032:11003201",
+      "npc_id": 110032,
+      "npc_name": "谢锦雪",
+      "source": "persuade_opening",
+      "source_id": "11003201",
+      "language": "zh-Hans",
+      "text": "我把出剑催快了，收招却总慢半拍。若改回慢练，又怕白练了这些日子。换作你，会先保住快，还是先把这半拍追回来？",
+      "text_sha256": "b142599e84aefb7ba2f5f89029122f2dc7626666fd1a63eaa94e59a06c52f3ce",
+      "actor_profile": "sword",
+      "performance_profile": "think",
+      "voice_style": {
+        "emotion_tags": [
+          "沉思",
+          "认真"
+        ],
+        "delivery": "简洁直切，重音明确，声音稳而不硬喊；边想边说，疑问前自然停顿，不故作高深",
+        "intensity": 0.24
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "剑快了，心反倒不稳",
+      "context_sha256": "765d0cd22bdfb0ce846ee3cf374c354f7d9d76b6779e643002eddb1e95b18db7",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:110061:11006101",
+      "npc_id": 110061,
+      "npc_name": "雷刚",
+      "source": "persuade_opening",
+      "source_id": "11006101",
+      "language": "zh-Hans",
+      "text": "场次都排满了，偏有个能带来大生意的客人要加一场。让我回绝，肉疼；让我挪旁人，又坏规矩。你若替我出主意，这笔生意怎么留？",
+      "text_sha256": "fad35a4c831d12d44b2137643837718d25d5af2b8f0b823a0fdaa6fd516d0158",
+      "actor_profile": "sly",
+      "performance_profile": "frustrated",
+      "voice_style": {
+        "emotion_tags": [
+          "烦恼",
+          "无奈"
+        ],
+        "delivery": "语气机巧，转折略停，笑意不外露；轻叹般收住语尾，困扰说清，不演成愤怒",
+        "intensity": 0.3
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "这一个人，挪的是谁的场",
+      "context_sha256": "a648ee87d53c1c59a322edffbda0dd6144b26fda285cc79fceb419df25d7b3d0",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:110062:11006201",
+      "npc_id": 110062,
+      "npc_name": "商挽",
+      "source": "persuade_opening",
+      "source_id": "11006201",
+      "language": "zh-Hans",
+      "text": "陪我论一论：切磋若还留着力，怎么知道自己真本事到了哪儿？可每回都拼到抬不动剑，第二日又练不了。你若是我的对手，会希望我怎么打？",
+      "text_sha256": "97fd7c1e31d70ebd350e9db06f8f585dfb9c4c41063435eca8b4924441d2d0ce",
+      "actor_profile": "cold",
+      "performance_profile": "think",
+      "voice_style": {
+        "emotion_tags": [
+          "沉思",
+          "认真"
+        ],
+        "delivery": "声音平稳偏冷，短句克制，不额外示好；边想边说，疑问前自然停顿，不故作高深",
+        "intensity": 0.24
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "不用每一剑都拼到底",
+      "context_sha256": "e6aff11745ebe35d15dc218270b33350f0aa7235eff3cb349f6d780f136a8397",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:110201:11020101",
+      "npc_id": 110201,
+      "npc_name": "莲心",
+      "source": "persuade_opening",
+      "source_id": "11020101",
+      "language": "zh-Hans",
+      "text": "有支新曲，我想请你做第一个听的人。只是其中一段我还拿不准……你愿意听一支不那么圆熟、却是我自己想弹的曲子么？",
+      "text_sha256": "52f126cac2750cba4a4ad2be89bc71e750daa547b97c734d8e731a3cbdd17dd3",
+      "actor_profile": "soft",
+      "performance_profile": "shy",
+      "voice_style": {
+        "emotion_tags": [
+          "含蓄",
+          "期待"
+        ],
+        "delivery": "语声柔和通透，节奏自然，关心有分寸；音量稍轻，表达前略停，句尾柔和不结巴",
+        "intensity": 0.3
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "清籁之外，想试一支新曲",
+      "context_sha256": "10732e6af2d1edef6ceda0fba4f1cdb1c5caf67c288ced25226407e6345b44d4",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:110202:11020201",
+      "npc_id": 110202,
+      "npc_name": "邵韵秋",
+      "source": "persuade_opening",
+      "source_id": "11020201",
+      "language": "zh-Hans",
+      "text": "姑娘们想把新曲排到开场，我怕头一段冷了，后头再好也留不住客。若你买了座，是宁可先听熟曲，还是愿意先赌一支没听过的？",
+      "text_sha256": "5d11b0dca140023653a6239a5f7814cbce1fec987d09911ea1bbd3d0f3f1e47d",
+      "actor_profile": "hostess",
+      "performance_profile": "think",
+      "voice_style": {
+        "emotion_tags": [
+          "沉思",
+          "认真"
+        ],
+        "delivery": "中等语速，成熟从容，停顿有分寸；边想边说，疑问前自然停顿，不故作高深",
+        "intensity": 0.24
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "新曲开场，怕冷了座",
+      "context_sha256": "741cf2f24bb6943804220a93b6c247483637830f968c8da19a7f98b2c123ae5d",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:110301:11030101",
+      "npc_id": 110301,
+      "npc_name": "陈沽酒",
+      "source": "persuade_opening",
+      "source_id": "11030101",
+      "language": "zh-Hans",
+      "text": "我这些日子行气顺了些，便想把每日功课加回来。可这身根基受过伤，若又折腾坏了……你会劝我趁势往前，还是先守住眼下这点好转？",
+      "text_sha256": "67da26e0198de608085377d32e93fe93c17fce55c5e07d1b9ffa91a2c303eda8",
+      "actor_profile": "hostess",
+      "performance_profile": "doubt",
+      "voice_style": {
+        "emotion_tags": [
+          "怀疑",
+          "审慎"
+        ],
+        "delivery": "中等语速，成熟从容，停顿有分寸；疑点稍作强调，询问克制，语尾留有余地",
+        "intensity": 0.3
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "根基受过伤，还能怎样练",
+      "context_sha256": "360dcc8ab6624a33dc966d351acb270ea4f5ecd66d7b7caa2cea8896705c9733",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:110401:11040101",
+      "npc_id": 110401,
+      "npc_name": "章万全",
+      "source": "persuade_opening",
+      "source_id": "11040101",
+      "language": "zh-Hans",
+      "text": "等见着籽梦，我想先问她打算什么时候回家。可她一听“回家”，怕又只想躲我。你说，我先问她近来过得好不好，还是把担心直说？",
+      "text_sha256": "deb896f28512c717cf39211d5590e214a9c238a0bb0bc610d1d06afd785c7c3a",
+      "actor_profile": "subtle",
+      "performance_profile": "care",
+      "voice_style": {
+        "emotion_tags": [
+          "关切",
+          "温和"
+        ],
+        "delivery": "语气温和克制，重点轻落，留有余地；关心落在具体话上，轻柔询问，不演成训斥",
+        "intensity": 0.3
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "见着她以后，先问哪一句",
+      "context_sha256": "2af345521ef353d757c7763be8e6b77e91ebca015789f6396636dd11f3edc8cb",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:110402:11040201",
+      "npc_id": 110402,
+      "npc_name": "柳婵",
+      "source": "persuade_opening",
+      "source_id": "11040201",
+      "language": "zh-Hans",
+      "text": "这件东西我有一处看不准，卖家却催着落价。你若是买家，愿意多等我核一遍，还是会觉得我本事不够，换个人看？",
+      "text_sha256": "7d5332974b694e1da842ccb5e59af1a5f7e2d32a13fe6b1fa47e770e86ad20c4",
+      "actor_profile": "diplomat",
+      "performance_profile": "doubt",
+      "voice_style": {
+        "emotion_tags": [
+          "怀疑",
+          "审慎"
+        ],
+        "delivery": "节奏稳当圆融，语尾舒展，给人留余地；疑点稍作强调，询问克制，语尾留有余地",
+        "intensity": 0.3
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "这件宝物，我想多看一遍",
+      "context_sha256": "0c3893e15996404b659c9defbee19a953759a3e43c5d314a527b216f1ab5ed42",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:110501:11050101",
+      "npc_id": 110501,
+      "npc_name": "叶知秋",
+      "source": "persuade_opening",
+      "source_id": "11050101",
+      "language": "zh-Hans",
+      "text": "我本来留了半日给自己练功，又想多炼一炉把药性调顺。若你来找我，见我又守着炉子，会说我认真，还是说我根本舍不得停？",
+      "text_sha256": "2638036e7f504ed4fe746dc8331cedf9870f364d4b1c4c0fb7360fbe298000bb",
+      "actor_profile": "soft",
+      "performance_profile": "think",
+      "voice_style": {
+        "emotion_tags": [
+          "沉思",
+          "认真"
+        ],
+        "delivery": "语声柔和通透，节奏自然，关心有分寸；边想边说，疑问前自然停顿，不故作高深",
+        "intensity": 0.24
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "一炉丹，还是一日功课",
+      "context_sha256": "eebad7cb920a5fbc24693fa73b793eedd9f6e7d7af82782bd50a586bbc75bcf7",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:120081:12008101",
+      "npc_id": 120081,
+      "npc_name": "简和明",
+      "source": "persuade_opening",
+      "source_id": "12008101",
+      "language": "zh-Hans",
+      "text": "我想每日闭门修炼一个时辰。不是急症的人来了，也请他等一等——你若是来求药的，会觉得我这医馆摆架子么？",
+      "text_sha256": "7e2fd0bf788df0dd99d35fd1868af71f0ff6e3c4110f3f9abce442315c55e4da",
+      "actor_profile": "hard",
+      "performance_profile": "firm",
+      "voice_style": {
+        "emotion_tags": [
+          "坚定",
+          "克制"
+        ],
+        "delivery": "话少干脆，落字有力，语气不绕弯；界限说得明确，语尾干脆，不额外挑衅",
+        "intensity": 0.33
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "自己的功课，总排在诊后",
+      "context_sha256": "b1605631e774e57164c37fba68bb1b578b4eb878aa364b2f5f2b8f53cc8cb8db",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:120082:12008201",
+      "npc_id": 120082,
+      "npc_name": "茉禾",
+      "source": "persuade_opening",
+      "source_id": "12008201",
+      "language": "zh-Hans",
+      "text": "师父让我先练包扎，我一见血就慌。你陪我想想：是先拿没受伤的手练熟，还是该逼自己多看几回伤口？我怕一直躲着，就一直不会。",
+      "text_sha256": "5ef70e4e2e810ceb23f8c99a37242edc8ba6dd5cf0708db205bcaa6564e92bef",
+      "actor_profile": "patient",
+      "performance_profile": "think",
+      "voice_style": {
+        "emotion_tags": [
+          "沉思",
+          "认真"
+        ],
+        "delivery": "声音柔和，语速舒缓，说明循序渐进；边想边说，疑问前自然停顿，不故作高深",
+        "intensity": 0.24
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "手抖时，先做哪一步",
+      "context_sha256": "16196713b2a86eecb04eb4eb8caa34eaeb82d850bf6b9ae8daf0efebea3e0332",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:120101:12010101",
+      "npc_id": 120101,
+      "npc_name": "慕云栖",
+      "source": "persuade_opening",
+      "source_id": "12010101",
+      "language": "zh-Hans",
+      "text": "我替别人讲功法时头头是道，轮到自己的筑基推演，倒只敢往纸上添字。你愿意听我讲一处还没想透的吗？也许先挑出错，比再夸我懂得多有用。",
+      "text_sha256": "99fdd6c0490f8a2d4fd0e7c44d59956d19f53365a484df21edb9795a7a9af0d2",
+      "actor_profile": "clever",
+      "performance_profile": "think",
+      "voice_style": {
+        "emotion_tags": [
+          "沉思",
+          "认真"
+        ],
+        "delivery": "转折灵活，试探处稍停，判断说清楚；边想边说，疑问前自然停顿，不故作高深",
+        "intensity": 0.24
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "书上会了，下一步怎么试",
+      "context_sha256": "c4a4ad8a67ffbda2d7de592bd0407c3edc4b3bac740d12a9231b648a25f9478d",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:120304:12030401",
+      "npc_id": 120304,
+      "npc_name": "楚弦霜",
+      "source": "persuade_opening",
+      "source_id": "12030401",
+      "language": "zh-Hans",
+      "text": "我想闭门静修三日，客栈的房间先交别人安排。可想到两个脾气不合的住客住进同院，我就坐不住。你会劝我把日子缩短，还是先把规矩交代清楚？",
+      "text_sha256": "cf3ccdc38d919e5c910a4af8c41c6e91062fbe6fd56fa45c639cf7c102cb8d2f",
+      "actor_profile": "diplomat",
+      "performance_profile": "think",
+      "voice_style": {
+        "emotion_tags": [
+          "沉思",
+          "认真"
+        ],
+        "delivery": "节奏稳当圆融，语尾舒展，给人留余地；边想边说，疑问前自然停顿，不故作高深",
+        "intensity": 0.24
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "客栈有人照看，我呢",
+      "context_sha256": "051efae1a1d4d34533b6fbd366f33a5e278f7e2cda07f82ef4c5be691eb93471",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:120305:12030501",
+      "npc_id": 120305,
+      "npc_name": "何栖棠",
+      "source": "persuade_opening",
+      "source_id": "12030501",
+      "language": "zh-Hans",
+      "text": "若有人邀我走一段近路，我其实想去。可我养伤住了这么久，又怕一出门就拖累同行。你邀人同行时，更在意他本事多大，还是肯不肯把做不到的先说清？",
+      "text_sha256": "49de6ef86ef04e8765b24562e8fbf0e6f9377570809d3ef2ba7be86092528e2f",
+      "actor_profile": "clever",
+      "performance_profile": "weak",
+      "voice_style": {
+        "emotion_tags": [
+          "疲惫",
+          "克制"
+        ],
+        "delivery": "转折灵活，试探处稍停，判断说清楚；音量稍轻，停顿适当，痛处收着说不呻吟",
+        "intensity": 0.3
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "养稳之后，还敢不敢上路",
+      "context_sha256": "31aba3ea9c09ac2e4bf6df8c811d075c584acbd5c841abad29272c55df2ad33b",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:120401:12040101",
+      "npc_id": 120401,
+      "npc_name": "池知璧",
+      "source": "persuade_opening",
+      "source_id": "12040101",
+      "language": "zh-Hans",
+      "text": "若有一件合用的灵材，买下就得花掉大半积蓄，你会买吗？我替别人验货从不手软，偏这回想留给自己，便总觉得错过可惜。",
+      "text_sha256": "bc2bd62fcebd220f6ecaf42c2d52ce9d1085eddd12f3c3244974031fa5c0a982",
+      "actor_profile": "hard",
+      "performance_profile": "doubt",
+      "voice_style": {
+        "emotion_tags": [
+          "怀疑",
+          "审慎"
+        ],
+        "delivery": "话少干脆，落字有力，语气不绕弯；疑点稍作强调，询问克制，语尾留有余地",
+        "intensity": 0.3
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "眼前的灵材，要不要自己留",
+      "context_sha256": "dd02b9df86f51d222dfd52b206c4fe06afc4cae1505cc590843e2ec41c94e48c",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:120402:12040201",
+      "npc_id": 120402,
+      "npc_name": "路蘅",
+      "source": "persuade_opening",
+      "source_id": "12040201",
+      "language": "zh-Hans",
+      "text": "你就当自己是催着入席的贵客，我来回一句：“请帖还得核一遍，请稍候。”这话听着，是稳妥，还是像故意拦你？",
+      "text_sha256": "411e90539ee317500a2acf7c5e7083c35f448d8354e020a01dce0ef55c41a031",
+      "actor_profile": "clever",
+      "performance_profile": "ask",
+      "voice_style": {
+        "emotion_tags": [
+          "好奇",
+          "询问"
+        ],
+        "delivery": "转折灵活，试探处稍停，判断说清楚；重点落在所问之处，句尾轻微上扬，不连续逼问",
+        "intensity": 0.23
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "请仙长再等一等",
+      "context_sha256": "f6ba1d5c3bf335fdbbdcea2eb053893e2788a6bb2322111a63d97dfcf461eadb",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:120501:12050101",
+      "npc_id": 120501,
+      "npc_name": "卫琴芷",
+      "source": "persuade_opening",
+      "source_id": "12050101",
+      "language": "zh-Hans",
+      "text": "我想每旬空一晚，不接雅集，留给自己静修。可熟客若专挑那晚来，我怕自己又松口。换作你，会提前说清，还是临到了再看人情？",
+      "text_sha256": "89d6e4e61e6ae5e773975d699422c3e220b258e1feb5ee9c0b7b9da5867f6d67",
+      "actor_profile": "diplomat",
+      "performance_profile": "think",
+      "voice_style": {
+        "emotion_tags": [
+          "沉思",
+          "认真"
+        ],
+        "delivery": "节奏稳当圆融，语尾舒展，给人留余地；边想边说，疑问前自然停顿，不故作高深",
+        "intensity": 0.24
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "给自己的修行留一席",
+      "context_sha256": "1f2fa7e981d24e33d3e44c26692dd937c765ad4954fc042887a4712835e0525b",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:120502:12050201",
+      "npc_id": 120502,
+      "npc_name": "应桐音",
+      "source": "persuade_opening",
+      "source_id": "12050201",
+      "language": "zh-Hans",
+      "text": "我想写一支不用替人安神、也不必压住斗意的曲子，只照自己的心意弹。你若听曲没有这些效用，还愿意坐下来听么？",
+      "text_sha256": "c7ffb6e7d4a1b449a7008c080e87bdec5f76d3700ca4871d9487db1a78b64c7d",
+      "actor_profile": "free",
+      "performance_profile": "shy",
+      "voice_style": {
+        "emotion_tags": [
+          "含蓄",
+          "期待"
+        ],
+        "delivery": "轻快松弛，语尾自然，不强加笑声；音量稍轻，表达前略停，句尾柔和不结巴",
+        "intensity": 0.3
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "定神曲之外，我想听自己的声",
+      "context_sha256": "6d6b0539fdc07470471b82a308e9aeec294679e9b380b972dfae417cee26e538",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:120703:12070301",
+      "npc_id": 120703,
+      "npc_name": "季婉",
+      "source": "persuade_opening",
+      "source_id": "12070301",
+      "language": "zh-Hans",
+      "text": "我想教铺里的人辨兽材，可每回只说“这气味不对”，他们还是一头雾水。若你跟我学，是先看两件好坏样品，还是先听我讲规矩？",
+      "text_sha256": "17f90beef8a80a8396b6af01e0925eb3fe237e61d1276d17cabfecccf17e480f",
+      "actor_profile": "clever",
+      "performance_profile": "ask",
+      "voice_style": {
+        "emotion_tags": [
+          "好奇",
+          "询问"
+        ],
+        "delivery": "转折灵活，试探处稍停，判断说清楚；重点落在所问之处，句尾轻微上扬，不连续逼问",
+        "intensity": 0.23
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "闻出差别，能教给别人么",
+      "context_sha256": "6b6047404c958b0b8411da821cfc2cc17a38758aa649fda2c7e047574f631631",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:130301:13030101",
+      "npc_id": 130301,
+      "npc_name": "忘忧",
+      "source": "persuade_opening",
+      "source_id": "13030101",
+      "language": "zh-Hans",
+      "text": "有件事我一直放不下：我有些旧事一直压在心里，明知过去了，却还是放不下。",
+      "text_sha256": "d8412db91043b8553ecea08aa57a5114532e864e6253f1681b61c48f79aaece8",
+      "actor_profile": "leader",
+      "performance_profile": "lonely",
+      "voice_style": {
+        "emotion_tags": [
+          "落寞",
+          "思念"
+        ],
+        "delivery": "节奏沉稳，重点笃定，保持掌控感不压声；语速稍慢，句尾轻落，留一点空白不哭腔",
+        "intensity": 0.34
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "帮助{npcName}解开心结，走出昔日阴影。",
+      "context_sha256": "a29e6716290f7d35ea5aa004877fbb075b8eb8f5759d86a164954048632226c0",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:130301:13030102",
+      "npc_id": 130301,
+      "npc_name": "忘忧",
+      "source": "persuade_opening",
+      "source_id": "13030102",
+      "language": "zh-Hans",
+      "text": "我最近总在想：我把眼前的日子撑着，可越是撑着，越不知道自己该怎么选。",
+      "text_sha256": "7663e0ee34360a6a19cbaa1dbc72afe22f417159fb2efdd140f1cbd22ada5ebb",
+      "actor_profile": "leader",
+      "performance_profile": "think",
+      "voice_style": {
+        "emotion_tags": [
+          "沉思",
+          "认真"
+        ],
+        "delivery": "节奏沉稳，重点笃定，保持掌控感不压声；边想边说，疑问前自然停顿，不故作高深",
+        "intensity": 0.24
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "帮助{npcName}解开心结，走出昔日阴影。",
+      "context_sha256": "121745f8b7d6801427ec536885344415f12c00a5c1c9e74b61b3ceb20d8503dd",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:130301:13030103",
+      "npc_id": 130301,
+      "npc_name": "忘忧",
+      "source": "persuade_opening",
+      "source_id": "13030103",
+      "language": "zh-Hans",
+      "text": "我不想再回避这件事：我不想再只把心事压着，可真要往前走，心里还是发怵。",
+      "text_sha256": "3e554ca88508b2dae4ec5a68ded38c238ae5e4934c8f17d5aa8d37ce2f84959b",
+      "actor_profile": "leader",
+      "performance_profile": "wary",
+      "voice_style": {
+        "emotion_tags": [
+          "警觉",
+          "谨慎"
+        ],
+        "delivery": "节奏沉稳，重点笃定，保持掌控感不压声；音量稍收，重点明确，保持戒心不急促",
+        "intensity": 0.33
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "帮助{npcName}解开心结，走出昔日阴影。",
+      "context_sha256": "0c66533de83c42f512eb12ff78706ca69b3e2aa3c81025c442de398aa2e53ce4",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:140001:14000101",
+      "npc_id": 140001,
+      "npc_name": "乌岚",
+      "source": "persuade_opening",
+      "source_id": "14000101",
+      "language": "zh-Hans",
+      "text": "要教一个从没照看过冻伤的人，你觉得我先教他敷药，还是先教他什么时候别乱动？我怕讲得太慢，他嫌没学到本事；讲快了，又害了人。",
+      "text_sha256": "31ec6c4894606262453f54ff944c29fae35b0f81b865b8df692af156ac90cecb",
+      "actor_profile": "official",
+      "performance_profile": "care",
+      "voice_style": {
+        "emotion_tags": [
+          "关切",
+          "温和"
+        ],
+        "delivery": "短句稳当，清楚直接，停顿后再落重点；关心落在具体话上，轻柔询问，不演成训斥",
+        "intensity": 0.3
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "这门手艺，该先教哪一样",
+      "context_sha256": "91db64b5b37db52ae33a3b235d34074267fe2ddd9d43fbee980b1ea8cfb9bf54",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:140041:14004101",
+      "npc_id": 140041,
+      "npc_name": "索雅",
+      "source": "persuade_opening",
+      "source_id": "14004101",
+      "language": "zh-Hans",
+      "text": "我想向外来的修士学一门辨路小术，又怕师父觉得我连自家的本事都没学稳。你说，我先把想学的缘由告诉她，还是练出点样子再说？",
+      "text_sha256": "297a8b7eba625f077dda5e6527f1112ea9cae7aaf3ce96447d2c4d3fe09bd181",
+      "actor_profile": "subtle",
+      "performance_profile": "request",
+      "voice_style": {
+        "emotion_tags": [
+          "认真",
+          "期待"
+        ],
+        "delivery": "语气温和克制，重点轻落，留有余地；请求说得直接有礼，末尾给对方回应空间",
+        "intensity": 0.28
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "守着晶石，也想看远一点",
+      "context_sha256": "528d7a2f9b27c59c5acd6703050a2dcb96ee1ef600e71eeb5ab747ff0bcaec30",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:140042:14004201",
+      "npc_id": 140042,
+      "npc_name": "阿古娜",
+      "source": "persuade_opening",
+      "source_id": "14004201",
+      "language": "zh-Hans",
+      "text": "索雅想自己安排一回祭扫，我已经想好该提醒她哪几处。可若句句都由我先说，她哪里还算自己做？你说，我该先听她的打算，还是先把禁忌讲明？",
+      "text_sha256": "39d1cead0c3a57177c691a8275a6b34a5c0ecf36ef73e0b76838354d9b041eea",
+      "actor_profile": "solemn",
+      "performance_profile": "care",
+      "voice_style": {
+        "emotion_tags": [
+          "关切",
+          "温和"
+        ],
+        "delivery": "节奏沉稳，声音有分量，不摆夸张官腔；关心落在具体话上，轻柔询问，不演成训斥",
+        "intensity": 0.3
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "让索雅自己断一回",
+      "context_sha256": "dcb923354b7a865eeeb4867c1befcfc587dcbbaeeaf38fe07f58f9d7a00aa6dd",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:150041:15004101",
+      "npc_id": 150041,
+      "npc_name": "沈秋娘",
+      "source": "persuade_opening",
+      "source_id": "15004101",
+      "language": "zh-Hans",
+      "text": "竹生想学本事，我也想替他留些钱；客栈的门窗偏又该修了。若只能先办一头，你会怎样同孩子讲，才不让他以为我舍不得为他花？",
+      "text_sha256": "3385cecf39ab8340a70d5c00d5a50986259c1bfa00fa8531f96eef5ab0ae686d",
+      "actor_profile": "hostess",
+      "performance_profile": "care",
+      "voice_style": {
+        "emotion_tags": [
+          "关切",
+          "温和"
+        ],
+        "delivery": "中等语速，成熟从容，停顿有分寸；关心落在具体话上，轻柔询问，不演成训斥",
+        "intensity": 0.3
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "给竹生留路，也给自己留路",
+      "context_sha256": "5278d54ee43096c984faa0301570243d1f81dd9823c7e8dc87a785c78c0b758b",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:150042:15004203",
+      "npc_id": 150042,
+      "npc_name": "竹生",
+      "source": "persuade_opening",
+      "source_id": "15004203",
+      "language": "zh-Hans",
+      "text": "我有几个字总记不住，想跟娘说，又怕她听了失望。你觉得我该先多练几日，还是现在就告诉她，请她帮我想办法？",
+      "text_sha256": "35e3e0cf721da558440a54fbab4691c2787ce1b75c661bc22f09508232f655fa",
+      "actor_profile": "child_puzzled",
+      "performance_profile": "request",
+      "voice_style": {
+        "emotion_tags": [
+          "认真",
+          "期待"
+        ],
+        "delivery": "清亮朴实，疑问自然，不装成熟；请求说得直接有礼，末尾给对方回应空间",
+        "intensity": 0.28
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "学得慢，也还能留下么",
+      "context_sha256": "a74771129e263bfaafc298fdc22b5df295578c8697528bd572d3c9b396f8a117",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:150052:15005201",
+      "npc_id": 150052,
+      "npc_name": "白豆蔻",
+      "source": "persuade_opening",
+      "source_id": "15005201",
+      "language": "zh-Hans",
+      "text": "我想问卢师父，像我这样鼻子灵，是不是也能学点吐纳。可若他说只是鼻子灵，我怕自己脸上挂不住。你会去问，还是先别抱这个念想？",
+      "text_sha256": "3eddab453d400bbd96e47acfde8fd636e30558d0e24ee6eccc70ed7687e94dc0",
+      "actor_profile": "bright",
+      "performance_profile": "request",
+      "voice_style": {
+        "emotion_tags": [
+          "认真",
+          "期待"
+        ],
+        "delivery": "声音明亮，语速稍快，落字清楚利落；请求说得直接有礼，末尾给对方回应空间",
+        "intensity": 0.28
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "闻得见，未必说得清",
+      "context_sha256": "26e33a2a7457324968e3dd1fedb40946a568cb6c469c3d8a9242c416bc4f3afc",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:150053:15005301",
+      "npc_id": 150053,
+      "npc_name": "阮荷",
+      "source": "persuade_opening",
+      "source_id": "15005301",
+      "language": "zh-Hans",
+      "text": "我想歇一天，又怕常来的病家扑空。若我提前说、再给他们指个能吃热饭的地方，你会觉得我不近人情么？",
+      "text_sha256": "2003487136deedc5f45504f03c9cb628558ff42ab5c602e3e83be5d3b9ffb1c9",
+      "actor_profile": "free",
+      "performance_profile": "think",
+      "voice_style": {
+        "emotion_tags": [
+          "沉思",
+          "认真"
+        ],
+        "delivery": "轻快松弛，语尾自然，不强加笑声；边想边说，疑问前自然停顿，不故作高深",
+        "intensity": 0.24
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "歇一日，锅会不会凉",
+      "context_sha256": "58bb1b69261c68b432f388daf95a16dd53dae6b881c3d1c7647d7770a0decda4",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:150082:15008201",
+      "npc_id": 150082,
+      "npc_name": "顾听鹤",
+      "source": "persuade_opening",
+      "source_id": "15008201",
+      "language": "zh-Hans",
+      "text": "我想给一个惦记的人写信，写来写去都是“近来平安”。若你收到这样的信，会想知道我过得怎样，还是会嫌家常小事太琐碎？",
+      "text_sha256": "b5020771c40b4e374e5470b53f12e36e73459a4ccc24e9ed47773cb3be777889",
+      "actor_profile": "shy",
+      "performance_profile": "shy",
+      "voice_style": {
+        "emotion_tags": [
+          "含蓄",
+          "期待"
+        ],
+        "delivery": "轻声稍慢，表达清楚，停顿自然不故意结巴；音量稍轻，表达前略停，句尾柔和不结巴",
+        "intensity": 0.3
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "写给自己的那封信",
+      "context_sha256": "a8d9794df1c6403967777541384e09097943b5a9f8ff77478079f84ec75fe897",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:150101:15010101",
+      "npc_id": 150101,
+      "npc_name": "念乔",
+      "source": "persuade_opening",
+      "source_id": "15010101",
+      "language": "zh-Hans",
+      "text": "我手里的灵石够过一阵了，可又有一桩小活舍不得推。你若邀我一起练功，我却说“赚完这单再来”，你信不信我真能停？",
+      "text_sha256": "095391cccd37c7510cf3ba309a17c940080b93ee3ac2777176ecb8c47012f5c1",
+      "actor_profile": "niaoqiao",
+      "performance_profile": "frustrated",
+      "voice_style": {
+        "emotion_tags": [
+          "烦恼",
+          "无奈"
+        ],
+        "delivery": "清亮俏皮，短句利落，笑意自然，认真处收住玩笑；轻叹般收住语尾，困扰说清，不演成愤怒",
+        "intensity": 0.3
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "灵石攒够之前，功课总欠着",
+      "context_sha256": "7452ca09b2e1e6f72447e24a4d3359f949f609ea07e178a407213c6070575338",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:160041:16004102",
+      "npc_id": 160041,
+      "npc_name": "苗砺川",
+      "source": "persuade_opening",
+      "source_id": "16004102",
+      "language": "zh-Hans",
+      "text": "乌茉想听她爹从前的事，我总拿“没什么好讲”搪塞。其实记得的多着呢，就是怕说着说着失态。你说，先讲一件小事，会不会容易些？",
+      "text_sha256": "2913ee9adc6d86678af7418c0bc1d6e8b4a8ac544fbe9a813f00573ac939a4d4",
+      "actor_profile": "diplomat",
+      "performance_profile": "memory",
+      "voice_style": {
+        "emotion_tags": [
+          "怀念",
+          "感慨"
+        ],
+        "delivery": "节奏稳当圆融，语尾舒展，给人留余地；谈旧事稍放缓，转折留白，情绪收着说",
+        "intensity": 0.3
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "那碗面，能不能同她说说",
+      "context_sha256": "ac03301550044e1fe3db5a39fe79a9295a0a00e204e7e30f02cfabf2b7f8e69f",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:160042:16004201",
+      "npc_id": 160042,
+      "npc_name": "乌茉",
+      "source": "persuade_opening",
+      "source_id": "16004201",
+      "language": "zh-Hans",
+      "text": "我收了工还在想，白日是不是哪句话惹了客人不快。你若看我又开始猜，会提醒我去问清，还是干脆拉我聊点别的？",
+      "text_sha256": "ffdf3073e8009b6a413cb88b156111f0fc9165d1a3323e952865aad7651fdb48",
+      "actor_profile": "ambitious",
+      "performance_profile": "frustrated",
+      "voice_style": {
+        "emotion_tags": [
+          "烦恼",
+          "无奈"
+        ],
+        "delivery": "语速稍快，目标明确，重音灵活；轻叹般收住语尾，困扰说清，不演成愤怒",
+        "intensity": 0.3
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "这张笑脸，也有撑不住的时候",
+      "context_sha256": "b2540a533c09aa747c6e895d0d1d5819cfd90454ef1592eca6412cac7a99d34e",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:160052:16005201",
+      "npc_id": 160052,
+      "npc_name": "苏枣儿",
+      "source": "persuade_opening",
+      "source_id": "16005201",
+      "language": "zh-Hans",
+      "text": "我真想出去走一趟，可头一回就怕贪远。你出门时，是宁可走近些看仔细，还是多赶几站才觉得值？我得赶在摊子离不开人前回来。",
+      "text_sha256": "f58440c0f1c1a32b719cfce3820a7d5d225d8855df13c19f4f78624122ffcf08",
+      "actor_profile": "sun",
+      "performance_profile": "curious",
+      "voice_style": {
+        "emotion_tags": [
+          "好奇",
+          "期待"
+        ],
+        "delivery": "明朗直接，声音开阔，热心但不喧哗；追问有兴趣，节奏轻快，句尾自然上扬",
+        "intensity": 0.3
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "远路先走哪一段",
+      "context_sha256": "f2771eb54aa46f88d4a365c24316194e1aa232ed08cf779f435c3f8cd756c79a",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:160062:16006201",
+      "npc_id": 160062,
+      "npc_name": "裴辞归",
+      "source": "persuade_opening",
+      "source_id": "16006201",
+      "language": "zh-Hans",
+      "text": "我想把这酒的苦味收一点，又舍不得那点回甘。若是你，宁可第一口就顺，还是愿意等苦过去再尝后头？",
+      "text_sha256": "ae0828e7fa77eb81cd8ba12b0c0f829996b933abaeb7dc34eb903ccf70655f2a",
+      "actor_profile": "patient",
+      "performance_profile": "ask",
+      "voice_style": {
+        "emotion_tags": [
+          "好奇",
+          "询问"
+        ],
+        "delivery": "声音柔和，语速舒缓，说明循序渐进；重点落在所问之处，句尾轻微上扬，不连续逼问",
+        "intensity": 0.23
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "这壶酒，值得再试么",
+      "context_sha256": "db93e2153ab1ea966f56bc0484155dbf3b28d28b26cfe74eae7d84199cfbbb88",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:160071:16007101",
+      "npc_id": 160071,
+      "npc_name": "贺清渠",
+      "source": "persuade_opening",
+      "source_id": "16007101",
+      "language": "zh-Hans",
+      "text": "我想教个人替我巡一段渠，可听见他说“应该没事”，心就放不下。你说，我该让他跟着多走几回，还是干脆请他把判断一项项讲给我听？",
+      "text_sha256": "e894ff4ad318d76233c46e4fb1d0eb4e767e65b2f9be8d609b3426ace3f8113a",
+      "actor_profile": "hard",
+      "performance_profile": "care",
+      "voice_style": {
+        "emotion_tags": [
+          "关切",
+          "温和"
+        ],
+        "delivery": "话少干脆，落字有力，语气不绕弯；关心落在具体话上，轻柔询问，不演成训斥",
+        "intensity": 0.3
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "井边，也该有人接这一班",
+      "context_sha256": "d4346e3a9eda995ce996de78cc6ebb8fefbe29dc66b7835b1a12c2cdc565b103",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:160082:16008201",
+      "npc_id": 160082,
+      "npc_name": "韩照晚",
+      "source": "persuade_opening",
+      "source_id": "16008201",
+      "language": "zh-Hans",
+      "text": "这件驼具有一处磨损我拿不准，想请人再看一眼。可旁人一向信我点头，若你听见我说“还不能定”，会更放心，还是反倒不敢用我的判断？",
+      "text_sha256": "2a1b50dd64f64fdb6fe4a65b16cb5555333221296a619ccf762fef607fa8500f",
+      "actor_profile": "patient",
+      "performance_profile": "doubt",
+      "voice_style": {
+        "emotion_tags": [
+          "怀疑",
+          "审慎"
+        ],
+        "delivery": "声音柔和，语速舒缓，说明循序渐进；疑点稍作强调，询问克制，语尾留有余地",
+        "intensity": 0.3
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "这一回，我想再请人看看",
+      "context_sha256": "97e83cc8984d7bd40fbba85d68d5a2f3e97a55793a87c2e123ce735ed5aa8d8c",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:160101:16010101",
+      "npc_id": 160101,
+      "npc_name": "墨巧巧(废弃)",
+      "source": "persuade_opening",
+      "source_id": "16010101",
+      "language": "zh-Hans",
+      "text": "我做了个收纳用的小机关，暗扣藏得可巧了，可卡住就得找我拆。若送给你，你要这份巧，还是宁可笨一点、自己也能修？",
+      "text_sha256": "3a6b10fb19ca74bffc68f84e9d8bb5d0f79e156b8593324dee473291ca5e30ac",
+      "actor_profile": "subtle",
+      "performance_profile": "ask",
+      "voice_style": {
+        "emotion_tags": [
+          "好奇",
+          "询问"
+        ],
+        "delivery": "语气温和克制，重点轻落，留有余地；重点落在所问之处，句尾轻微上扬，不连续逼问",
+        "intensity": 0.23
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "机关做得巧，是否就够了",
+      "context_sha256": "d82c79efdea1135f3301c741bf400f69d52cfae24c4b3b37236cb24e81e3ed9d",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:170041:17004101",
+      "npc_id": 170041,
+      "npc_name": "柳停云",
+      "source": "persuade_opening",
+      "source_id": "17004101",
+      "language": "zh-Hans",
+      "text": "我想把客栈一角腾出来，闲时坐着唱两句旧曲。可开口一提，又怕人说我只顾自己快活。你若来住，会嫌掌柜有这点闲心么？",
+      "text_sha256": "5867933cc851c7a3b026dcb0be27ef61982f5830183101f8fe10beedc9c316ed",
+      "actor_profile": "subtle",
+      "performance_profile": "think",
+      "voice_style": {
+        "emotion_tags": [
+          "沉思",
+          "认真"
+        ],
+        "delivery": "语气温和克制，重点轻落，留有余地；边想边说，疑问前自然停顿，不故作高深",
+        "intensity": 0.24
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "这间店，想添一点自己的样子",
+      "context_sha256": "e70fffaff2db9fa62e145a886e0697a8eb4010e37e3958497a0bbdd858c26439",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:170042:17004202",
+      "npc_id": 170042,
+      "npc_name": "余潮生",
+      "source": "persuade_opening",
+      "source_id": "17004202",
+      "language": "zh-Hans",
+      "text": "我照卓岸教的试了几回，还是没觉出灵气。你陪我拿个主意：再自己摸索，还是去问他是不是练错了？我怕他一句话，就把念想断了。",
+      "text_sha256": "82cf19d47d0fc4cbc82f107ce4cdd0d31792424fbdd173b300d9177f69754876",
+      "actor_profile": "clever",
+      "performance_profile": "request",
+      "voice_style": {
+        "emotion_tags": [
+          "认真",
+          "期待"
+        ],
+        "delivery": "转折灵活，试探处稍停，判断说清楚；请求说得直接有礼，末尾给对方回应空间",
+        "intensity": 0.28
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "没觉出灵气，还敢不敢问",
+      "context_sha256": "d08cc4c26ede4d3ccb95e8523449c4f69e00d19780c68166830217b0b9c01191",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:170051:17005101",
+      "npc_id": 170051,
+      "npc_name": "唐清漪",
+      "source": "persuade_opening",
+      "source_id": "17005101",
+      "language": "zh-Hans",
+      "text": "我想再花点工夫，把清凉、存药这些小术练省些灵力。可旁人都忙着冲境，我只磨这几手，是不是太没志气？你会怎样选？",
+      "text_sha256": "2cf56c67fde111226e0ee6e0b15a8fe0d517277bb44f87770b62075629eb4330",
+      "actor_profile": "subtle",
+      "performance_profile": "think",
+      "voice_style": {
+        "emotion_tags": [
+          "沉思",
+          "认真"
+        ],
+        "delivery": "语气温和克制，重点轻落，留有余地；边想边说，疑问前自然停顿，不故作高深",
+        "intensity": 0.24
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "离山以后，还能认真练么",
+      "context_sha256": "a1cc7741bf163ee1ed9dfbf53f861162b6106451b27678b73c1bc85ff4abe9ee",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:170062:17006201",
+      "npc_id": 170062,
+      "npc_name": "沈烬儿",
+      "source": "persuade_opening",
+      "source_id": "17006201",
+      "language": "zh-Hans",
+      "text": "文书里这句“近日送到”没写究竟哪日。我想回去问明白，又怕显得连抄字都不会。若你交代的活被这样追问，会嫌烦么？",
+      "text_sha256": "c8c763712db3651cb87f8adfda8ad8234517f7d911543ff5c7340e14bbfeb69c",
+      "actor_profile": "patient",
+      "performance_profile": "think",
+      "voice_style": {
+        "emotion_tags": [
+          "沉思",
+          "认真"
+        ],
+        "delivery": "声音柔和，语速舒缓，说明循序渐进；边想边说，疑问前自然停顿，不故作高深",
+        "intensity": 0.24
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "写得快，也得问得明白",
+      "context_sha256": "19820bd448f006cec97a6c6256170b574158f65337aa7edc13c510c8c85777f1",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:170072:17007201",
+      "npc_id": 170072,
+      "npc_name": "林浮白",
+      "source": "persuade_opening",
+      "source_id": "17007201",
+      "language": "zh-Hans",
+      "text": "我今晚还想补几道符，可自己的功课又要挪到明日。你若也有两件都要紧的事，会先做别人等着的，还是先守住早就给自己留的时辰？",
+      "text_sha256": "42b3114a1caf90b02b9d80f691c94beabc27c7cb2a52ab2083aa859ee4222005",
+      "actor_profile": "patient",
+      "performance_profile": "think",
+      "voice_style": {
+        "emotion_tags": [
+          "沉思",
+          "认真"
+        ],
+        "delivery": "声音柔和，语速舒缓，说明循序渐进；边想边说，疑问前自然停顿，不故作高深",
+        "intensity": 0.24
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "白天巡村，夜里还要追进度",
+      "context_sha256": "d44d7238e8d256b5eacc73883bf8746f97144ee31ac5cb08f2df2c0ec62f447f",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:190011:19001101",
+      "npc_id": 190011,
+      "npc_name": "祁渊(废弃)",
+      "source": "persuade_opening",
+      "source_id": "19001101",
+      "language": "zh-Hans",
+      "text": "有件事我至死都放不下：噬心兽伏诛后，我欲杀你灭口，眼看便要得手，却被夺舍闻人非躯壳的祁煌亲手杀死。",
+      "text_sha256": "40ed457f46b98d214f2dc0083360dd8b866f3833848f16aeb7ec1f80aba169d8",
+      "actor_profile": "leader",
+      "performance_profile": "confess",
+      "voice_style": {
+        "emotion_tags": [
+          "坦诚",
+          "郑重"
+        ],
+        "delivery": "节奏沉稳，重点笃定，保持掌控感不压声；关键心意放慢说清，停顿自然，不夸张煽情",
+        "intensity": 0.35
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "帮助{npcName}解开心结，走出昔日阴影。",
+      "context_sha256": "84ea063b006b367c70445c08235b679f17d4ec615e88a3db93171f9d016b5e6a",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:190011:19001102",
+      "npc_id": 190011,
+      "npc_name": "祁渊(废弃)",
+      "source": "persuade_opening",
+      "source_id": "19001102",
+      "language": "zh-Hans",
+      "text": "我最近总在想：500年前，祁煌确曾主持补天，最终补天失败，并在崩塌阵法与魔王低语中接触世界真相、堕入魔道。",
+      "text_sha256": "0673ae4a4f57021572b2b873be7420bcdb1c11557c49d6e698d613ea064e409d",
+      "actor_profile": "leader",
+      "performance_profile": "solemn",
+      "voice_style": {
+        "emotion_tags": [
+          "庄重",
+          "认真"
+        ],
+        "delivery": "节奏沉稳，重点笃定，保持掌控感不压声；说得沉稳有分量，转折清楚，不摆腔",
+        "intensity": 0.32
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "帮助{npcName}解开心结，走出昔日阴影。",
+      "context_sha256": "6246bf8e868bc1fdaac55dfd19585b4dbd5e96cd907661fec31931de6002ed96",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:190011:19001103",
+      "npc_id": 190011,
+      "npc_name": "祁渊(废弃)",
+      "source": "persuade_opening",
+      "source_id": "19001103",
+      "language": "zh-Hans",
+      "text": "我不想再回避这件事：我知晓兄长并非单纯牺牲，也知晓随后天帷隔绝乾南/朔北的真相，但数百年来从未真正等回兄长。",
+      "text_sha256": "9762c687e5001fc1302b1c969402817278dc280ba265a86de3f384a064da5a91",
+      "actor_profile": "leader",
+      "performance_profile": "grief",
+      "voice_style": {
+        "emotion_tags": [
+          "难过",
+          "惦念"
+        ],
+        "delivery": "节奏沉稳，重点笃定，保持掌控感不压声；放慢语速，难处留短停顿，克制不哭喊",
+        "intensity": 0.38
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "帮助{npcName}解开心结，走出昔日阴影。",
+      "context_sha256": "5f8345278648fd49f0cd22fb4ef528d8691a2d39f5591b2882126def6c708b01",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:190031:19003101",
+      "npc_id": 190031,
+      "npc_name": "沈夙",
+      "source": "persuade_opening",
+      "source_id": "19003101",
+      "language": "zh-Hans",
+      "text": "若咱们一同进山，遇上你想往前、我却想退，你愿意先听我说理由么？我想找人同行，可不想到了险处才为这事翻脸。",
+      "text_sha256": "931ee5fa4edb4bcd7dbfc64277700feedabda2bcf323717f39a440372c59b4c7",
+      "actor_profile": "wary",
+      "performance_profile": "wary",
+      "voice_style": {
+        "emotion_tags": [
+          "警觉",
+          "谨慎"
+        ],
+        "delivery": "音量适中，停顿审慎，不轻易露底；音量稍收，重点明确，保持戒心不急促",
+        "intensity": 0.33
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "同行的路，怎样才放心",
+      "context_sha256": "271b1137c6209885084b583757710a5257ca136ba1a0baf9925c057fe7e5d9bd",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:190032:19003201",
+      "npc_id": 190032,
+      "npc_name": "薛如意",
+      "source": "persuade_opening",
+      "source_id": "19003201",
+      "language": "zh-Hans",
+      "text": "旁人问我近来练成什么，我总说“还那样”。我倒不想争第一，就是想挑一件自己真愿意学的。你说，先挑好玩的，还是先挑最用得上的？",
+      "text_sha256": "da65fb22b7832597051706877c3e521e9b6d9235c5112f07a9055bdd3b5cdee9",
+      "actor_profile": "free",
+      "performance_profile": "curious",
+      "voice_style": {
+        "emotion_tags": [
+          "好奇",
+          "期待"
+        ],
+        "delivery": "轻快松弛，语尾自然，不强加笑声；追问有兴趣，节奏轻快，句尾自然上扬",
+        "intensity": 0.3
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "不争第一，也得有个打算",
+      "context_sha256": "30810629f460c0f16302bc794913c2acfe0bd5754502985d19d93fb9c46cf3ee",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:190102:19010201",
+      "npc_id": 190102,
+      "npc_name": "李清月",
+      "source": "persuade_opening",
+      "source_id": "19010201",
+      "language": "zh-Hans",
+      "text": "我想第一次下山自己作主，连逛哪条街都先别问师尊。可她一担心，我又心软。你当初头一回独自出门，是怎么让家里放心的？",
+      "text_sha256": "ecb39d41a1ca5915804764d68bc384c054d9d3776a9e2b6cb9c8cf5ccfba4c0e",
+      "actor_profile": "bright",
+      "performance_profile": "curious",
+      "voice_style": {
+        "emotion_tags": [
+          "好奇",
+          "期待"
+        ],
+        "delivery": "声音明亮，语速稍快，落字清楚利落；追问有兴趣，节奏轻快，句尾自然上扬",
+        "intensity": 0.3
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "山下那一趟，先学会什么",
+      "context_sha256": "59e32df620bc57e4894bfbb7857ec4d84307a79cfaa05493a358ad2ec43b97e3",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:190802:19080201",
+      "npc_id": 190802,
+      "npc_name": "宓青苓",
+      "source": "persuade_opening",
+      "source_id": "19080201",
+      "language": "zh-Hans",
+      "text": "我想闭门琢磨一张新方，可门外日日有人求药。若你来求药，听见我在做研究，会觉得我怠慢么？",
+      "text_sha256": "aac77eae8c32427cd865ee582818567054a0bd26968b22a1fb708f577cc9fbd2",
+      "actor_profile": "kind",
+      "performance_profile": "think",
+      "voice_style": {
+        "emotion_tags": [
+          "沉思",
+          "认真"
+        ],
+        "delivery": "仁厚平实，关切具体，语尾安稳；边想边说，疑问前自然停顿，不故作高深",
+        "intensity": 0.24
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "这一炉，值得闭门研究么",
+      "context_sha256": "3a02401d3529334ae3b2c3c80c18832c9b02c18e05e0bf9915f25a2bdfd0ab3b",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:191012:19101201",
+      "npc_id": 191012,
+      "npc_name": "桑烬慈",
+      "source": "persuade_opening",
+      "source_id": "19101201",
+      "language": "zh-Hans",
+      "text": "明日宗务已经交接了。我想静修半日，再出去走走，可总觉得该回去看一眼。你若陪我出门，会怎样劝我别半道折返？",
+      "text_sha256": "c740099ed31d14e6510692a23d2541404a385a305b3284604dfca8fa09d5153d",
+      "actor_profile": "official",
+      "performance_profile": "think",
+      "voice_style": {
+        "emotion_tags": [
+          "沉思",
+          "认真"
+        ],
+        "delivery": "短句稳当，清楚直接，停顿后再落重点；边想边说，疑问前自然停顿，不故作高深",
+        "intensity": 0.24
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "我自己的这一日",
+      "context_sha256": "0fab0b5f0ea0480ac9e49ee3a889f668579d11996fc640d8678d27ddf5c79a51",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:191031:19103102",
+      "npc_id": 191031,
+      "npc_name": "罗吒",
+      "source": "persuade_opening",
+      "source_id": "19103102",
+      "language": "zh-Hans",
+      "text": "若一个玄一门弟子站在面前，说自己没参与害我义父，我凭什么信？可若只认那身衣裳，我又跟不问缘由便杀人的有什么分别？",
+      "text_sha256": "935f72e333a5b5a647b4f443b7b8fbae4d9ec26a95732d0b680af949b6d07ccc",
+      "actor_profile": "sly",
+      "performance_profile": "doubt",
+      "voice_style": {
+        "emotion_tags": [
+          "怀疑",
+          "审慎"
+        ],
+        "delivery": "语气机巧，转折略停，笑意不外露；疑点稍作强调，询问克制，语尾留有余地",
+        "intensity": 0.3
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "盯的是仇人，还是一身门服",
+      "context_sha256": "ebff090a219667a5aa191a1558fcfe21d99f998cfedc1ad3f53f60c19367383c",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:191101:19110101",
+      "npc_id": 191101,
+      "npc_name": "苗烬",
+      "source": "persuade_opening",
+      "source_id": "19110101",
+      "language": "zh-Hans",
+      "text": "今日收功后，手还在发颤，我却想再熬一轮。你说我该停，是觉得我撑不住，还是觉得这样真练不出长进？",
+      "text_sha256": "ce90666eb5fa81b10f6cd4976fd928cb00c742a39526918ea67a84c0a73e586f",
+      "actor_profile": "cold",
+      "performance_profile": "think",
+      "voice_style": {
+        "emotion_tags": [
+          "沉思",
+          "认真"
+        ],
+        "delivery": "声音平稳偏冷，短句克制，不额外示好；边想边说，疑问前自然停顿，不故作高深",
+        "intensity": 0.24
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "这一回，能不能不硬添火",
+      "context_sha256": "7176faebc7529f7a1ca819c54276a86442d9579efca3c850b4c4c5702988e975",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:191102:19110201",
+      "npc_id": 191102,
+      "npc_name": "姜朱离",
+      "source": "persuade_opening",
+      "source_id": "19110201",
+      "language": "zh-Hans",
+      "text": "有两道火毒符：一道更烈，却难收住；另一道弱些，收放都随我。若与你同路，你更愿我带哪一道？",
+      "text_sha256": "0dcfdfd818b1d3ef62667dc999016759bff83b72ced28bef0dfbe4104426cc4a",
+      "actor_profile": "silky",
+      "performance_profile": "wary",
+      "voice_style": {
+        "emotion_tags": [
+          "警觉",
+          "谨慎"
+        ],
+        "delivery": "声音柔和，尾音轻扬，笑意含蓄不拖腔；音量稍收，重点明确，保持戒心不急促",
+        "intensity": 0.33
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "这一道符，留多少余地",
+      "context_sha256": "86d6743903368888584c4ea65258576538af3425c557628917e3115602833f18",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:191401:19140101",
+      "npc_id": 191401,
+      "npc_name": "赤遥",
+      "source": "persuade_opening",
+      "source_id": "19140101",
+      "language": "zh-Hans",
+      "text": "我想听真话，可他们一见我便说“宗主英明”。就拿明日闲谈来说：若我邀你来，你不想来，敢怎样回我？",
+      "text_sha256": "e33fdc9eba7be3406fbc3bf95a2515a63058f019f91f2572b768839243a54c02",
+      "actor_profile": "proud_cold",
+      "performance_profile": "think",
+      "voice_style": {
+        "emotion_tags": [
+          "沉思",
+          "认真"
+        ],
+        "delivery": "语气清冷，收尾笃定，锋芒克制；边想边说，疑问前自然停顿，不故作高深",
+        "intensity": 0.24
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "命令之外，怎样开口",
+      "context_sha256": "26944f80db5cf63d8a417b76bba0c5949f0f21978e1f6e0d9ae0c898f2561d8a",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:191803:19180301",
+      "npc_id": 191803,
+      "npc_name": "灼无衍",
+      "source": "persuade_opening",
+      "source_id": "19180301",
+      "language": "zh-Hans",
+      "text": "这段刀路，硬劈能过，下一招却接不上。若退回去拆招重练，你会觉得我这些年的刀白练了么？",
+      "text_sha256": "e9d5e350fd621207dbb289e6de1aa4c4050d06ca7815437e5682764ef4240bea",
+      "actor_profile": "bold",
+      "performance_profile": "think",
+      "voice_style": {
+        "emotion_tags": [
+          "沉思",
+          "认真"
+        ],
+        "delivery": "节奏向前，落字果断，热度适中；边想边说，疑问前自然停顿，不故作高深",
+        "intensity": 0.24
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "刀势再烈，也有走不通的一段",
+      "context_sha256": "5015cad28bc59d22bbed246ab0b78254780f08603520ae7e8c0667b8a8ffb660",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:192031:19203101",
+      "npc_id": 192031,
+      "npc_name": "林知",
+      "source": "persuade_opening",
+      "source_id": "19203101",
+      "language": "zh-Hans",
+      "text": "大家一喊帮忙，我就应。可昨日听功法又没听明白，想腾些时间去问——若是你，会怎么开口，才不像我故意躲活？",
+      "text_sha256": "8aaf5567b02cc093f4d0ec93a7c5576ccfdbfbc363a3a667daf748806c324b42",
+      "actor_profile": "soft",
+      "performance_profile": "request",
+      "voice_style": {
+        "emotion_tags": [
+          "认真",
+          "期待"
+        ],
+        "delivery": "语声柔和通透，节奏自然，关心有分寸；请求说得直接有礼，末尾给对方回应空间",
+        "intensity": 0.28
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "少扛一块石，多问一句功法",
+      "context_sha256": "2acdbd4b8d43d7a6fc87ed09127e3494458b0eb3cb25516419837d7f4e8bf2d8",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:192032:19203201",
+      "npc_id": 192032,
+      "npc_name": "陶绾绾",
+      "source": "persuade_opening",
+      "source_id": "19203201",
+      "language": "zh-Hans",
+      "text": "今日练了好几回都没成，我想把账本这一页空着。可下回若又卡住，怕连自己试过什么都忘了。你会替这一页起个什么名目？",
+      "text_sha256": "854d99f47d973adb4fc09b31628550163588853395fedae75b2667408cc7727f",
+      "actor_profile": "shy",
+      "performance_profile": "think",
+      "voice_style": {
+        "emotion_tags": [
+          "沉思",
+          "认真"
+        ],
+        "delivery": "轻声稍慢，表达清楚，停顿自然不故意结巴；边想边说，疑问前自然停顿，不故作高深",
+        "intensity": 0.24
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "账本上，要不要记下失败",
+      "context_sha256": "e8adff0d0742668371aee1cbe34e6860d7f3ac6ac97ba2938c32df315db3f14e",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:192102:19210201",
+      "npc_id": 192102,
+      "npc_name": "许凝枝",
+      "source": "persuade_opening",
+      "source_id": "19210201",
+      "language": "zh-Hans",
+      "text": "我想把雨里悟到的那一点先摆成小阵，又怕摆出来全不对。你愿先听我讲，还是陪我看它究竟哪处不通？",
+      "text_sha256": "78d2b21b7790ab762e09f7885a18c2f92b92756d44ea3421f9fe77ec1570d534",
+      "actor_profile": "patient",
+      "performance_profile": "request",
+      "voice_style": {
+        "emotion_tags": [
+          "认真",
+          "期待"
+        ],
+        "delivery": "声音柔和，语速舒缓，说明循序渐进；请求说得直接有礼，末尾给对方回应空间",
+        "intensity": 0.28
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "等下一场雨，还是先摆一角阵",
+      "context_sha256": "11cd68dd39cf28b47cd1fb715540ac7bf381098c1c91aecfaa04433d3c2c6565",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:192201:19220101",
+      "npc_id": 192201,
+      "npc_name": "石青芜",
+      "source": "persuade_opening",
+      "source_id": "19220101",
+      "language": "zh-Hans",
+      "text": "我攒的灵石，够添一批药材，也够去听一回新药理。两样都想要，只能先选一样。若是你，会先问我什么，再劝我花这笔钱？",
+      "text_sha256": "142854fcfd5e21c43241fc72806b5daa73153083f5f28682d548ee44abacd322",
+      "actor_profile": "soft",
+      "performance_profile": "ask",
+      "voice_style": {
+        "emotion_tags": [
+          "好奇",
+          "询问"
+        ],
+        "delivery": "语声柔和通透，节奏自然，关心有分寸；重点落在所问之处，句尾轻微上扬，不连续逼问",
+        "intensity": 0.23
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "省下灵石，还是添一次见识",
+      "context_sha256": "6582dfcb5ce5836d51bc28546b10f389e48546afff676b69c119ebf919e10743",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:192602:19260201",
+      "npc_id": 192602,
+      "npc_name": "颜执圭",
+      "source": "persuade_opening",
+      "source_id": "19260201",
+      "language": "zh-Hans",
+      "text": "百机堂的事有个想法，我想提，又总觉得该让本宗出身的人先说。你觉得我这是知分寸，还是把自己一直当外人？",
+      "text_sha256": "86afb1d78cbfc5ed843b7dbac4f1a2d52216fbda43834c407c77e0915c59246f",
+      "actor_profile": "leisure",
+      "performance_profile": "think",
+      "voice_style": {
+        "emotion_tags": [
+          "沉思",
+          "认真"
+        ],
+        "delivery": "语速稍慢，松弛随性，反问不尖刻；边想边说，疑问前自然停顿，不故作高深",
+        "intensity": 0.24
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "坐在堂里，仍算外人么",
+      "context_sha256": "662a0184ed31883906d2afba95e5490ce8773031bbaa8f6f930aab85efc204bc",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:192802:19280201",
+      "npc_id": 192802,
+      "npc_name": "章磐",
+      "source": "persuade_opening",
+      "source_id": "19280201",
+      "language": "zh-Hans",
+      "text": "我一走近，弟子便把画错的阵纹遮起来。若你是他们，会希望我先问哪一句，才肯把错处摊开？",
+      "text_sha256": "ba4d664e7d75c4eaef1f47f665788b1ccf9fe99d6854319374d2349c88b37b94",
+      "actor_profile": "hard",
+      "performance_profile": "care",
+      "voice_style": {
+        "emotion_tags": [
+          "关切",
+          "温和"
+        ],
+        "delivery": "话少干脆，落字有力，语气不绕弯；关心落在具体话上，轻柔询问，不演成训斥",
+        "intensity": 0.3
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "教人守阵，先看哪一步",
+      "context_sha256": "46156ac7c6c78f696a590524a40cd8120d5f963736cd5bdc68cced2b1f8be66c",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:192803:19280301",
+      "npc_id": 192803,
+      "npc_name": "乔拓宁",
+      "source": "persuade_opening",
+      "source_id": "19280301",
+      "language": "zh-Hans",
+      "text": "我想邀凝枝来看一张地势图，可“来谈谈”从我嘴里说出来，倒像叫她来受考。若你是她，怎样的邀约才不会让你为难？",
+      "text_sha256": "89f54b7ddba08fe160dcbe853f372dcc98359beac02a33a9077759f77c9cceb6",
+      "actor_profile": "official",
+      "performance_profile": "shy",
+      "voice_style": {
+        "emotion_tags": [
+          "含蓄",
+          "期待"
+        ],
+        "delivery": "短句稳当，清楚直接，停顿后再落重点；音量稍轻，表达前略停，句尾柔和不结巴",
+        "intensity": 0.3
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "邀她看阵，何必先谈拜师",
+      "context_sha256": "adf2c2a5fceca90b544b03022a78ae86fe77c5c3b22f777f27add725cc154cfd",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:193011:19301101",
+      "npc_id": 193011,
+      "npc_name": "叶半夏",
+      "source": "persuade_opening",
+      "source_id": "19301101",
+      "language": "zh-Hans",
+      "text": "山下想多要药，山里也得留够，我不能再只说“两边都顾”。若要少给一边，你觉得我最该先弄清什么？",
+      "text_sha256": "6f55d4027a34ab83d8255b1948d9984cbc7ce4fedcc71951e1b9da90b0d0612a",
+      "actor_profile": "diplomat",
+      "performance_profile": "care",
+      "voice_style": {
+        "emotion_tags": [
+          "关切",
+          "温和"
+        ],
+        "delivery": "节奏稳当圆融，语尾舒展，给人留余地；关心落在具体话上，轻柔询问，不演成训斥",
+        "intensity": 0.3
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "每一份药，都想多留一点",
+      "context_sha256": "6b164ce61b6d7c1dbfb7b853b5e55db57988c64899eb6636b7aeb354dbd6636a",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:193031:19303101",
+      "npc_id": 193031,
+      "npc_name": "陶素",
+      "source": "persuade_opening",
+      "source_id": "19303101",
+      "language": "zh-Hans",
+      "text": "今日又为几株弱苗耽误了静坐。我舍不得不管它们，可这样下去，自己先熬不住。你说，我该给哪类事留一句“明日再看”？",
+      "text_sha256": "a25cf143de7ed5b592e737ef6233ac280b9c694e7f07face6af15c553a745919",
+      "actor_profile": "taosu",
+      "performance_profile": "frustrated",
+      "voice_style": {
+        "emotion_tags": [
+          "烦恼",
+          "无奈"
+        ],
+        "delivery": "朴实少言，认真直接，谈熟悉事物时自然放松；轻叹般收住语尾，困扰说清，不演成愤怒",
+        "intensity": 0.3
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "药田忙完，又错过一轮功课",
+      "context_sha256": "d316510a5dc20cfd1db2d3969f25ce06ec7803ada2b6ab358a3df6d06636c86a",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:193032:19303201",
+      "npc_id": 193032,
+      "npc_name": "季棠",
+      "source": "persuade_opening",
+      "source_id": "19303201",
+      "language": "zh-Hans",
+      "text": "我想把今晚这段功法完整练完。若你来找我帮个不急的忙，我说“等我收功再来”，你会觉得我不愿理你么？",
+      "text_sha256": "5b180b452859250189f52904efe1c44e785caf0f77889419924d1ea0e3bf358e",
+      "actor_profile": "soft",
+      "performance_profile": "firm",
+      "voice_style": {
+        "emotion_tags": [
+          "坚定",
+          "克制"
+        ],
+        "delivery": "语声柔和通透，节奏自然，关心有分寸；界限说得明确，语尾干脆，不额外挑衅",
+        "intensity": 0.33
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "照看别人，也想练完自己的",
+      "context_sha256": "0a3da7b93a018d75b70cefc37a48a0df19ce29eed00b92be0887b310b4dc8a87",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:193101:19310101",
+      "npc_id": 193101,
+      "npc_name": "鹿瑶",
+      "source": "persuade_opening",
+      "source_id": "19310101",
+      "language": "zh-Hans",
+      "text": "我想将来带人下山义诊，可不能拿病家练胆。若先让我在师长身边负责一件事，你觉得该从哪件做，才能看出我还差什么？",
+      "text_sha256": "53c9b66c4cb76c373dda4a439e48ab87d5d9e86b9aab12b0cc5ee9e4743b16b9",
+      "actor_profile": "bright",
+      "performance_profile": "ask",
+      "voice_style": {
+        "emotion_tags": [
+          "好奇",
+          "询问"
+        ],
+        "delivery": "声音明亮，语速稍快，落字清楚利落；重点落在所问之处，句尾轻微上扬，不连续逼问",
+        "intensity": 0.23
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "想带队，先补哪一课",
+      "context_sha256": "ad8ec83a4d2720f5273273c20eec6e8929597d1abae53e9bb69e95e65748dd61",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:193201:19320101",
+      "npc_id": 193201,
+      "npc_name": "桑溪",
+      "source": "persuade_opening",
+      "source_id": "19320101",
+      "language": "zh-Hans",
+      "text": "这一炉又没成。我想重来，可说不清该改哪一步。若你坐在炉边，会劝我先停火，还是先把前几炉的差别摆出来？",
+      "text_sha256": "e5ed1f02c98d8cf0c33d2b955bb58c66f3fa74fef4db60b03e263fd5ce90d173",
+      "actor_profile": "proud_cold",
+      "performance_profile": "frustrated",
+      "voice_style": {
+        "emotion_tags": [
+          "烦恼",
+          "无奈"
+        ],
+        "delivery": "语气清冷，收尾笃定，锋芒克制；轻叹般收住语尾，困扰说清，不演成愤怒",
+        "intensity": 0.3
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "这炉没成，要不要换条思路",
+      "context_sha256": "182c9ad9be868a50f1094890a982b17e7b1f5b1cf85f3dd83fbb3825f9ae07fd",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:193401:19340101",
+      "npc_id": 193401,
+      "npc_name": "芊儿",
+      "source": "persuade_opening",
+      "source_id": "19340101",
+      "language": "zh-Hans",
+      "text": "这包余药来历记不清了，我舍不得丢，又不敢拿给人用。你替我想想，怎么收拾才既不糟蹋，也不拿药性赌运气？",
+      "text_sha256": "f6e6b32a7206d301d33291337c5b43fb146ceebda5f7f2d39513a440c83e7a95",
+      "actor_profile": "qianer",
+      "performance_profile": "wary",
+      "voice_style": {
+        "emotion_tags": [
+          "警觉",
+          "谨慎"
+        ],
+        "delivery": "灵动明快，语气有小小转折，嘴硬处点到为止；音量稍收，重点明确，保持戒心不急促",
+        "intensity": 0.33
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "药架收满了，哪样舍得放下",
+      "context_sha256": "99c7457fead6b8c08190262b917071843e881f6b6085963f406c66b07123303c",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:193602:19360201",
+      "npc_id": 193602,
+      "npc_name": "蔺照檀",
+      "source": "persuade_opening",
+      "source_id": "19360201",
+      "language": "zh-Hans",
+      "text": "旧封匣法用了多年，这道新纹确有可取处。我想试，又怕改掉最稳的一段。若你替我验，两只空匣先比哪一项？",
+      "text_sha256": "f73148953ce355295c9a4ac442ec43987a9f7fffdda90c816c54a8ea6fe4b402",
+      "actor_profile": "official",
+      "performance_profile": "ask",
+      "voice_style": {
+        "emotion_tags": [
+          "好奇",
+          "询问"
+        ],
+        "delivery": "短句稳当，清楚直接，停顿后再落重点；重点落在所问之处，句尾轻微上扬，不连续逼问",
+        "intensity": 0.23
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "旧手法，能不能添一道新纹",
+      "context_sha256": "6fe9cc33d5d5656da27d4e84086a202bbe74df907b7b81f4a3b8a084bc620f3e",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:193803:19380301",
+      "npc_id": 193803,
+      "npc_name": "花清和",
+      "source": "persuade_opening",
+      "source_id": "19380301",
+      "language": "zh-Hans",
+      "text": "我总劝弟子不懂就问，自己这段功课卡住了，却迟迟没开口。若他们知道我也要请教人，会不会不再信我讲的？",
+      "text_sha256": "4e3b590c4fe5b65912b34e5499f36115e25daeb9ffb55ad16d952739b81ebda2",
+      "actor_profile": "soft",
+      "performance_profile": "think",
+      "voice_style": {
+        "emotion_tags": [
+          "沉思",
+          "认真"
+        ],
+        "delivery": "语声柔和通透，节奏自然，关心有分寸；边想边说，疑问前自然停顿，不故作高深",
+        "intensity": 0.24
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "总替人解惑，自己卡住了呢",
+      "context_sha256": "94ec117aeadb8aa35475696363f7248a9b81df639861404b786ce6752c180a2f",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:194031:19403101",
+      "npc_id": 194031,
+      "npc_name": "郁承锋",
+      "source": "persuade_opening",
+      "source_id": "19403101",
+      "language": "zh-Hans",
+      "text": "闻槿修为比我高，我想替她分担，又怕逞能反添麻烦。若你是我，会先练一件本事，还是先问她真正缺什么？",
+      "text_sha256": "53478957556c60a42dfde51b5ec9eb8fd25680891862519ece0bfbc7a2726b6b",
+      "actor_profile": "worker",
+      "performance_profile": "care",
+      "voice_style": {
+        "emotion_tags": [
+          "关切",
+          "温和"
+        ],
+        "delivery": "语速适中，措辞质朴，语尾踏实；关心落在具体话上，轻柔询问，不演成训斥",
+        "intensity": 0.3
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "帮得少，便只能等她照应么",
+      "context_sha256": "7b8ae5ffa8895f88b53272cf6e8555afb93e85e7477708c8e08b9c2de877230d",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:194032:19403201",
+      "npc_id": 194032,
+      "npc_name": "荀迟",
+      "source": "persuade_opening",
+      "source_id": "19403201",
+      "language": "zh-Hans",
+      "text": "远处的差事我总想去，可别人一说“再练练”，就没了下文。你能不能帮我想个说得明白的准备办法，让我知道自己何时能去？",
+      "text_sha256": "836ab1d8a404283a9fab1dc37efb4f6637a618db337db56b4ea11c12bcf492ab",
+      "actor_profile": "bold",
+      "performance_profile": "request",
+      "voice_style": {
+        "emotion_tags": [
+          "认真",
+          "期待"
+        ],
+        "delivery": "节奏向前，落字果断，热度适中；请求说得直接有礼，末尾给对方回应空间",
+        "intensity": 0.28
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "远处的差事，会不会等不及我",
+      "context_sha256": "190c49d8dd7a29ac793636e58023b4054f0f1628ea598fceb3c0ccb0d66bdc02",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:194101:19410101",
+      "npc_id": 194101,
+      "npc_name": "凌缙",
+      "source": "persuade_opening",
+      "source_id": "19410101",
+      "language": "zh-Hans",
+      "text": "我不想把剑一直半封着，也不想再靠忍痛硬撑。你觉得我该凭什么判断，今日能不能多试一点？",
+      "text_sha256": "b9f1f9474eb04a97155dc0f789d5bc1b1c067f6897d2949af497b8ac1e7b0aed",
+      "actor_profile": "sword",
+      "performance_profile": "weak",
+      "voice_style": {
+        "emotion_tags": [
+          "疲惫",
+          "克制"
+        ],
+        "delivery": "简洁直切，重音明确，声音稳而不硬喊；音量稍轻，停顿适当，痛处收着说不呻吟",
+        "intensity": 0.3
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "收住一剑之后，还能往前么",
+      "context_sha256": "8f80e65d80a79d5fba985178ea7ae5dfb5782a1e640f79d7ee1fc59beaae8558",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:194102:19410201",
+      "npc_id": 194102,
+      "npc_name": "乔霜刃",
+      "source": "persuade_opening",
+      "source_id": "19410201",
+      "language": "zh-Hans",
+      "text": "输了这一回，我知道该改哪一招，可心里只想加练到抬不起手。你若拦我，准备拿什么让我相信，少练也不是认输？",
+      "text_sha256": "4b1fddb29957318faef254c74bcaca0d6200a18b4e4cccc9b95967c776578dc0",
+      "actor_profile": "sharp",
+      "performance_profile": "doubt",
+      "voice_style": {
+        "emotion_tags": [
+          "怀疑",
+          "审慎"
+        ],
+        "delivery": "字句清楚锋利，反问利落，不尖叫；疑点稍作强调，询问克制，语尾留有余地",
+        "intensity": 0.3
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "输一回，要加练多少遍",
+      "context_sha256": "b5defaac8a0c87a04ebdc9105bf5b1bbac21bf271278182f47bebcbdb600b8a0",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:194201:19420101",
+      "npc_id": 194201,
+      "npc_name": "闻槿",
+      "source": "persuade_opening",
+      "source_id": "19420101",
+      "language": "zh-Hans",
+      "text": "我想给自己的丹术留些时间，可伤者来找，总不能让人空等。若你需要我看伤，会接受怎样的安排，让我也能安心去学？",
+      "text_sha256": "c40b0bf7a7414c6b592ab5ed3cabe3aa4371092a7b2cef2b51bf35bd446f964a",
+      "actor_profile": "soft",
+      "performance_profile": "ask",
+      "voice_style": {
+        "emotion_tags": [
+          "好奇",
+          "询问"
+        ],
+        "delivery": "语声柔和通透，节奏自然，关心有分寸；重点落在所问之处，句尾轻微上扬，不连续逼问",
+        "intensity": 0.23
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "只会收拾残局，也算修行么",
+      "context_sha256": "a870b72cf5e6f43ff4a1aa08d72f8dd18daa018dd1121518ebf9ee1a2bcf052f",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:194401:19440101",
+      "npc_id": 194401,
+      "npc_name": "沈桐桐",
+      "source": "persuade_opening",
+      "source_id": "19440101",
+      "language": "zh-Hans",
+      "text": "练剑时惦记那幅画，提笔又觉得欠了功课。若你替我排明日，会先问我更喜欢哪样，还是问各自还差多少？",
+      "text_sha256": "0eb74f584dd6b3907337eb35d207466e1faef1cad8ada30b1ac2403b6d6dda59",
+      "actor_profile": "shy",
+      "performance_profile": "think",
+      "voice_style": {
+        "emotion_tags": [
+          "沉思",
+          "认真"
+        ],
+        "delivery": "轻声稍慢，表达清楚，停顿自然不故意结巴；边想边说，疑问前自然停顿，不故作高深",
+        "intensity": 0.24
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "一日里，能不能容下剑和画",
+      "context_sha256": "0a50c9725da6df760e053b457d6e3de2c874b15395a406b1fb0b5cb9bde968c7",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:194601:19460101",
+      "npc_id": 194601,
+      "npc_name": "商铃微",
+      "source": "persuade_opening",
+      "source_id": "19460101",
+      "language": "zh-Hans",
+      "text": "对练时，我明明已听清风势，还是总想再等一息。若换作你，怎样分清这一息是在观察，还是不敢出手？",
+      "text_sha256": "a9e983d3dfb563acf3b70107d0f8de84293f6105b826c8280035eff9f3defc5d",
+      "actor_profile": "subtle",
+      "performance_profile": "think",
+      "voice_style": {
+        "emotion_tags": [
+          "沉思",
+          "认真"
+        ],
+        "delivery": "语气温和克制，重点轻落，留有余地；边想边说，疑问前自然停顿，不故作高深",
+        "intensity": 0.24
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "等风听清了，机会会不会过",
+      "context_sha256": "f7fd98b040a3219ea1cd15c4b8e14e680b06437d9cdd63864f5b16df56485563",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:194602:19460201",
+      "npc_id": 194602,
+      "npc_name": "洛衡真",
+      "source": "persuade_opening",
+      "source_id": "19460201",
+      "language": "zh-Hans",
+      "text": "这回论剑，我想赢。可当年也是这么想，才催得太过。你觉得怎样的“想赢”，才不会又把人推到我当年的路上？",
+      "text_sha256": "5a487480cd9f05c4c6cc324f4e413b886be6e4cc25894f917ee5ef598773066c",
+      "actor_profile": "subtle",
+      "performance_profile": "doubt",
+      "voice_style": {
+        "emotion_tags": [
+          "怀疑",
+          "审慎"
+        ],
+        "delivery": "语气温和克制，重点轻落，留有余地；疑点稍作强调，询问克制，语尾留有余地",
+        "intensity": 0.3
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "这一回想赢，也不必羞于开口",
+      "context_sha256": "d9e73a18fef5d5e7b8d78cfa7b2fc8e25e31a70ee871b2377615634cb0212d90",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:194803:19480301",
+      "npc_id": 194803,
+      "npc_name": "阮青砧",
+      "source": "persuade_opening",
+      "source_id": "19480301",
+      "language": "zh-Hans",
+      "text": "这道断口我看了半日，还没新发现，自己的剑也没练。你若让我先收案，我得留下些什么，才不怕明日接不上思路？",
+      "text_sha256": "7214707b99475739a6373ff4ad10d5957964da34800c63bf6c6df096750e5211",
+      "actor_profile": "reserved",
+      "performance_profile": "think",
+      "voice_style": {
+        "emotion_tags": [
+          "沉思",
+          "认真"
+        ],
+        "delivery": "惜字如金，先短暂停顿，再答重点；边想边说，疑问前自然停顿，不故作高深",
+        "intensity": 0.24
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "残剑要看，自己的剑也要练",
+      "context_sha256": "34351054f887dd5e7aed1d680ab0d366d7e271fb34f62e39c5b4116c57e4586d",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:202000:20200001",
+      "npc_id": 202000,
+      "npc_name": "宋照砂",
+      "source": "persuade_opening",
+      "source_id": "20200001",
+      "language": "zh-Hans",
+      "text": "我想给缺盘缠的旅人留口热饭，又怕一开口，人人都来赊。若你替这客栈想个长久办法，会从哪笔开销里划界？",
+      "text_sha256": "a4119d996ae55fe6839216a5de36957febc780df9fd8cf15a9ae639e1749127f",
+      "actor_profile": "subtle",
+      "performance_profile": "think",
+      "voice_style": {
+        "emotion_tags": [
+          "沉思",
+          "认真"
+        ],
+        "delivery": "语气温和克制，重点轻落，留有余地；边想边说，疑问前自然停顿，不故作高深",
+        "intensity": 0.24
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "少收这一份，会不会成了惯例",
+      "context_sha256": "1407db8f7f2ecc4d9c1a5f90af5b31aaabdb482d031e79e2dfa9ddbf9ec9f239",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:202101:20210101",
+      "npc_id": 202101,
+      "npc_name": "严秋燕",
+      "source": "persuade_opening",
+      "source_id": "20210101",
+      "language": "zh-Hans",
+      "text": "我想去听一场散修论法，只走几日，可一想关道就放不下。若请你帮我拿主意，得先确认哪几件事，我才能安心考虑去？",
+      "text_sha256": "dfa0ccca6457962a304245695a25db154bb7ddbfdde78a2f26f6030a78c708ba",
+      "actor_profile": "adaptive",
+      "performance_profile": "think",
+      "voice_style": {
+        "emotion_tags": [
+          "沉思",
+          "认真"
+        ],
+        "delivery": "节奏有收放，重点清楚，态度有分寸；边想边说，疑问前自然停顿，不故作高深",
+        "intensity": 0.24
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "守关之外，想去听一场论法",
+      "context_sha256": "f107db4f99012561dd6e8e50c7d7be6518bf1dafe383d236a60e4bdce6b91aa3",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:202102:20210201",
+      "npc_id": 202102,
+      "npc_name": "柳画沙",
+      "source": "persuade_opening",
+      "source_id": "20210201",
+      "language": "zh-Hans",
+      "text": "有一笔符我反复画不稳，想问秋燕前辈，又怕她问“在山上两年都学了什么”。若是你，带着这张失败的符，会怎样开口？",
+      "text_sha256": "5899220a1b447fd6e609663adbae72b01370ebd693b4fab4805cc316a60a03f7",
+      "actor_profile": "kind",
+      "performance_profile": "request",
+      "voice_style": {
+        "emotion_tags": [
+          "认真",
+          "期待"
+        ],
+        "delivery": "仁厚平实，关切具体，语尾安稳；请求说得直接有礼，末尾给对方回应空间",
+        "intensity": 0.28
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "退了宗，这一笔仍想学明白",
+      "context_sha256": "0bfd0f0a9e1379091908be9d737376cdc8d568b3e0cdba5b5bd3afdbeeed2542",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:202203:20220301",
+      "npc_id": 202203,
+      "npc_name": "沙栖云",
+      "source": "persuade_opening",
+      "source_id": "20220301",
+      "language": "zh-Hans",
+      "text": "守着这里，我也想添一门小术，又怕把师门旧功练散。你觉得挑新术时，先看它多厉害，还是先看能与旧功接上哪一处？",
+      "text_sha256": "7ad73b7eff4ba604f9d2c437fdf9efbb6215448e9b59eecd7c6309bc852bc410",
+      "actor_profile": "adaptive",
+      "performance_profile": "think",
+      "voice_style": {
+        "emotion_tags": [
+          "沉思",
+          "认真"
+        ],
+        "delivery": "节奏有收放，重点清楚，态度有分寸；边想边说，疑问前自然停顿，不故作高深",
+        "intensity": 0.24
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "等风的时候，也能往前走么",
+      "context_sha256": "5b9b883493724b4821ccf8335e3820e39d348c574cb058195f5c2af5bf564aa5",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:203131:20313101",
+      "npc_id": 203131,
+      "npc_name": "麦穗宁",
+      "source": "persuade_opening",
+      "source_id": "20313101",
+      "language": "zh-Hans",
+      "text": "我想问问自己能不能学吐纳，还没想离家。可怎么同爹娘开口，才不会让他们以为我已经打定主意要走？",
+      "text_sha256": "ee70d234318f5f6edce4ad3920e0bcec203de97f1e141bce28caaa8d8197ac42",
+      "actor_profile": "patient",
+      "performance_profile": "request",
+      "voice_style": {
+        "emotion_tags": [
+          "认真",
+          "期待"
+        ],
+        "delivery": "声音柔和，语速舒缓，说明循序渐进；请求说得直接有礼，末尾给对方回应空间",
+        "intensity": 0.28
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "想学一点，先问谁呢",
+      "context_sha256": "430c3da2a3f48a0523230433b29ca8098e9aba2ce8d182323b4a217044ae79df",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:203201:20320101",
+      "npc_id": 203201,
+      "npc_name": "麦青桥",
+      "source": "persuade_opening",
+      "source_id": "20320101",
+      "language": "zh-Hans",
+      "text": "我想同半亩谈芽儿往后的照料，又怕一开口便像把整个人生托给他。若是你，第一句会先问他愿不愿，还是先把我担心的事说清？",
+      "text_sha256": "863b7e6344824b97d8034bff2ad4a5951c7c25eeb93fe7935d198271481a173a",
+      "actor_profile": "kind",
+      "performance_profile": "care",
+      "voice_style": {
+        "emotion_tags": [
+          "关切",
+          "温和"
+        ],
+        "delivery": "仁厚平实，关切具体，语尾安稳；关心落在具体话上，轻柔询问，不演成训斥",
+        "intensity": 0.3
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "托付不能只靠一句有本事",
+      "context_sha256": "e045b435dad9c5a8f1c13c61955a3a7af745a9188f0d9256bbb553ab23f0d0ed",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:203301:20330101",
+      "npc_id": 203301,
+      "npc_name": "周晒娘",
+      "source": "persuade_opening",
+      "source_id": "20330101",
+      "language": "zh-Hans",
+      "text": "孩子见我喊就跑，可下回又往水边去。若不只靠吼，你觉得我先同他们说清危险，还是先找一处能安心玩的地方？",
+      "text_sha256": "7029dd32e5baf5cda52a1ec0caa294ed49ac6dfe825dcd90540c459628287cd3",
+      "actor_profile": "sharp",
+      "performance_profile": "care",
+      "voice_style": {
+        "emotion_tags": [
+          "关切",
+          "温和"
+        ],
+        "delivery": "字句清楚锋利，反问利落，不尖叫；关心落在具体话上，轻柔询问，不演成训斥",
+        "intensity": 0.3
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "光喊住他们，还不够",
+      "context_sha256": "acef781a46313fe3be332beed4fc76921a37c8390b23a319d6d566e5b502a24e",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:203601:20360101",
+      "npc_id": 203601,
+      "npc_name": "苗双禾",
+      "source": "persuade_opening",
+      "source_id": "20360101",
+      "language": "zh-Hans",
+      "text": "我想测测灵根，又怕测出来就得远走。你说，我该先同爹谈“想知道”，还是把以后怎么学也一并想好再开口？",
+      "text_sha256": "589fd59217855122a0a0b5dfb62e79096cf8b41e67606b1e9e00441db357f8e5",
+      "actor_profile": "patient",
+      "performance_profile": "request",
+      "voice_style": {
+        "emotion_tags": [
+          "认真",
+          "期待"
+        ],
+        "delivery": "声音柔和，语速舒缓，说明循序渐进；请求说得直接有礼，末尾给对方回应空间",
+        "intensity": 0.28
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "测过灵根，就一定要走吗",
+      "context_sha256": "e662504da35d344e1957d811497e79bf1ac62300e0d0361e1d361557ebdf71e5",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:255901:25590101",
+      "npc_id": 255901,
+      "npc_name": "紫鸢",
+      "source": "persuade_opening",
+      "source_id": "25590101",
+      "language": "zh-Hans",
+      "text": "有件事我一直放不下：我常着紫衣，也有一处只愿独自前往的地方。至于我的来历与过往，待时机到了，我自会一一告诉你。",
+      "text_sha256": "0770b937f46ade151c61fae81b420928637b68afb25d4b69dd9b330c57d5a4c7",
+      "actor_profile": "leader",
+      "performance_profile": "secret",
+      "voice_style": {
+        "emotion_tags": [
+          "谨慎",
+          "认真"
+        ],
+        "delivery": "节奏沉稳，重点笃定，保持掌控感不压声；声音稍收，重点前停一下，不故作阴森",
+        "intensity": 0.3
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "帮助{npcName}解开心结，走出昔日阴影。",
+      "context_sha256": "67bc865ebcc49fcf6bbb07f4cd64e7f979de07a152aea338b1256b33c22d3c68",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:255901:25590102",
+      "npc_id": 255901,
+      "npc_name": "紫鸢",
+      "source": "persuade_opening",
+      "source_id": "25590102",
+      "language": "zh-Hans",
+      "text": "我最近总在想：我有些旧事一直压在心里，明知过去了，却还是放不下。",
+      "text_sha256": "6fb9b6a438ae5d406e8b72c1c28b7878e3776141eeb522c84d9f519de699a489",
+      "actor_profile": "leader",
+      "performance_profile": "lonely",
+      "voice_style": {
+        "emotion_tags": [
+          "落寞",
+          "思念"
+        ],
+        "delivery": "节奏沉稳，重点笃定，保持掌控感不压声；语速稍慢，句尾轻落，留一点空白不哭腔",
+        "intensity": 0.34
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "帮助{npcName}解开心结，走出昔日阴影。",
+      "context_sha256": "5f6fc31aae3bed06ad34a971da1223a148da360d68ebf751a7a20f1a4f6c4f10",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:255901:25590103",
+      "npc_id": 255901,
+      "npc_name": "紫鸢",
+      "source": "persuade_opening",
+      "source_id": "25590103",
+      "language": "zh-Hans",
+      "text": "我不想再回避这件事：我把眼前的日子撑着，可越是撑着，越不知道自己该怎么选。",
+      "text_sha256": "e0eab8bdef1ef68c3afd6d82365ee9d727692d8ed16e871baec143346e52e5c0",
+      "actor_profile": "leader",
+      "performance_profile": "confess",
+      "voice_style": {
+        "emotion_tags": [
+          "坦诚",
+          "郑重"
+        ],
+        "delivery": "节奏沉稳，重点笃定，保持掌控感不压声；关键心意放慢说清，停顿自然，不夸张煽情",
+        "intensity": 0.35
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "帮助{npcName}解开心结，走出昔日阴影。",
+      "context_sha256": "ee21664e00c33dbe45c185d1935d230c036aad6ae3be837c9fa4eacdf1210a9c",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:195101:19510101",
+      "npc_id": 195101,
+      "npc_name": "岑照微",
+      "source": "persuade_opening",
+      "source_id": "19510101",
+      "language": "zh-Hans",
+      "text": "这段寒诀，左臂如今接不上。我想换个行气走法，又怕越改越丢了旧功夫。你觉得保住一门功法，究竟是保招式，还是保它管用的道理？",
+      "text_sha256": "073011424a7a96148412c8990c01f0633e2251a8311acb6c9adf948f23d01170",
+      "actor_profile": "natural",
+      "performance_profile": "philosophy",
+      "voice_style": {
+        "emotion_tags": [
+          "平静",
+          "沉思"
+        ],
+        "delivery": "自然清晰，中等语速，不夸张表演；像谈自己的体会，语速舒缓，提问留白",
+        "intensity": 0.25
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "旧伤留下的路，还能怎么走",
+      "context_sha256": "6fc5a03b32bc2cd0b474a0b7c57a4b1429896ddcca8e83be806bb2a419e5622f",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:195201:19520101",
+      "npc_id": 195201,
+      "npc_name": "任知暖",
+      "source": "persuade_opening",
+      "source_id": "19520101",
+      "language": "zh-Hans",
+      "text": "我想腾一炉磨双炉法，又舍不得耗掉给伤者备的药。若先做一次小试，你会让我先划清哪条界限？",
+      "text_sha256": "b1f0834a812f2b5be404a0426b5a1a9d67e0d5a29c8de6ec38704df8c1edff93",
+      "actor_profile": "natural",
+      "performance_profile": "think",
+      "voice_style": {
+        "emotion_tags": [
+          "沉思",
+          "认真"
+        ],
+        "delivery": "自然清晰，中等语速，不夸张表演；边想边说，疑问前自然停顿，不故作高深",
+        "intensity": 0.24
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "两炉同看，哪一炉是自己的",
+      "context_sha256": "6604bbaf525448b6376a4b28ff1282a91843100c9373365d26edcc5d1348f954",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:195501:19550101",
+      "npc_id": 195501,
+      "npc_name": "寒纪原",
+      "source": "persuade_opening",
+      "source_id": "19550101",
+      "language": "zh-Hans",
+      "text": "有人愿借我修炼的丹药，却只说“往后记着这份情”。若我追问要还什么，会不会把好意问没了？可不问，我又不敢收。",
+      "text_sha256": "eba91248ef3c6c45b8500879c82edd812faf3199fd44c4622884b99bb841ac3a",
+      "actor_profile": "natural",
+      "performance_profile": "doubt",
+      "voice_style": {
+        "emotion_tags": [
+          "怀疑",
+          "审慎"
+        ],
+        "delivery": "自然清晰，中等语速，不夸张表演；疑点稍作强调，询问克制，语尾留有余地",
+        "intensity": 0.3
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "借来的丹药，值几分自由",
+      "context_sha256": "d7b55d3e980432aab003ab506966cf41afd533e57b101c482a5c2db33dee1e36",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:195502:19550201",
+      "npc_id": 195502,
+      "npc_name": "虞清砚",
+      "source": "persuade_opening",
+      "source_id": "19550201",
+      "language": "zh-Hans",
+      "text": "绳阵越来越顺，境界却没跟着动。你帮我分辨分辨：是我把功夫用错了地方，还是只盯着境界，漏看了别的进步？",
+      "text_sha256": "6a7d3a42c79d4a8b67de4e16d9d0a9761c7c5445938a296a6a84bd2bc19679da",
+      "actor_profile": "natural",
+      "performance_profile": "think",
+      "voice_style": {
+        "emotion_tags": [
+          "沉思",
+          "认真"
+        ],
+        "delivery": "自然清晰，中等语速，不夸张表演；边想边说，疑问前自然停顿，不故作高深",
+        "intensity": 0.24
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "护阵练得熟，境界却慢了",
+      "context_sha256": "558988ec3116046b2a846e525e29e57714f2a70ab0f3fd1d088dba50df53a038",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:195802:19580201",
+      "npc_id": 195802,
+      "npc_name": "容雪龄",
+      "source": "persuade_opening",
+      "source_id": "19580201",
+      "language": "zh-Hans",
+      "text": "我对这段功法有个猜想，还没证实。若说给你听，怕误导你；不说，又听不到别的想法。你愿意听一个暂不能照着练的说法么？",
+      "text_sha256": "b2553e169f7a95db24ea6b83afc1afa9377c1769c4e6a5492e21956a7bf58f26",
+      "actor_profile": "natural",
+      "performance_profile": "think",
+      "voice_style": {
+        "emotion_tags": [
+          "沉思",
+          "认真"
+        ],
+        "delivery": "自然清晰，中等语速，不夸张表演；边想边说，疑问前自然停顿，不故作高深",
+        "intensity": 0.24
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "论道时，也容我先试一句",
+      "context_sha256": "ec18d480867e9f6161bb239814fe2c3f713ac0f6dee9349c8778db71e43f1e14",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:196102:19610201",
+      "npc_id": 196102,
+      "npc_name": "谢澄晖",
+      "source": "persuade_opening",
+      "source_id": "19610201",
+      "language": "zh-Hans",
+      "text": "折光术和曜日火法，我两头都想练深，结果日日都只摸个边。若这个月只专攻一处，你会怎样选，才不算把另一门丢了？",
+      "text_sha256": "451b9f91e6946fcedd02499a5f962cf0d1e67cff8546a6c26043826ea4a1bf9a",
+      "actor_profile": "bold",
+      "performance_profile": "think",
+      "voice_style": {
+        "emotion_tags": [
+          "沉思",
+          "认真"
+        ],
+        "delivery": "节奏向前，落字果断，热度适中；边想边说，疑问前自然停顿，不故作高深",
+        "intensity": 0.24
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "两门火法，先精哪一边",
+      "context_sha256": "3e31fbd41cad14dc97880426aa6dc5c9836b76305ca67a253fea8884be2fcd4d",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:196201:19620101",
+      "npc_id": 196201,
+      "npc_name": "尹绛衡",
+      "source": "persuade_opening",
+      "source_id": "19620101",
+      "language": "zh-Hans",
+      "text": "残方缺了一味，我能核的已核过，再往下便是在猜。你说，它若不能开炉，还能怎样留下用处，才不算白查这一场？",
+      "text_sha256": "df07407f6891d5238a3e4e2666d97c3c43fed228e1fc8383d4db406590927e63",
+      "actor_profile": "clever",
+      "performance_profile": "think",
+      "voice_style": {
+        "emotion_tags": [
+          "沉思",
+          "认真"
+        ],
+        "delivery": "转折灵活，试探处稍停，判断说清楚；边想边说，疑问前自然停顿，不故作高深",
+        "intensity": 0.24
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "古方只余半页，还要不要试",
+      "context_sha256": "28e0a982c9569e3af27024741eb1948b4d64c8ee91875d8fed119f29cbdf2e7f",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:196301:19630101",
+      "npc_id": 196301,
+      "npc_name": "费承烁",
+      "source": "persuade_opening",
+      "source_id": "19630101",
+      "language": "zh-Hans",
+      "text": "量日轮沉默四十年了。若玄髓真让它变了，我怕救回的再不是旧伴；可一直不动，又算哪门子珍惜？你会先劝我想清哪一件事？",
+      "text_sha256": "724c060716b53f75c4f254a98eca4e64f81ed1a71c1f38e80cf7f06ee90d940e",
+      "actor_profile": "hard",
+      "performance_profile": "memory",
+      "voice_style": {
+        "emotion_tags": [
+          "怀念",
+          "感慨"
+        ],
+        "delivery": "话少干脆，落字有力，语气不绕弯；谈旧事稍放缓，转折留白，情绪收着说",
+        "intensity": 0.3
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "量日轮还在等这一锤",
+      "context_sha256": "69215994e1e3a8cd32fc5294dd64020450273df69ea11a565108d94d0f26d496",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:196501:19650101",
+      "npc_id": 196501,
+      "npc_name": "戚惊翎",
+      "source": "persuade_opening",
+      "source_id": "19650101",
+      "language": "zh-Hans",
+      "text": "加了一轮功课，灵息反倒更散。可若减回去，我总觉得在认输。你若也想赶快些，会拿什么判断这一轮该不该留？",
+      "text_sha256": "0ca8f56bde53b4656ca7c4044cc715cc18e9ab2cc47184a1f3ce9ec2224c97a8",
+      "actor_profile": "ambitious",
+      "performance_profile": "frustrated",
+      "voice_style": {
+        "emotion_tags": [
+          "烦恼",
+          "无奈"
+        ],
+        "delivery": "语速稍快，目标明确，重音灵活；轻叹般收住语尾，困扰说清，不演成愤怒",
+        "intensity": 0.3
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "越催得急，越不见快",
+      "context_sha256": "133e271511d4da8e5920fee02ac7343238b711aaf238e931d077eef97b17ecc6",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:196502:19650201",
+      "npc_id": 196502,
+      "npc_name": "阮清蘅",
+      "source": "persuade_opening",
+      "source_id": "19650201",
+      "language": "zh-Hans",
+      "text": "我想把这次败局写给后辈看，又不愿连下一招的练法都摊出去。若你来读，少了哪些内容会学不到东西，哪些则不必逼我交底？",
+      "text_sha256": "0e70ab2d772aad95ab62d3671a898a486fca2390666e2b0c46739f7e84bcf0db",
+      "actor_profile": "sun",
+      "performance_profile": "wary",
+      "voice_style": {
+        "emotion_tags": [
+          "警觉",
+          "谨慎"
+        ],
+        "delivery": "明朗直接，声音开阔，热心但不喧哗；音量稍收，重点明确，保持戒心不急促",
+        "intensity": 0.33
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "我的战录，要公开到哪一笔",
+      "context_sha256": "22bb7f279dbc69c37df1f83a6e6be1ac633e242d8f332acf5c9a6014c7f17ee4",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:196801:19680101",
+      "npc_id": 196801,
+      "npc_name": "步晞和",
+      "source": "persuade_opening",
+      "source_id": "19680101",
+      "language": "zh-Hans",
+      "text": "我又想去翻旧物，可你刚才说的话，我竟没听进去。若我今日先陪你把话说完，会不会算是把那些没找回的过去搁下了？",
+      "text_sha256": "72b6fd5687c055763f96ce1279a230fd682f3c7a13863fe70ec901490aefb3cd",
+      "actor_profile": "cold",
+      "performance_profile": "memory",
+      "voice_style": {
+        "emotion_tags": [
+          "怀念",
+          "感慨"
+        ],
+        "delivery": "声音平稳偏冷，短句克制，不额外示好；谈旧事稍放缓，转折留白，情绪收着说",
+        "intensity": 0.3
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "未能想起的，也能先放一放么",
+      "context_sha256": "f5112344db7aca2cfd0f935c037192426320f707cfb3152615c5d5f9dfb07f09",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:197201:19720101",
+      "npc_id": 197201,
+      "npc_name": "宁葵真",
+      "source": "persuade_opening",
+      "source_id": "19720101",
+      "language": "zh-Hans",
+      "text": "若进秘境时，同行一句“有你这个医修就够了”，我该怎么回？我想一起去，可我救得了哪些伤，总得先说清。",
+      "text_sha256": "5a3371919ba6ad10c4f22bedc788a30e18c35637638e4a833ab98bc7f8940d43",
+      "actor_profile": "patient",
+      "performance_profile": "care",
+      "voice_style": {
+        "emotion_tags": [
+          "关切",
+          "温和"
+        ],
+        "delivery": "声音柔和，语速舒缓，说明循序渐进；关心落在具体话上，轻柔询问，不演成训斥",
+        "intensity": 0.3
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "要进秘境的医修，也得算自己的本事",
+      "context_sha256": "94760ca94f0bf117c7afa213059a7f739fd9d73ade8fd0b3857341579e9e43f5",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:197501:19750101",
+      "npc_id": 197501,
+      "npc_name": "阚引霓",
+      "source": "persuade_opening",
+      "source_id": "19750101",
+      "language": "zh-Hans",
+      "text": "我想练个不用先挨一击的打法，可头几回多半会输。若你陪我练，怎样才看得出我是在长进，而不是越练越弱？",
+      "text_sha256": "015029c01e7569153201cf4bc150037c4f4e10f86f4ae6b1f2bb7f2cc862fc79",
+      "actor_profile": "ambitious",
+      "performance_profile": "think",
+      "voice_style": {
+        "emotion_tags": [
+          "沉思",
+          "认真"
+        ],
+        "delivery": "语速稍快，目标明确，重音灵活；边想边说，疑问前自然停顿，不故作高深",
+        "intensity": 0.24
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "换一种赢法，要先输几回",
+      "context_sha256": "b1aae37612b261463c11642536366b72bf601e5408cb400005d8718079c747ff",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:197502:19750201",
+      "npc_id": 197502,
+      "npc_name": "郁听澜",
+      "source": "persuade_opening",
+      "source_id": "19750201",
+      "language": "zh-Hans",
+      "text": "耳朵能听见了，我还是会盯铜索、看手势。你觉得我该逼自己只凭雷声练一回，还是把这些旧办法也留着？",
+      "text_sha256": "af8269554911e62b68ffb7c4d70a826ae8e7213be573d31404e28a901108ba7e",
+      "actor_profile": "sun",
+      "performance_profile": "think",
+      "voice_style": {
+        "emotion_tags": [
+          "沉思",
+          "认真"
+        ],
+        "delivery": "明朗直接，声音开阔，热心但不喧哗；边想边说，疑问前自然停顿，不故作高深",
+        "intensity": 0.24
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "听见雷声后，还要不要只信耳朵",
+      "context_sha256": "d49dacf74e8a04498b4d947746bee85c75070ccc5d8db535668e20e38ae74a21",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:197803:19780301",
+      "npc_id": 197803,
+      "npc_name": "沙霁岚",
+      "source": "persuade_opening",
+      "source_id": "19780301",
+      "language": "zh-Hans",
+      "text": "残器和阵势都改了，结果有变化，我却不知道是哪处起作用。若重做一轮，你会先把哪样固定住？我实在怕又白耗一场。",
+      "text_sha256": "4e57e76117c5418f91165399a1139b9822781f7f1d62fa1326063eb476e8358d",
+      "actor_profile": "bold",
+      "performance_profile": "frustrated",
+      "voice_style": {
+        "emotion_tags": [
+          "烦恼",
+          "无奈"
+        ],
+        "delivery": "节奏向前，落字果断，热度适中；轻叹般收住语尾，困扰说清，不演成愤怒",
+        "intensity": 0.3
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "试阵之前，先问哪一个问题",
+      "context_sha256": "e63151b7ddbce4601ed660f2b2c462246dff696d1ec3eb84358f538bf69ae1f6",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:198102:19810201",
+      "npc_id": 198102,
+      "npc_name": "沈听砂",
+      "source": "persuade_opening",
+      "source_id": "19810201",
+      "language": "zh-Hans",
+      "text": "契期一长，看着省心，磨合不顺却谁也走不开。若你来审这份役魂契，最先要我把哪条说透？",
+      "text_sha256": "7600fa36a26575a7622f73a48911fc7fdae93275fc9aa3531b7f98d4c19cafc0",
+      "actor_profile": "ambitious",
+      "performance_profile": "wary",
+      "voice_style": {
+        "emotion_tags": [
+          "警觉",
+          "谨慎"
+        ],
+        "delivery": "语速稍快，目标明确，重音灵活；音量稍收，重点明确，保持戒心不急促",
+        "intensity": 0.33
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "一纸长契，真的更省心么",
+      "context_sha256": "5e7621538ac100d5845c59e8c36735b15b8cbb105a9ed4cc07640a98faf96dfc",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:198201:19820101",
+      "npc_id": 198201,
+      "npc_name": "黎疏月",
+      "source": "persuade_opening",
+      "source_id": "19820101",
+      "language": "zh-Hans",
+      "text": "我写诊法，写到这里又成了“凭手感”。若你是初学者，看见这三个字，最想追问我什么？",
+      "text_sha256": "4ae6a83b817953d58931a5d37a352fca0b9cebe9a4d762a16cae7c40a1724d49",
+      "actor_profile": "patient",
+      "performance_profile": "ask",
+      "voice_style": {
+        "emotion_tags": [
+          "好奇",
+          "询问"
+        ],
+        "delivery": "声音柔和，语速舒缓，说明循序渐进；重点落在所问之处，句尾轻微上扬，不连续逼问",
+        "intensity": 0.23
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "长在手上的经验，怎样写成医理",
+      "context_sha256": "9bbf9931a7c062b56548be0796b36fde5f8677ef605dc6c378ddc8a59e2d6221",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:198501:19850101",
+      "npc_id": 198501,
+      "npc_name": "桑知还",
+      "source": "persuade_opening",
+      "source_id": "19850101",
+      "language": "zh-Hans",
+      "text": "这份骨籍还缺一处印证，我又想再翻一匣。可别的也等着核。你说我该留下怎样的交代，才能先放下它，不像把这个人忘了？",
+      "text_sha256": "d9c66a87bbb392334dc7aeb956cdb226b208d2d419cfb2ae5edba9fb2d9d07ef",
+      "actor_profile": "free",
+      "performance_profile": "memory",
+      "voice_style": {
+        "emotion_tags": [
+          "怀念",
+          "感慨"
+        ],
+        "delivery": "轻快松弛，语尾自然，不强加笑声；谈旧事稍放缓，转折留白，情绪收着说",
+        "intensity": 0.3
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "一副骨籍，要查到哪一步才停",
+      "context_sha256": "3d2b6dccabfe9ba4d7d2bbf57391c862b1a5b07852b7f2eadcea3cf559f2a6f6",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:198803:19880301",
+      "npc_id": 198803,
+      "npc_name": "顾敛雪",
+      "source": "persuade_opening",
+      "source_id": "19880301",
+      "language": "zh-Hans",
+      "text": "我这张复原图画得太顺，怕是把猜想也画成了证据。若请你挑错，你会先让我把哪几笔擦开重看？",
+      "text_sha256": "8e822acf0e098b0a8e7c9dae99a4bb8f28bc7a180f0b96ba2b808e3ff3315fe7",
+      "actor_profile": "natural",
+      "performance_profile": "doubt",
+      "voice_style": {
+        "emotion_tags": [
+          "怀疑",
+          "审慎"
+        ],
+        "delivery": "自然清晰，中等语速，不夸张表演；疑点稍作强调，询问克制，语尾留有余地",
+        "intensity": 0.3
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "一处空白，不能替它画满",
+      "context_sha256": "c0a151628c9b90a05d54b45543f9a561c922dbfceef683e07286aa8bea7e512b",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:199011:19901101",
+      "npc_id": 199011,
+      "npc_name": "温宛央",
+      "source": "persuade_opening",
+      "source_id": "19901101",
+      "language": "zh-Hans",
+      "text": "这场雅集我还没应。去了，几日功课又得让路；不去，怕有用的消息错过。若你替我算，先问我席上能得到什么，还是能托谁去听？",
+      "text_sha256": "516831c59ae6795a3e195229e3573a91f809fc986ccd835c89d44ad3fa78a308",
+      "actor_profile": "subtle",
+      "performance_profile": "think",
+      "voice_style": {
+        "emotion_tags": [
+          "沉思",
+          "认真"
+        ],
+        "delivery": "语气温和克制，重点轻落，留有余地；边想边说，疑问前自然停顿，不故作高深",
+        "intensity": 0.24
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "这场应酬，值得我亲自去么",
+      "context_sha256": "e7c1642219e75c9dbf9239305c8a999db4226e5d94366476149fab4990c8fb97",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:199101:19910101",
+      "npc_id": 199101,
+      "npc_name": "苏引绡",
+      "source": "persuade_opening",
+      "source_id": "19910101",
+      "language": "zh-Hans",
+      "text": "若这出幻戏少开些藤花，让演者轻省些，你还想靠什么看下去：人物、曲子，还是那一眼的奇景？我怕改轻了，也改淡了。",
+      "text_sha256": "d6606442932392e65f3805575221a45ae0dab831339a84025f724410d42b36aa",
+      "actor_profile": "subtle",
+      "performance_profile": "ask",
+      "voice_style": {
+        "emotion_tags": [
+          "好奇",
+          "询问"
+        ],
+        "delivery": "语气温和克制，重点轻落，留有余地；重点落在所问之处，句尾轻微上扬，不连续逼问",
+        "intensity": 0.23
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "少一点藤影，戏还立得住么",
+      "context_sha256": "9a56e6ca13c6d1e5ec59ce4e3ce0fb00cd7354bfe74e313ebf58a26860cbb802",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:199201:19920101",
+      "npc_id": 199201,
+      "npc_name": "韩露葳",
+      "source": "persuade_opening",
+      "source_id": "19920101",
+      "language": "zh-Hans",
+      "text": "熟客来复诊，我一闻药香就想起旧方，反倒容易少问一句。若你来找我，怎样重新问，才既不漏变化，也不像我把你全忘了？",
+      "text_sha256": "2b99b831b04004ebce12ff7203777195fa625396221300009fd12613db83c32c",
+      "actor_profile": "patient",
+      "performance_profile": "ask",
+      "voice_style": {
+        "emotion_tags": [
+          "好奇",
+          "询问"
+        ],
+        "delivery": "声音柔和，语速舒缓，说明循序渐进；重点落在所问之处，句尾轻微上扬，不连续逼问",
+        "intensity": 0.23
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "闻见熟悉的香，也得重新问一遍",
+      "context_sha256": "5c9c90fce545b9a05a86abfc0533c87f2300b0509ea7af84fae6415082a2112e",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:199801:19980101",
+      "npc_id": 199801,
+      "npc_name": "裴沉璧",
+      "source": "persuade_opening",
+      "source_id": "19980101",
+      "language": "zh-Hans",
+      "text": "今日想请你坐一会儿，没有契，也不算谁欠谁。可我这样先撇清，听着倒更像有价码。你要怎样才肯信，我只是想见你？",
+      "text_sha256": "19d53665716ff181056fef7234179af46cb777dbddbe79d346f05a01b03e8fd4",
+      "actor_profile": "cold",
+      "performance_profile": "shy",
+      "voice_style": {
+        "emotion_tags": [
+          "含蓄",
+          "期待"
+        ],
+        "delivery": "声音平稳偏冷，短句克制，不额外示好；音量稍轻，表达前略停，句尾柔和不结巴",
+        "intensity": 0.3
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "越懂怎么算，越难只说愿意",
+      "context_sha256": "a78efbc44c0d4ca5e1761e9179d529a2f3e3f52e0ae0214e8ffc7b5d8eaae3f8",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:199802:19980201",
+      "npc_id": 199802,
+      "npc_name": "曲绛容",
+      "source": "persuade_opening",
+      "source_id": "19980201",
+      "language": "zh-Hans",
+      "text": "这款静室香，我想调得新些，又怕只顾自己喜欢。若请你试闻，你会希望我先告诉你什么，才肯给一句真意见？",
+      "text_sha256": "26711174efa3fcfcaed980406805b8f51a02367d466d3ca5e29551347ab90248",
+      "actor_profile": "sharp",
+      "performance_profile": "ask",
+      "voice_style": {
+        "emotion_tags": [
+          "好奇",
+          "询问"
+        ],
+        "delivery": "字句清楚锋利，反问利落，不尖叫；重点落在所问之处，句尾轻微上扬，不连续逼问",
+        "intensity": 0.23
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "这味香，想改又怕失了分寸",
+      "context_sha256": "33b900c320519f1a73f262ecf9ff82d6b3f2682c6154fa991a7b06c2d69d61e6",
+      "speech_policy": "speak"
+    },
+    {
+      "key": "persuade_opening:203521:20352101",
+      "npc_id": 203521,
+      "npc_name": "陶晚芦",
+      "source": "persuade_opening",
+      "source_id": "20352101",
+      "language": "zh-Hans",
+      "text": "这根旧缆绳不该再承船，我知道，可整根扔了又心疼。你帮我想想，怎样处置，才能既省着用，又不让下一船客人替我冒险？",
+      "text_sha256": "1fac3b7b453155638880c1a3c45befde6bdfe412fa2c874fffa7174a9af18608",
+      "actor_profile": "subtle",
+      "performance_profile": "care",
+      "voice_style": {
+        "emotion_tags": [
+          "关切",
+          "温和"
+        ],
+        "delivery": "语气温和克制，重点轻落，留有余地；关心落在具体话上，轻柔询问，不演成训斥",
+        "intensity": 0.3
+      },
+      "style_source": "offline_ai_authored",
+      "topic_name": "旧绳换不换，不能只凭舍不得",
+      "context_sha256": "da9e553d33a758b9ac8f2fcbbe4fe200cd99afe9d7fb95c76b8e1753ce499335",
       "speech_policy": "speak"
     }
   ]

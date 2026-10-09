@@ -1,0 +1,114 @@
+--- a/sherpa-onnx/csrc/online-transducer-modified-beam-search-decoder.cc
++++ b/sherpa-onnx/csrc/online-transducer-modified-beam-search-decoder.cc
+@@ -172,6 +172,32 @@
+       int32_t frame_offset = (*result)[b].frame_offset;
+       int32_t start = hyps_row_splits[b];
+       int32_t end = hyps_row_splits[b + 1];
++      // A1_CONTEXT_BEFORE_TOPK: apply contextual scores before acoustic pruning.
++      // Otherwise a rare token discarded by TopkIndex can never receive its
++      // hotword bonus. Keep the beam small; preserve original acoustic scores
++      // separately for the confidence trace.
++      if (ss != nullptr && ss[b]->GetContextGraph() != nullptr) {
++        const auto &graph = ss[b]->GetContextGraph();
++        for (int32_t h = start; h < end; ++h) {
++          const auto *state = prev[h].context_state;
++          // Every absent transition returns to root and cancels the pending
++          // prefix. Only arcs on the failure chain need a graph lookup.
++          std::vector<float> scores(vocab_size, -state->node_score);
++          for (const auto *node = state;; node = node->fail) {
++            for (const auto &arc : node->next) {
++              int32_t token = arc.first;
++              if (token <= 0 || token >= vocab_size || token == unk_id_) continue;
++              scores[token] = std::get<0>(graph->ForwardOneStep(
++                  state, token, false /*strict mode*/));
++            }
++            if (node == graph->Root()) break;
++          }
++          for (int32_t token = 1; token < vocab_size; ++token) {
++            if (token == unk_id_) continue;
++            p_logprob[(h - start) * vocab_size + token] += scores[token];
++          }
++        }
++      }
+       auto topk =
+           TopkIndex(p_logprob, vocab_size * (end - start), max_active_paths_);
+ 
+@@ -204,11 +230,11 @@
+           ++new_hyp.num_trailing_blanks;
+         }
+         if (lm_ && shallow_fusion_) {
+-           new_hyp.log_prob = p_logprob[k] + context_score -
++            new_hyp.log_prob = p_logprob[k] -
+                            prev_lm_log_prob;  // log_prob only includes the
+                                               // score of the transducer
+         } else {
+-           new_hyp.log_prob = p_logprob[k] + context_score;  // rescore or no LM
++            new_hyp.log_prob = p_logprob[k];  // context score already included
+                                                              // previous token
+                                                              // score is ignored
+         }
+--- a/sherpa-onnx/csrc/online-transducer-modified-beam-search-decoder.h
++++ b/sherpa-onnx/csrc/online-transducer-modified-beam-search-decoder.h
+@@ -47,6 +47,9 @@
+ 
+   void UpdateDecoderOut(OnlineTransducerDecoderResult *result) override;
+ 
++  // Worker-owned; changed before decoding a single review stream.
++  void SetMaxActivePaths(int32_t paths) { max_active_paths_ = paths; }
++
+  private:
+   OnlineTransducerModel *model_;  // Not owned
+   OnlineLM *lm_;                  // Not owned
+--- a/sherpa-onnx/csrc/online-recognizer-transducer-impl.h
++++ b/sherpa-onnx/csrc/online-recognizer-transducer-impl.h
+@@ -286,6 +286,20 @@
+   }
+ 
+   void DecodeStreams(OnlineStream **ss, int32_t n) const override {
++    // A1_FINAL_REVIEW: reuse the same weights for a bounded wider search.
++    // The option is deliberately stream-scoped. Ordinary streams and batches
++    // restore the configured live beam on every decode.
++    if (config_.decoding_method == "modified_beam_search") {
++      int32_t paths = config_.max_active_paths;
++      if (n == 1 && ss[0]->HasOption("a1_final_paths")) {
++        const auto &requested = ss[0]->GetOption("a1_final_paths");
++        if (requested == "8") paths = 8;
++        else if (requested == "12") paths = 12;
++        else if (requested == "16") paths = 16;
++      }
++      static_cast<OnlineTransducerModifiedBeamSearchDecoder *>(decoder_.get())
++          ->SetMaxActivePaths(paths);
++    }
+     int32_t chunk_size = model_->ChunkSize();
+     int32_t chunk_shift = model_->ChunkShift();
+ 
+@@ -360,6 +374,18 @@
+ 
+   OnlineRecognizerResult GetResult(OnlineStream *s) const override {
+     OnlineTransducerDecoderResult decoder_result = s->GetResult();
++    // A1_FINALIZE_CONTEXT: remove unfinished-prefix bonuses at the actual end,
++    // before selecting the final hypothesis. Only change the copy; repeated
++    // GetResult calls must not subtract a bonus repeatedly from the stream.
++    if (s->GetContextGraph() && s->NumFramesReady() > 0 && !IsReady(s) &&
++        s->IsLastFrame(s->NumFramesReady() - 1)) {
++      for (auto &entry : decoder_result.hyps) {
++        auto &hyp = entry.second;
++        if (hyp.context_state) {
++          hyp.log_prob += s->GetContextGraph()->Finalize(hyp.context_state).first;
++        }
++      }
++    }
+     decoder_->StripLeadingBlanks(&decoder_result);
+ 
+     // TODO(fangjun): Remember to change these constants if needed
+--- a/sherpa-onnx/c-api/c-api.cc
++++ b/sherpa-onnx/c-api/c-api.cc
+@@ -3740,3 +3740,8 @@
+   if (!text) return;
+   delete[] text;
+ }
++
++// Explicit marker for the locally maintained contextual-pruning/finalization patch.
++extern "C" SHERPA_ONNX_API const char *A1SherpaOnnxHotwordRevision() {
++  return "a1-context-before-topk-finalize-v2";
++}

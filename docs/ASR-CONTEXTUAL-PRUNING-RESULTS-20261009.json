@@ -1,0 +1,874 @@
+{
+  "date": "2026-10-09",
+  "kind": "offline-synthetic-regression",
+  "syntheticCases": 18,
+  "naturalCases": 1,
+  "calibrationCases": 11,
+  "heldoutCases": 8,
+  "nativeArtifact": {
+    "upstreamVersion": "1.13.8",
+    "upstreamCommit": "11afbd009a7f8c08f4bcf2fc1b265d0df4670fbf",
+    "upstreamArchiveSha256": "0a8db6c55dd318f4a688faba85f7760b99a6c92e8ef8864479d418531bee1ac2",
+    "revision": "a1-context-before-topk-finalize-v1",
+    "patchSha256": "02b82e809354a1af36f5fc636b31e3456aa0a976bb315aaf5a65d6cee72faf93",
+    "dllSha256": "d68b199b3d0747e65897e1e51a99f3b0083982512224646421316b6e230dc9aa",
+    "architecture": "win-x64",
+    "onnxruntime": "1.28.2",
+    "cuda": "12.x",
+    "cudnn": "9.x",
+    "generator": "Visual Studio 18 2026",
+    "builtUtc": "2026-10-09T11:15:21.5647502Z"
+  },
+  "profiles": {
+    "light": {
+      "metrics": {
+        "calibration": {
+          "baseline": {
+            "positive": {
+              "errors": 18,
+              "characters": 93,
+              "cer": 0.1935483870967742
+            },
+            "negative": {
+              "errors": 5,
+              "characters": 78,
+              "cer": 0.0641025641025641
+            },
+            "exactHotwords": 6,
+            "expectedHotwords": 16
+          },
+          "candidate": {
+            "positive": {
+              "errors": 14,
+              "characters": 93,
+              "cer": 0.15053763440860216
+            },
+            "negative": {
+              "errors": 5,
+              "characters": 78,
+              "cer": 0.0641025641025641
+            },
+            "exactHotwords": 10,
+            "expectedHotwords": 16
+          }
+        },
+        "heldout": {
+          "baseline": {
+            "positive": {
+              "errors": 11,
+              "characters": 52,
+              "cer": 0.21153846153846154
+            },
+            "negative": {
+              "errors": 0,
+              "characters": 62,
+              "cer": 0.0
+            },
+            "exactHotwords": 4,
+            "expectedHotwords": 9
+          },
+          "candidate": {
+            "positive": {
+              "errors": 8,
+              "characters": 52,
+              "cer": 0.15384615384615385
+            },
+            "negative": {
+              "errors": 0,
+              "characters": 62,
+              "cer": 0.0
+            },
+            "exactHotwords": 6,
+            "expectedHotwords": 9
+          }
+        }
+      },
+      "cases": [
+        {
+          "name": "name-at-start",
+          "split": "calibration",
+          "group": "positive",
+          "reference": "苏倾盏，你在这里吗？",
+          "expectedWords": [
+            "苏倾盏"
+          ],
+          "audioSha256": "e20fe461f471376ca69373d2833018e45d6423459c6ee5ca40c1cb339b261fec",
+          "samples": 47100,
+          "baseline": {
+            "text": "苏青展你在这里吗",
+            "cer": 0.25
+          },
+          "candidate": {
+            "text": "苏青展你在这里吗",
+            "cer": 0.25
+          }
+        },
+        {
+          "name": "name-in-sentence",
+          "split": "calibration",
+          "group": "positive",
+          "reference": "我想找苏倾盏，请问她在哪里？",
+          "expectedWords": [
+            "苏倾盏"
+          ],
+          "audioSha256": "7fbbafc0928c0c73beccdffad7a05bdd0d03e88dd422a2a1b151dd3331828e81",
+          "samples": 67492,
+          "baseline": {
+            "text": "我想找苏青展请问他在哪里",
+            "cer": 0.25
+          },
+          "candidate": {
+            "text": "我想找苏青展请问他在哪里",
+            "cer": 0.25
+          }
+        },
+        {
+          "name": "name-and-sect",
+          "split": "calibration",
+          "group": "positive",
+          "reference": "苏倾盏是焚天宗的弟子。",
+          "expectedWords": [
+            "苏倾盏",
+            "焚天宗"
+          ],
+          "audioSha256": "5c67898004ecdcd43079edafa7a8193cccab123d1660c4162fe80d085a6a4d9c",
+          "samples": 50535,
+          "baseline": {
+            "text": "苏清展示焚天宗的弟子",
+            "cer": 0.3
+          },
+          "candidate": {
+            "text": "苏清展示焚天宗的弟子",
+            "cer": 0.3
+          }
+        },
+        {
+          "name": "two-sects",
+          "split": "calibration",
+          "group": "positive",
+          "reference": "我想去焚天宗，也想去镇岳宗。",
+          "expectedWords": [
+            "焚天宗",
+            "镇岳宗"
+          ],
+          "audioSha256": "b714a2020803b103832799b6b531545f0619f8c752a887d15e97e5b091acbeba",
+          "samples": 66771,
+          "baseline": {
+            "text": "我想去焚天宗也想去镇岳宗",
+            "cer": 0
+          },
+          "candidate": {
+            "text": "我想去焚天宗也想去镇岳宗",
+            "cer": 0
+          }
+        },
+        {
+          "name": "common-names",
+          "split": "calibration",
+          "group": "positive",
+          "reference": "念乔，王小二，谢长风，你们好。",
+          "expectedWords": [
+            "念乔",
+            "王小二",
+            "谢长风"
+          ],
+          "audioSha256": "3c230a9b731dc26824f95e61d355448481d90d2196794daefd80f7f3d97110e5",
+          "samples": 77412,
+          "baseline": {
+            "text": "面桥王小二谢长风你们好",
+            "cer": 0.18181818181818182
+          },
+          "candidate": {
+            "text": "面桥王小二谢长风你们好",
+            "cer": 0.18181818181818182
+          }
+        },
+        {
+          "name": "rare-names",
+          "split": "calibration",
+          "group": "positive",
+          "reference": "我想请纪小蝶和江楚弦帮忙。",
+          "expectedWords": [
+            "纪小蝶",
+            "江楚弦"
+          ],
+          "audioSha256": "c586264896c75dcc5a7bebdb07aa906960e01f6e6eea7a0eaee5e83c122e4bea",
+          "samples": 60291,
+          "baseline": {
+            "text": "我想请进小蝶和江楚贤帮忙",
+            "cer": 0.16666666666666666
+          },
+          "candidate": {
+            "text": "我想请纪小蝶和江楚弦帮忙",
+            "cer": 0
+          }
+        },
+        {
+          "name": "neutral-fruit",
+          "split": "calibration",
+          "group": "negative",
+          "reference": "今天吃了一个苹果，我们明天去公园散步。",
+          "expectedWords": [],
+          "audioSha256": "3c0fc747b4401dda17f781e7a8cc90206a326363d656a66432dd4a00db845b73",
+          "samples": 81961,
+          "baseline": {
+            "text": "今天吃了一个苹果我们明天去公园散步",
+            "cer": 0
+          },
+          "candidate": {
+            "text": "今天吃了一个苹果我们明天去公园散步",
+            "cer": 0
+          }
+        },
+        {
+          "name": "neutral-cup",
+          "split": "calibration",
+          "group": "negative",
+          "reference": "这个杯子有点倾斜，桌子上放着一盏灯。",
+          "expectedWords": [],
+          "audioSha256": "a93d0b1c5a47057a03b4053cfbfe31a52019f65dc005a504a14b25851ef2507f",
+          "samples": 73324,
+          "baseline": {
+            "text": "这个杯子有点清洁桌子上放着一盏灯",
+            "cer": 0.125
+          },
+          "candidate": {
+            "text": "这个杯子有点清洁桌子上放着一盏灯",
+            "cer": 0.125
+          }
+        },
+        {
+          "name": "neutral-city",
+          "split": "calibration",
+          "group": "negative",
+          "reference": "苏州今天的天气很好，青山绿水就在眼前。",
+          "expectedWords": [],
+          "audioSha256": "815f95dbfdf067a9bc195203126f6b9d9b8acca2ba2cc2ac4147b1040ba79a77",
+          "samples": 84201,
+          "baseline": {
+            "text": "苏州今天的天气很好青山绿水就在眼前",
+            "cer": 0
+          },
+          "candidate": {
+            "text": "苏州今天的天气很好青山绿水就在眼前",
+            "cer": 0
+          }
+        },
+        {
+          "name": "original-mixed",
+          "split": "calibration",
+          "group": "positive",
+          "reference": "苏倾盏。焚天宗。我想找苏倾盏，去焚天宗看看。念乔。今天吃了一个苹果。",
+          "expectedWords": [
+            "苏倾盏",
+            "焚天宗",
+            "苏倾盏",
+            "焚天宗",
+            "念乔"
+          ],
+          "audioSha256": "1d487169fa9fcb8c8854dcdc791fade1fc28aeba51d8410fafc1e794b1a4b6a6",
+          "samples": 187143,
+          "baseline": {
+            "text": "苏清展分天宗我想找苏青展去焚天宗看看念桥今天吃了一个苹果",
+            "cer": 0.21428571428571427
+          },
+          "candidate": {
+            "text": "苏清展焚天宗我想找苏青展去焚天宗看看念乔今天吃了一个苹果",
+            "cer": 0.14285714285714285
+          }
+        },
+        {
+          "name": "official-natural",
+          "split": "calibration",
+          "group": "negative",
+          "reference": "对我做了介绍啊那么我想说的是呢大家如果对我的研究感兴趣呢",
+          "expectedWords": [],
+          "audioSha256": "668bf8df51a10027b84d5d8816a1ce11ae93545538dc05cfe2aa6811d399c250",
+          "samples": 89784,
+          "baseline": {
+            "text": "对我做了介绍那么我想说的是大家如果对我的研究感兴趣",
+            "cer": 0.10714285714285714
+          },
+          "candidate": {
+            "text": "对我做了介绍那么我想说的是大家如果对我的研究感兴趣",
+            "cer": 0.10714285714285714
+          }
+        },
+        {
+          "name": "heldout-invitation",
+          "split": "heldout",
+          "group": "positive",
+          "reference": "请苏倾盏过来，我们一起去焚天宗。",
+          "expectedWords": [
+            "苏倾盏",
+            "焚天宗"
+          ],
+          "audioSha256": "8d5acf848e71bbf6384baee82bfe6ab18c0687e38d0e3846e36a73c9df6e195c",
+          "samples": 71011,
+          "baseline": {
+            "text": "请苏清展过来我们一起去焚天宗",
+            "cer": 0.14285714285714285
+          },
+          "candidate": {
+            "text": "请苏清展过来我们一起去焚天宗",
+            "cer": 0.14285714285714285
+          }
+        },
+        {
+          "name": "heldout-question",
+          "split": "heldout",
+          "group": "positive",
+          "reference": "你见过苏倾盏吗？我有事找她。",
+          "expectedWords": [
+            "苏倾盏"
+          ],
+          "audioSha256": "0ea3fa4a86ef5b98173446aa1ecdd411ea971072a40709eaacbbda24425ca781",
+          "samples": 72771,
+          "baseline": {
+            "text": "你见过苏青展吗或有事找他",
+            "cer": 0.3333333333333333
+          },
+          "candidate": {
+            "text": "你见过苏青展吗或有事找他",
+            "cer": 0.3333333333333333
+          }
+        },
+        {
+          "name": "heldout-friends",
+          "split": "heldout",
+          "group": "positive",
+          "reference": "念乔和王小二在等你，谢长风也来了。",
+          "expectedWords": [
+            "念乔",
+            "王小二",
+            "谢长风"
+          ],
+          "audioSha256": "a48bded3e9bfd43f7bf7c7007ac21acefa8a46e963b6dd6d159232e72ce45a1e",
+          "samples": 77004,
+          "baseline": {
+            "text": "面桥和王小二在等你谢长风也来了",
+            "cer": 0.13333333333333333
+          },
+          "candidate": {
+            "text": "面桥和王小二在等你谢长风也来了",
+            "cer": 0.13333333333333333
+          }
+        },
+        {
+          "name": "heldout-rare",
+          "split": "heldout",
+          "group": "positive",
+          "reference": "莲心和陆浩元去了镇岳宗。",
+          "expectedWords": [
+            "莲心",
+            "陆浩元",
+            "镇岳宗"
+          ],
+          "audioSha256": "2fa045aadfc402048548d26c8a73a6116de70c019baf9e3356f25b3ce9b8549d",
+          "samples": 55652,
+          "baseline": {
+            "text": "连心和陆浩元去了正月宗",
+            "cer": 0.2727272727272727
+          },
+          "candidate": {
+            "text": "莲心和陆浩元去了镇岳宗",
+            "cer": 0
+          }
+        },
+        {
+          "name": "heldout-fire",
+          "split": "heldout",
+          "group": "negative",
+          "reference": "火焰正在燃烧，天空已经变亮。",
+          "expectedWords": [],
+          "audioSha256": "c08e33bbebe6c9ecba299c55e91bbecb853eed108457023e8368b2b0d1d9adc9",
+          "samples": 65169,
+          "baseline": {
+            "text": "火焰正在燃烧天空已经变亮",
+            "cer": 0
+          },
+          "candidate": {
+            "text": "火焰正在燃烧天空已经变亮",
+            "cer": 0
+          }
+        },
+        {
+          "name": "heldout-poem",
+          "split": "heldout",
+          "group": "negative",
+          "reference": "我念了一首诗，走过一座桥，然后坐下休息。",
+          "expectedWords": [],
+          "audioSha256": "73a503466054ab64f7b7f9340643a290dee270c13e22952c3087be6b0a011826",
+          "samples": 87240,
+          "baseline": {
+            "text": "我念了一首诗走过一座桥然后坐下休息",
+            "cer": 0
+          },
+          "candidate": {
+            "text": "我念了一首诗走过一座桥然后坐下休息",
+            "cer": 0
+          }
+        },
+        {
+          "name": "heldout-money",
+          "split": "heldout",
+          "group": "negative",
+          "reference": "请给我两杯茶，再拿三个馒头，一共多少钱？",
+          "expectedWords": [],
+          "audioSha256": "5ae3b88c343df9dbaf8d9836a875a9db9d3c482dfbf0fcec50c52c996206acf5",
+          "samples": 89324,
+          "baseline": {
+            "text": "请给我两杯茶再拿三个馒头一共多少钱",
+            "cer": 0
+          },
+          "candidate": {
+            "text": "请给我两杯茶再拿三个馒头一共多少钱",
+            "cer": 0
+          }
+        },
+        {
+          "name": "heldout-direction",
+          "split": "heldout",
+          "group": "negative",
+          "reference": "沿着这条路向前走，到了门口再向左转。",
+          "expectedWords": [],
+          "audioSha256": "3b49a71e55946340fdabe4a6881ccfad041b99ae3414eb2e90182ba9dc8cfd34",
+          "samples": 78926,
+          "baseline": {
+            "text": "沿着这条路向前走到了门口再向左转",
+            "cer": 0
+          },
+          "candidate": {
+            "text": "沿着这条路向前走到了门口再向左转",
+            "cer": 0
+          }
+        }
+      ]
+    },
+    "accurate": {
+      "metrics": {
+        "calibration": {
+          "baseline": {
+            "positive": {
+              "errors": 30,
+              "characters": 93,
+              "cer": 0.3225806451612903
+            },
+            "negative": {
+              "errors": 1,
+              "characters": 78,
+              "cer": 0.01282051282051282
+            },
+            "exactHotwords": 6,
+            "expectedHotwords": 16
+          },
+          "candidate": {
+            "positive": {
+              "errors": 18,
+              "characters": 93,
+              "cer": 0.1935483870967742
+            },
+            "negative": {
+              "errors": 1,
+              "characters": 78,
+              "cer": 0.01282051282051282
+            },
+            "exactHotwords": 13,
+            "expectedHotwords": 16
+          }
+        },
+        "heldout": {
+          "baseline": {
+            "positive": {
+              "errors": 6,
+              "characters": 52,
+              "cer": 0.11538461538461539
+            },
+            "negative": {
+              "errors": 6,
+              "characters": 62,
+              "cer": 0.0967741935483871
+            },
+            "exactHotwords": 6,
+            "expectedHotwords": 9
+          },
+          "candidate": {
+            "positive": {
+              "errors": 5,
+              "characters": 52,
+              "cer": 0.09615384615384616
+            },
+            "negative": {
+              "errors": 6,
+              "characters": 62,
+              "cer": 0.0967741935483871
+            },
+            "exactHotwords": 7,
+            "expectedHotwords": 9
+          }
+        }
+      },
+      "cases": [
+        {
+          "name": "name-at-start",
+          "split": "calibration",
+          "group": "positive",
+          "reference": "苏倾盏，你在这里吗？",
+          "expectedWords": [
+            "苏倾盏"
+          ],
+          "audioSha256": "e20fe461f471376ca69373d2833018e45d6423459c6ee5ca40c1cb339b261fec",
+          "samples": 47100,
+          "baseline": {
+            "text": "苏青产柴这里吗",
+            "cer": 0.5
+          },
+          "candidate": {
+            "text": "苏倾盏你在这里吗",
+            "cer": 0
+          }
+        },
+        {
+          "name": "name-in-sentence",
+          "split": "calibration",
+          "group": "positive",
+          "reference": "我想找苏倾盏，请问她在哪里？",
+          "expectedWords": [
+            "苏倾盏"
+          ],
+          "audioSha256": "7fbbafc0928c0c73beccdffad7a05bdd0d03e88dd422a2a1b151dd3331828e81",
+          "samples": 67492,
+          "baseline": {
+            "text": "共享整苏青展请问他在哪里",
+            "cer": 0.5
+          },
+          "candidate": {
+            "text": "共享张苏倾盏请问他在哪里",
+            "cer": 0.3333333333333333
+          }
+        },
+        {
+          "name": "name-and-sect",
+          "split": "calibration",
+          "group": "positive",
+          "reference": "苏倾盏是焚天宗的弟子。",
+          "expectedWords": [
+            "苏倾盏",
+            "焚天宗"
+          ],
+          "audioSha256": "5c67898004ecdcd43079edafa7a8193cccab123d1660c4162fe80d085a6a4d9c",
+          "samples": 50535,
+          "baseline": {
+            "text": "苏青禅是焚天宗的弟子",
+            "cer": 0.2
+          },
+          "candidate": {
+            "text": "苏倾盏焚天宗的弟子杜",
+            "cer": 0.2
+          }
+        },
+        {
+          "name": "two-sects",
+          "split": "calibration",
+          "group": "positive",
+          "reference": "我想去焚天宗，也想去镇岳宗。",
+          "expectedWords": [
+            "焚天宗",
+            "镇岳宗"
+          ],
+          "audioSha256": "b714a2020803b103832799b6b531545f0619f8c752a887d15e97e5b091acbeba",
+          "samples": 66771,
+          "baseline": {
+            "text": "共享区焚天宗也想去陈岳宗",
+            "cer": 0.3333333333333333
+          },
+          "candidate": {
+            "text": "共享区焚天宗也想去陈岳宗",
+            "cer": 0.3333333333333333
+          }
+        },
+        {
+          "name": "common-names",
+          "split": "calibration",
+          "group": "positive",
+          "reference": "念乔，王小二，谢长风，你们好。",
+          "expectedWords": [
+            "念乔",
+            "王小二",
+            "谢长风"
+          ],
+          "audioSha256": "3c230a9b731dc26824f95e61d355448481d90d2196794daefd80f7f3d97110e5",
+          "samples": 77412,
+          "baseline": {
+            "text": "念乔黄小二新长峰你们好",
+            "cer": 0.2727272727272727
+          },
+          "candidate": {
+            "text": "念乔王小二谢长风你们好",
+            "cer": 0
+          }
+        },
+        {
+          "name": "rare-names",
+          "split": "calibration",
+          "group": "positive",
+          "reference": "我想请纪小蝶和江楚弦帮忙。",
+          "expectedWords": [
+            "纪小蝶",
+            "江楚弦"
+          ],
+          "audioSha256": "c586264896c75dcc5a7bebdb07aa906960e01f6e6eea7a0eaee5e83c122e4bea",
+          "samples": 60291,
+          "baseline": {
+            "text": "共享请进小蝶和江楚贤帮忙",
+            "cer": 0.3333333333333333
+          },
+          "candidate": {
+            "text": "共享请尽小蝶和姜楚贤帮忙",
+            "cer": 0.4166666666666667
+          }
+        },
+        {
+          "name": "neutral-fruit",
+          "split": "calibration",
+          "group": "negative",
+          "reference": "今天吃了一个苹果，我们明天去公园散步。",
+          "expectedWords": [],
+          "audioSha256": "3c0fc747b4401dda17f781e7a8cc90206a326363d656a66432dd4a00db845b73",
+          "samples": 81961,
+          "baseline": {
+            "text": "今天吃了一个苹果我们明天去公园散步",
+            "cer": 0
+          },
+          "candidate": {
+            "text": "今天吃了一个苹果我们明天去公园散步",
+            "cer": 0
+          }
+        },
+        {
+          "name": "neutral-cup",
+          "split": "calibration",
+          "group": "negative",
+          "reference": "这个杯子有点倾斜，桌子上放着一盏灯。",
+          "expectedWords": [],
+          "audioSha256": "a93d0b1c5a47057a03b4053cfbfe31a52019f65dc005a504a14b25851ef2507f",
+          "samples": 73324,
+          "baseline": {
+            "text": "整个杯子有点倾斜桌子上放着一盏灯",
+            "cer": 0.0625
+          },
+          "candidate": {
+            "text": "整个杯子有点倾斜桌子上放着一盏灯",
+            "cer": 0.0625
+          }
+        },
+        {
+          "name": "neutral-city",
+          "split": "calibration",
+          "group": "negative",
+          "reference": "苏州今天的天气很好，青山绿水就在眼前。",
+          "expectedWords": [],
+          "audioSha256": "815f95dbfdf067a9bc195203126f6b9d9b8acca2ba2cc2ac4147b1040ba79a77",
+          "samples": 84201,
+          "baseline": {
+            "text": "苏州今天的天气很好青山绿水就在眼前",
+            "cer": 0
+          },
+          "candidate": {
+            "text": "苏州今天的天气很好青山绿水就在眼前",
+            "cer": 0
+          }
+        },
+        {
+          "name": "original-mixed",
+          "split": "calibration",
+          "group": "positive",
+          "reference": "苏倾盏。焚天宗。我想找苏倾盏，去焚天宗看看。念乔。今天吃了一个苹果。",
+          "expectedWords": [
+            "苏倾盏",
+            "焚天宗",
+            "苏倾盏",
+            "焚天宗",
+            "念乔"
+          ],
+          "audioSha256": "1d487169fa9fcb8c8854dcdc791fade1fc28aeba51d8410fafc1e794b1a4b6a6",
+          "samples": 187143,
+          "baseline": {
+            "text": "苏青展焚天宗鸿想炒苏青展区焚天宗看看念乔今天吃了一个苹果",
+            "cer": 0.25
+          },
+          "candidate": {
+            "text": "苏倾盏焚天宗洪想炒苏倾盏曲焚天宗看看念乔今天吃了一个苹果",
+            "cer": 0.10714285714285714
+          }
+        },
+        {
+          "name": "official-natural",
+          "split": "calibration",
+          "group": "negative",
+          "reference": "对我做了介绍啊那么我想说的是呢大家如果对我的研究感兴趣呢",
+          "expectedWords": [],
+          "audioSha256": "668bf8df51a10027b84d5d8816a1ce11ae93545538dc05cfe2aa6811d399c250",
+          "samples": 89784,
+          "baseline": {
+            "text": "对我做了介绍啊那么我想说的是呢大家如果对我的研究感兴趣呢",
+            "cer": 0
+          },
+          "candidate": {
+            "text": "对我做了介绍啊那么我想说的是呢大家如果对我的研究感兴趣呢",
+            "cer": 0
+          }
+        },
+        {
+          "name": "heldout-invitation",
+          "split": "heldout",
+          "group": "positive",
+          "reference": "请苏倾盏过来，我们一起去焚天宗。",
+          "expectedWords": [
+            "苏倾盏",
+            "焚天宗"
+          ],
+          "audioSha256": "8d5acf848e71bbf6384baee82bfe6ab18c0687e38d0e3846e36a73c9df6e195c",
+          "samples": 71011,
+          "baseline": {
+            "text": "请苏清晨过来我们一起去焚天宗",
+            "cer": 0.14285714285714285
+          },
+          "candidate": {
+            "text": "请苏倾盏过来我们一起去焚天宗",
+            "cer": 0
+          }
+        },
+        {
+          "name": "heldout-question",
+          "split": "heldout",
+          "group": "positive",
+          "reference": "你见过苏倾盏吗？我有事找她。",
+          "expectedWords": [
+            "苏倾盏"
+          ],
+          "audioSha256": "0ea3fa4a86ef5b98173446aa1ecdd411ea971072a40709eaacbbda24425ca781",
+          "samples": 72771,
+          "baseline": {
+            "text": "你见过苏倾臣吗我有事找他",
+            "cer": 0.16666666666666666
+          },
+          "candidate": {
+            "text": "你见过苏清晨吗我有事找他",
+            "cer": 0.25
+          }
+        },
+        {
+          "name": "heldout-friends",
+          "split": "heldout",
+          "group": "positive",
+          "reference": "念乔和王小二在等你，谢长风也来了。",
+          "expectedWords": [
+            "念乔",
+            "王小二",
+            "谢长风"
+          ],
+          "audioSha256": "a48bded3e9bfd43f7bf7c7007ac21acefa8a46e963b6dd6d159232e72ce45a1e",
+          "samples": 77004,
+          "baseline": {
+            "text": "面墙和王小二在等你谢长风也来了",
+            "cer": 0.13333333333333333
+          },
+          "candidate": {
+            "text": "面墙和王小二在等你谢长风也来了",
+            "cer": 0.13333333333333333
+          }
+        },
+        {
+          "name": "heldout-rare",
+          "split": "heldout",
+          "group": "positive",
+          "reference": "莲心和陆浩元去了镇岳宗。",
+          "expectedWords": [
+            "莲心",
+            "陆浩元",
+            "镇岳宗"
+          ],
+          "audioSha256": "2fa045aadfc402048548d26c8a73a6116de70c019baf9e3356f25b3ce9b8549d",
+          "samples": 55652,
+          "baseline": {
+            "text": "莲心和陆浩元去了镇岳宗",
+            "cer": 0
+          },
+          "candidate": {
+            "text": "莲心和陆浩元去了镇岳宗",
+            "cer": 0
+          }
+        },
+        {
+          "name": "heldout-fire",
+          "split": "heldout",
+          "group": "negative",
+          "reference": "火焰正在燃烧，天空已经变亮。",
+          "expectedWords": [],
+          "audioSha256": "c08e33bbebe6c9ecba299c55e91bbecb853eed108457023e8368b2b0d1d9adc9",
+          "samples": 65169,
+          "baseline": {
+            "text": "胡彦正在燃烧天空已经变亮",
+            "cer": 0.16666666666666666
+          },
+          "candidate": {
+            "text": "胡彦正在燃烧天空已经变亮",
+            "cer": 0.16666666666666666
+          }
+        },
+        {
+          "name": "heldout-poem",
+          "split": "heldout",
+          "group": "negative",
+          "reference": "我念了一首诗，走过一座桥，然后坐下休息。",
+          "expectedWords": [],
+          "audioSha256": "73a503466054ab64f7b7f9340643a290dee270c13e22952c3087be6b0a011826",
+          "samples": 87240,
+          "baseline": {
+            "text": "念了一首诗走过一座桥然后坐下休息",
+            "cer": 0.058823529411764705
+          },
+          "candidate": {
+            "text": "念了一首诗走过一座桥然后坐下休息",
+            "cer": 0.058823529411764705
+          }
+        },
+        {
+          "name": "heldout-money",
+          "split": "heldout",
+          "group": "negative",
+          "reference": "请给我两杯茶，再拿三个馒头，一共多少钱？",
+          "expectedWords": [],
+          "audioSha256": "5ae3b88c343df9dbaf8d9836a875a9db9d3c482dfbf0fcec50c52c996206acf5",
+          "samples": 89324,
+          "baseline": {
+            "text": "请给我两杯茶再拿三个馒头一共多少钱",
+            "cer": 0
+          },
+          "candidate": {
+            "text": "请给我两杯茶再拿三个馒头一共多少钱",
+            "cer": 0
+          }
+        },
+        {
+          "name": "heldout-direction",
+          "split": "heldout",
+          "group": "negative",
+          "reference": "沿着这条路向前走，到了门口再向左转。",
+          "expectedWords": [],
+          "audioSha256": "3b49a71e55946340fdabe4a6881ccfad041b99ae3414eb2e90182ba9dc8cfd34",
+          "samples": 78926,
+          "baseline": {
+            "text": "延展这条路向前走就到了门口再向左转",
+            "cer": 0.1875
+          },
+          "candidate": {
+            "text": "延展这条路向前走就到了门口再向左转",
+            "cer": 0.1875
+          }
+        }
+      ]
+    }
+  }
+}

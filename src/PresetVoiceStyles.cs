@@ -15,7 +15,7 @@ internal static class PresetVoiceStyles
     internal sealed record Match(string EntryKey, string Source, string SourceId, string TopicName,
         string LibraryVersion, VoiceStyle Style)
     {
-        public string Description => (Source == "base_greeting" ? "基础问候语" : "话题开场白") +
+        public string Description => (Source == "base_greeting" ? "基础问候语" : Source == "persuade_opening" ? "说服开场白" : "话题开场白") +
             (TopicName.Length == 0 ? "" : " · " + TopicName) + " · " + EntryKey + " · 库版本 " + LibraryVersion;
     }
 
@@ -38,7 +38,7 @@ internal static class PresetVoiceStyles
                 // Conditional templates, pets and stage directions are never human dialogue.
                 if (entry.GetProperty("speech_policy").GetString() != "speak") continue;
                 var source = entry.GetProperty("source").GetString();
-                if (source is not ("base_greeting" or "topic_opening" or "topic_opening_branch")) continue;
+                if (source is not ("base_greeting" or "topic_opening" or "topic_opening_branch" or "persuade_opening")) continue;
                 var text = entry.GetProperty("text").GetString()?.Trim();
                 var style = VoiceStyle.Parse(entry.GetProperty("voice_style"));
                 if (string.IsNullOrWhiteSpace(text) || style == null)

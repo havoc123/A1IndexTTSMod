@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType><TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable><ImplicitUsings>enable</ImplicitUsings>
+    <NoWarn>$(NoWarn);NETSDK1138</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../src/AsrModelProfiles.cs" Link="AsrModelProfiles.cs" />
+    <Compile Include="../../src/AsrBpeTokenizer.cs" Link="AsrBpeTokenizer.cs" />
+    <Compile Include="../../src/AsrDecoderSession.cs" Link="AsrDecoderSession.cs" />
+    <Compile Include="../../src/AsrFinalSelection.cs" Link="AsrFinalSelection.cs" />
+    <Compile Include="../../src/StreamingAsr.cs" Link="StreamingAsr.cs" />
+    <PackageReference Include="org.k2fsa.sherpa.onnx" Version="1.13.8" />
+    <PackageReference Include="NAudio.Wasapi" Version="2.3.0" />
+    <PackageReference Include="NAudio.WinMM" Version="2.3.0" />
+  </ItemGroup>
+</Project>

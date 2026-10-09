@@ -78,8 +78,8 @@ public sealed class Plugin : BasePlugin, IManagedFeaturePlugin
             _autoRead = Config.Bind("SpeechPanel", "AutoRead", true, "Automatically speak new NPC replies.");
             _panelScale = Config.Bind("SpeechPanel", "InterfaceScalePercent", 100, "User interface scale, in addition to automatic display scaling (75-175%).");
             _panelScale.Value = Math.Clamp(_panelScale.Value, 75, 175);
-            _panelTab = Config.Bind("SpeechPanel", "LastTab", 0, "Last open speech panel tab (0-2).");
-            _panelTab.Value = Math.Clamp(_panelTab.Value, 0, 2);
+            _panelTab = Config.Bind("SpeechPanel", "LastTab", 0, "Last open speech panel tab (0-3).");
+            _panelTab.Value = Math.Clamp(_panelTab.Value, 0, 3);
             NpcVoiceResolver.Initialize(Log);
             PresetVoiceStyles.Initialize(Log, Config.Bind("Stage3Mvp", "PresetVoiceStyles", true,
                 "Use the embedded character-specific emotion library for exact preset greetings and topic openings when no valid reply voice_style is available."));
@@ -110,6 +110,11 @@ public sealed class Plugin : BasePlugin, IManagedFeaturePlugin
             SpeechMvp.SetAutoRead(_autoRead.Value);
             SpeechMvp.SetVolume(_panelVolume.Value);
             SpeechPanelUi.Configure(Log, _panelVolume, _autoRead, _managedEnabled, _panelScale, _panelTab);
+            StreamingAsr.ConfigureRoot(Paths.GameRootPath);
+            StreamingAsr.SetLog(message => Log.LogInfo(message));
+            SpeechPanelUi.ConfigureAsr(Config.Bind("SpeechInput", "Enabled", true, "Enable in-process streaming Chinese ASR."),
+                Config.Bind("SpeechInput", "DeviceId", "", "WASAPI capture device ID; blank uses the current Windows default microphone."),
+                Config.Bind("SpeechInput", "ModelProfile", "lightweight14m", "Installed model: lightweight14m or accurate160m. Only one model is loaded."));
             Probe.SetSpeechLog(Log);
             _harmony = new Harmony(PluginInfo.Guid);
             PatchCompleteBudgeted();
@@ -122,6 +127,7 @@ public sealed class Plugin : BasePlugin, IManagedFeaturePlugin
             PatchExact("Game", "Game.Model.NpcModel", "AddNpcChatMessage", new[] { "System.String", "System.String" },
                 "OnNpcDisplayPrefix", "OnNpcDisplay", "OnNpcDisplayFinalizer");
             PatchSingleParameter("Game", "Game.NpcPersuadePanel", "OnReceivePersuadeResponse", "Game.Model.ChatMessage", "OnPersuadeResponsePrefix", "OnPersuadeResponse");
+            PatchSingleParameter("Game", "Game.NpcPersuadePanel", "OnReceivePersuadeResponseNpc", "Game.Model.ChatMessage", "OnPersuadeResponsePrefix", "OnPersuadeResponse");
             if (diagnostics.Value)
             {
                 Patch("Game", "Game.Model.NpcModel", "SendChatMessage", "OnPlayerInput", prefix:true);
@@ -130,6 +136,12 @@ public sealed class Plugin : BasePlugin, IManagedFeaturePlugin
             Log.LogInfo("Stage2A diagnostic capture is " + (diagnostics.Value ? (capture.Value ? "ON (full prompt)" : "ON") : "OFF"));
         }
         catch (Exception e) { Log.LogError("Stage2A initialization failed safely: " + e.GetType().Name + ": " + e.Message); }
+    }
+
+    public override bool Unload()
+    {
+        StreamingAsr.Shutdown();
+        return base.Unload();
     }
 
     private void Patch(string assembly, string type, string method, string callback, bool prefix=false)
@@ -325,6 +337,7 @@ internal static class Probe
 
     public static bool OnUiShortcutPrefix(UnityEngine.InputSystem.InputAction.CallbackContext __1)
     {
+        if (StreamingAsr.IsActive && __1.control?.device?.TryCast<UnityEngine.InputSystem.Keyboard>() != null) return false;
         if (!SpeechPanelUi.ShouldBlockGameInput()) return true;
         // Mouse actions outside the overlay remain available; keyboard/gamepad shortcuts do not.
         var pointer = __1.control?.device?.TryCast<UnityEngine.InputSystem.Pointer>();
@@ -737,7 +750,7 @@ internal static class Probe
         return __exception;
     }
 
-    public static void OnPersuadeResponse(object __instance, object[] __args)
+    public static void OnPersuadeResponse(object __instance, object[] __args, MethodBase __originalMethod, string? __state)
     {
         if (_npcDisplayScopeDepth > 0)
         {
@@ -754,34 +767,50 @@ internal static class Probe
             if (string.IsNullOrWhiteSpace(text)) return;
             var raw = messageType.GetProperty("NpcRawOutput")?.GetValue(message) as string;
             var marker = messageType.GetProperty("SystemMarker")?.GetValue(message) as string;
-            // Player submissions can carry the NPC's sender ID in this callback.
-            // A structured NPC payload is the reliable discriminator here.
-            var separated = NpcReplyPayload.Separate(raw ?? "");
-            var reply = separated == null ? null : ExtractNpcReply(separated.GameJson);
-            if (!string.IsNullOrEmpty(marker) || reply == null || string.IsNullOrWhiteSpace(reply.Content)) return;
             var npcKey = GetPersuadeNpcKey(__instance);
-            var pending = StyleStore.Take(npcKey, reply.Content);
-            reply = reply with { VoiceStyle = separated?.VoiceStyle ?? pending?.Style };
+            var observedRaw = __state ?? raw;
+            var admitted = PersuadeSpeechPolicy.Resolve(npcKey, text, observedRaw, marker,
+                __originalMethod.Name == "OnReceivePersuadeResponseNpc", GetPersuadeTopicId(__instance));
+            if (admitted == null) return;
+            var separated = admitted.Payload;
+            var pending = StyleStore.Take(npcKey, admitted.ReplyContent);
+            var style = separated?.VoiceStyle ?? pending?.Style;
+            var preset = style == null ? admitted.Preset : null;
+            style ??= preset?.Style;
             if (textProperty?.CanWrite == true)
             {
-                var decodedText = StyleEnvelopeCodec.Decode(text).Content;
+                var decodedText = admitted.Text;
                 if (!string.Equals(decodedText, text, StringComparison.Ordinal)) textProperty.SetValue(message, decodedText);
-                text = decodedText;
             }
-            var preset = reply.VoiceStyle == null ? PresetVoiceStyles.Resolve(npcKey, text) : null;
-            if (preset != null) reply = reply with { VoiceStyle = preset.Style };
-            _speechLog?.LogInfo($"Stage3 persuade NPC response npc={npcKey} chars={text.Length} rawChars={raw?.Length ?? 0}");
+            text = admitted.Text;
+            _speechLog?.LogInfo($"Stage3 persuade NPC response npc={npcKey} chars={text.Length} rawChars={observedRaw?.Length ?? 0} callback={__originalMethod.Name} preset={preset?.EntryKey ?? "none"}");
             var timestamp = messageType.GetProperty("MSTimestamp")?.GetValue(message)?.ToString();
             if (string.IsNullOrWhiteSpace(timestamp) || timestamp == "0") return;
             var identity = DisplayTurnIdentity.Create(npcKey, timestamp);
             if (identity == null) return;
             SpeechPanelData.RecordReply(identity, npcKey, text, SpeechTextFilter.RemoveParentheticals(text),
-                reply.Emotion ?? "normal", reply.VoiceStyle, pending?.RawReply ?? raw,
-                preset != null ? "preset_matched" : reply.VoiceStyle == null ? pending?.Status ?? separated?.VoiceStyleStatus ?? "unparseable_or_unavailable" : "valid",
+                admitted.Emotion ?? "normal", style, pending?.RawReply ?? observedRaw,
+                preset != null ? "preset_matched" : style == null ? pending?.Status ?? separated?.VoiceStyleStatus ?? "unparseable_or_unavailable" : "valid",
                 preset != null ? "offline_preset_library" : separated?.VoiceStyle != null ? separated.VoiceStyleSource : pending != null ? "pending_store" : null,
                 preset != null ? null : separated?.VoiceStyleFailureReason ?? pending?.FailureReason, preset?.Description);
             _speechLog?.LogInfo($"Stage3 persuade display callback identity={identity}");
-            SpeechMvp.OnNpcReply(npcKey, text, reply.Emotion ?? "normal", reply.VoiceStyle, identity);
+            if (_captureEnabled) Emit(new
+            {
+                kind = "persuade_reply_observation", runId = RunId, npcId = npcKey,
+                displayIdentity = identity, callback = __originalMethod.Name,
+                linkedRequestSeq = _lastRequestSeq,
+                rawLength = observedRaw?.Length ?? 0,
+                rawSha256 = observedRaw == null ? null : Hash(observedRaw),
+                raw = _full && observedRaw != null ? Limit(RedactCredentialFields(observedRaw)) : null,
+                text = _full ? Limit(text) : null,
+                voiceStyleStatus = separated?.VoiceStyleStatus ?? "absent",
+                voiceStyleFailureReason = separated?.VoiceStyleFailureReason,
+                effectiveVoiceStyleSource = preset != null ? "offline_preset_library" : separated?.VoiceStyle != null ? separated.VoiceStyleSource : pending?.Source,
+                effectiveVoiceStyleStatus = style == null ? "absent" : "valid",
+                presetEntry = preset?.EntryKey,
+                validStyle = _full ? style : null
+            });
+            SpeechMvp.OnNpcReply(npcKey, text, admitted.Emotion ?? "normal", style, identity);
         }
         catch (Exception e)
         {
@@ -818,8 +847,9 @@ internal static class Probe
         });
     }
 
-    public static void OnPersuadeResponsePrefix(object __instance, object[] __args)
+    public static void OnPersuadeResponsePrefix(object __instance, object[] __args, out string? __state)
     {
+        __state = null;
         try
         {
             var message = __args.FirstOrDefault(a => a?.GetType().FullName == "Game.Model.ChatMessage");
@@ -827,6 +857,7 @@ internal static class Probe
             var type = message.GetType();
             var rawProperty = type.GetProperty("NpcRawOutput", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
             var raw = rawProperty?.GetValue(message) as string;
+            __state = raw;
             if (string.IsNullOrWhiteSpace(raw)) return;
             var separated = NpcReplyPayload.Separate(raw);
             if (separated == null) return;
@@ -858,6 +889,12 @@ internal static class Probe
         var configId = panel.GetType().GetProperty("_npcId", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)?.GetValue(panel);
         var value = configId?.GetType().GetProperty("Value")?.GetValue(configId);
         return value is int id && id > 0 ? "npc:" + id : key;
+    }
+
+    private static string? GetPersuadeTopicId(object panel)
+    {
+        var id = panel.GetType().GetProperty("_topicId", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)?.GetValue(panel);
+        return id?.GetType().GetProperty("Value")?.GetValue(id)?.ToString();
     }
 
     private static long EmitText(string kind, object npc, string text, string? raw=null)

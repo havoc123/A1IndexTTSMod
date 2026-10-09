@@ -52,6 +52,7 @@
     </EmbeddedResource>
     <PackageReference Include="NAudio.Wasapi" Version="2.3.0" />
     <PackageReference Include="NAudio.WinMM" Version="2.3.0" />
+    <PackageReference Include="org.k2fsa.sherpa.onnx" Version="1.13.8" />
     <Reference Include="BepInEx.Core">
       <HintPath>$(BepInExDir)\core\BepInEx.Core.dll</HintPath>
       <Private>false</Private>
@@ -94,6 +95,10 @@
     </Reference>
     <Reference Include="UnityEngine.UIModule">
       <HintPath>$(BepInExDir)\interop\UnityEngine.UIModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.ImageConversionModule">
+      <HintPath>$(BepInExDir)\interop\UnityEngine.ImageConversionModule.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.InputLegacyModule">

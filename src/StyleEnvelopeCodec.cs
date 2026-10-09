@@ -1,4 +1,6 @@
 using System.Text.Json;
+using System.Text;
+using System.Text.RegularExpressions;
 
 namespace A1IndexTTSMod;
 
@@ -8,12 +10,16 @@ internal static class StyleEnvelopeCodec
     public const string OpenTag = "<a1tts_v1>";
     public const string CloseTag = "</a1tts_v1>";
     public const int MaximumFrameLength = 2048;
+    private static readonly Regex ClosingPayloadPrefix = new(
+        "^\\s*(?<fence>```(?:json)?\\s*)?(?<json>\\{)\\s*\"(?:emotion_tags|delivery|intensity)\"\\s*:",
+        RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
     internal sealed record Result(string Content, VoiceStyle? Style, string Status, string? FailureReason, int FrameCount);
 
     public static Result Decode(string? content)
     {
         content ??= string.Empty;
+        content = NormalizeClosingTagPayloads(content);
         var first = content.IndexOf(OpenTag, StringComparison.Ordinal);
         if (first < 0) return new Result(content, null, "absent", null, 0);
 
@@ -78,6 +84,55 @@ internal static class StyleEnvelopeCodec
         {
             return new Result(cleanContent, null, "invalid", "invalid_json", 1);
         }
+    }
+
+    private static string NormalizeClosingTagPayloads(string content)
+    {
+        // Some replies use the closing tag as the opening marker. Only repair a
+        // marker immediately followed by a known style property; ordinary tags
+        // and unrelated JSON remain dialogue. The regular decoder still applies
+        // all schema, frame-count, length and terminal-position checks.
+        var normalized = new StringBuilder();
+        var copied = 0;
+        var search = 0;
+        while (true)
+        {
+            var start = content.IndexOf(CloseTag, search, StringComparison.Ordinal);
+            if (start < 0) break;
+            var payloadStart = start + CloseTag.Length;
+            var prefix = ClosingPayloadPrefix.Match(content[payloadStart..]);
+            if (!prefix.Success) { search = payloadStart; continue; }
+            var jsonStart = payloadStart + prefix.Groups["json"].Index;
+            var bytes = Encoding.UTF8.GetBytes(content[jsonStart..]);
+            var payloadEnd = content.Length;
+            var complete = false;
+            try
+            {
+                var reader = new Utf8JsonReader(bytes);
+                using var document = JsonDocument.ParseValue(ref reader);
+                payloadEnd = jsonStart + Encoding.UTF8.GetCharCount(bytes, 0, (int)reader.BytesConsumed);
+                complete = true;
+            }
+            catch (JsonException) { }
+            if (complete && prefix.Groups["fence"].Success)
+            {
+                while (payloadEnd < content.Length && char.IsWhiteSpace(content[payloadEnd])) payloadEnd++;
+                if (content.AsSpan(payloadEnd).StartsWith("```", StringComparison.Ordinal)) payloadEnd += 3;
+                else { complete = false; payloadEnd = content.Length; }
+            }
+            normalized.Append(content, copied, start - copied).Append(OpenTag)
+                .Append(content, payloadStart, payloadEnd - payloadStart);
+            if (!complete) return normalized.ToString(); // existing incomplete-frame handling
+            normalized.Append(CloseTag);
+            copied = payloadEnd;
+            var possibleClose = copied;
+            while (possibleClose < content.Length && char.IsWhiteSpace(content[possibleClose])) possibleClose++;
+            if (content.AsSpan(possibleClose).StartsWith(CloseTag, StringComparison.Ordinal) &&
+                !ClosingPayloadPrefix.IsMatch(content[(possibleClose + CloseTag.Length)..]))
+                copied = possibleClose + CloseTag.Length;
+            search = copied;
+        }
+        return copied == 0 ? content : normalized.Append(content, copied, content.Length - copied).ToString();
     }
 
     public static string EncodeExample(string content, VoiceStyle style)
