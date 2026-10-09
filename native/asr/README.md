@@ -55,3 +55,31 @@ patch or a link to the corresponding source.
 
 Offline evidence and rejected alternatives are in
 `docs/ASR-CONTEXTUAL-PRUNING-VALIDATION-20261009.md`.
+
+## v3 GPU routing and optional packages
+
+The current DLL marker is `a1-context-before-topk-finalize-v3`. It retains v2
+context scoring and replay behavior and adds controlled GPU device selection,
+thread-local provider initialization counts, and caught online-recognizer
+initialization exceptions. CUDA/DirectML provider failures terminate ASR
+initialization rather than silently accepting CPU fallback. The managed layer
+requires three initialized GPU graphs; ORT may still assign auxiliary operators
+to CPU. The production integration now requires v3.
+
+`Build-AsrNative.ps1 -Provider CUDA` outputs `.state/asr-native`, using ORT
+1.28.2 CUDA 12/cuDNN 9. `-Provider DirectML` outputs `.state/asr-native-directml`,
+using the pinned upstream ORT DirectML 1.14.1 and DirectML 1.15.0 NuGet packages.
+The latter includes runtime DLLs, licenses, notices and per-DLL hashes. Builds
+use one MSBuild worker by default. Runtime directories cannot be mixed in a
+single process.
+
+`Install-AsrNative.ps1 -ArtifactDirectory .state/asr-native-directml` installs
+the DirectML runtime separately. `Install-ASR.ps1 -Provider DirectML` installs
+only the 14M model and rejects the 160M profile before download. Once a valid
+v3 runtime is installed, the model downloader can reuse it without local C++
+build artifacts. `Build-AsrBundle.ps1 -Provider CUDA|DirectML` produces an
+independent optional 14M package. CUDA includes a fixed-revision 160M downloader
+rather than redistributing those weights/tokenizer.
+
+See `docs/ASR-MODULAR-DIRECTML-20261009.md` for offline AMD GPU execution,
+resource measurements, regression evidence and installation behavior.

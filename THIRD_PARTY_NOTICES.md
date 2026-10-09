@@ -27,3 +27,13 @@ The optional accurate profile downloads `sherpa-onnx-streaming-zipformer-zh-fp16
 The generated ASR hotwords reuse a small subset of NPC/sect names from `references/npcs/npc_id_name.csv`. Their provenance is recorded in `config/asr-hotwords.sources.json`; the game rights statement above also applies to these names.
 
 The accurate profile also downloads `bpe.model` from [the same author's XL model at fixed revision 0128977216bda3dc2b7d70178be8e721c0e49b8b](https://huggingface.co/csukuangfj/sherpa-onnx-streaming-zipformer-zh-xlarge-fp16-2025-06-30/tree/0128977216bda3dc2b7d70178be8e721c0e49b8b). Its pieces and IDs are checked against the accurate profile's token table. This tokenizer resource is downloaded during installation, not committed or bundled; its terms are separate from this project's source license, as with the optional weights above. The managed adapter implements the vocabulary export and Chinese encoding behavior of the pinned [simple-sentencepiece v0.7](https://github.com/pkufool/simple-sentencepiece/tree/v0.7) used by sherpa-onnx, including byte fallback, without adding a Python/protobuf dependency to the game. The original model vocabulary is preserved; runtime token aliases only bridge pre-tokenized hotword paths into the pinned native API.
+
+
+The 0.7.7 optional DirectML 14M package includes the pinned ONNX Runtime
+DirectML 1.14.1 and Microsoft.AI.DirectML 1.15.0 runtime DLLs. Their original
+LICENSE and ThirdPartyNotices files are retained beside the runtime. CUDA
+optional packages retain installed NVIDIA cuDNN license texts; NVIDIA runtime
+terms continue to apply. Optional distributable packages contain only the
+14M checkpoint; the 160M checkpoint and BPE resource remain installed locally
+or downloaded directly at the fixed revisions above. Source repositories do
+not contain these runtime binaries or model weights.

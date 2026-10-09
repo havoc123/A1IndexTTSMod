@@ -1,12 +1,25 @@
 [CmdletBinding()]
 param([string] $GameRoot = 'E:\Program Files (x86)\Steam\steamapps\common\A1',
-    [ValidateSet('lightweight14m','accurate160m')][string] $Profile = 'lightweight14m')
+    [ValidateSet('lightweight14m','accurate160m')][string] $Profile = 'lightweight14m',
+    [ValidateSet('CUDA','DirectML')][string] $Provider = 'CUDA')
 
 $ErrorActionPreference = 'Stop'
 $GameRoot = [IO.Path]::GetFullPath($GameRoot)
+if (Get-Process WorldApart -ErrorAction SilentlyContinue) { throw 'Close WorldApart before installing ASR.' }
+if ($Provider -eq 'DirectML' -and $Profile -ne 'lightweight14m') { throw 'DirectML only permits the 14M model.' }
+$artifact = Join-Path $PSScriptRoot $(if ($Provider -eq 'DirectML') { '../.state/asr-native-directml' } else { '../.state/asr-native' })
+$hasArtifact = Test-Path -LiteralPath (Join-Path $artifact 'manifest.json')
+$installedRuntime = Join-Path $GameRoot $(if ($Provider -eq 'DirectML') { 'A1IndexTTSMod/asr/runtime-directml' } else { 'A1IndexTTSMod/asr/runtime' })
+if (-not $hasArtifact) {
+    $installedManifest = Join-Path $installedRuntime 'a1-native-manifest.json'
+    if (-not (Test-Path -LiteralPath $installedManifest)) { throw 'Install the prebuilt ASR optional package first, or build the native artifact.' }
+    $installed = Get-Content -LiteralPath $installedManifest -Raw | ConvertFrom-Json
+    if ($installed.revision -ne 'a1-context-before-topk-finalize-v3' -or $installed.provider -ne $Provider -or
+        $installed.dllSha256 -ne (Get-FileHash -LiteralPath (Join-Path $installedRuntime 'sherpa-onnx-c-api.dll') -Algorithm SHA256).Hash.ToLowerInvariant()) { throw 'Installed native ASR runtime validation failed.' }
+}
 $base = Join-Path $GameRoot 'A1IndexTTSMod\asr'
 $model = Join-Path $base 'sherpa-onnx-streaming-zipformer-zh-14M-2023-02-23'
-$runtime = Join-Path $base 'runtime'
+$runtime = Join-Path $base $(if ($Provider -eq 'DirectML') { 'runtime-directml' } else { 'runtime' })
 $cache = Join-Path $GameRoot 'A1IndexTTSMod\.cache\asr-download'
 $temp = Join-Path $env:TEMP ('sherpa-onnx-1.13.8-' + [guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Path $model,$runtime,$cache,$temp -Force | Out-Null
@@ -78,6 +91,7 @@ if ($hadPrevious) {
     Remove-Item -LiteralPath $resolvedPrevious -Recurse -Force
 }
 
+if ($Provider -eq 'CUDA') {
 $archive = Join-Path $cache 'sherpa-onnx-v1.13.8-cuda-12.x-cudnn-9.x-onnxruntime1.28.2-win-x64-cuda.tar.bz2'
 $url = 'https://github.com/k2-fsa/sherpa-onnx/releases/download/v1.13.8/sherpa-onnx-v1.13.8-cuda-12.x-cudnn-9.x-onnxruntime1.28.2-win-x64-cuda.tar.bz2'
 $needed = @('sherpa-onnx-c-api.dll','onnxruntime.dll','onnxruntime_providers_shared.dll','onnxruntime_providers_cuda.dll')
@@ -109,6 +123,8 @@ if (-not (Test-Path -LiteralPath (Join-Path $runtime 'cudnn64_9.dll'))) {
     $eula = Get-ChildItem -LiteralPath $temp -File -Include '*LICENSE*','*EULA*' -Recurse | Select-Object -First 1
     if ($eula) { Copy-Item -LiteralPath $eula.FullName -Destination (Join-Path $runtime 'LICENSE-NVIDIA-cuDNN.txt') -Force }
 }
+}
+if ($hasArtifact) { & (Join-Path $PSScriptRoot 'Install-AsrNative.ps1') -GameRoot $GameRoot -ArtifactDirectory $artifact }
 $license = Join-Path $runtime 'LICENSE-sherpa-onnx.txt'
 Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/k2-fsa/sherpa-onnx/v1.13.8/LICENSE' -OutFile $license
 if ($Profile -eq 'lightweight14m') {
@@ -123,7 +139,7 @@ $resolvedTemp = [IO.Path]::GetFullPath($temp)
 $resolvedTempRoot = [IO.Path]::GetFullPath($env:TEMP).TrimEnd('\') + '\'
 if (-not $resolvedTemp.StartsWith($resolvedTempRoot, [StringComparison]::OrdinalIgnoreCase)) { throw 'Temporary cleanup path is outside TEMP.' }
 Remove-Item -LiteralPath $temp -Recurse -Force
-Remove-Item -LiteralPath $archive,$cudnn -Force -ErrorAction SilentlyContinue
+if ($Provider -eq 'CUDA') { Remove-Item -LiteralPath $archive,$cudnn -Force -ErrorAction SilentlyContinue }
 Write-Host "ASR model installed at $model"
-Write-Host "sherpa-onnx 1.13.8 CUDA runtime installed at $runtime"
-Write-Host 'The NVIDIA driver and CUDA 12.x runtime must be available on this PC; cuDNN 9.14 CUDA 12 DLLs were installed app-local.'
+Write-Host "sherpa-onnx 1.13.8 $Provider runtime installed at $runtime"
+if ($Provider -eq 'CUDA') { Write-Host 'The NVIDIA driver and CUDA 12.x runtime must be available on this PC; cuDNN 9.14 CUDA 12 DLLs were installed app-local.' }

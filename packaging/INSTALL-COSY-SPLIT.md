@@ -45,7 +45,7 @@ AutoStartAudioCpp = true
 AudioCppPrecision = q8_0
 ```
 
-新装默认 `GpuBackend = Nvidia`、`GpuDevice = 0`。AMD 或 Intel 显卡需在 MOD 配置中选择对应后端和设备，使用 Vulkan 服务端；不要将 Nvidia 配置直接照搬到其他显卡。实际运行速度与可用显存依设备而异。
+0.7.7 新装默认 `GpuBackend = Auto`，NVIDIA 自动使用 CUDA，AMD 自动使用 Vulkan，并从服务器实际设备列表选择编号。已有可行的手动配置保留；AMD 单显卡的旧 Nvidia 默认会自动解析为 Vulkan。Intel 的 TTS 继续使用手动 Vulkan 配置。实际速度依设备而异。
 
 本包针对项目使用的 A1 Windows x64 IL2CPP 游戏及 Unity 2022.3.43 加载环境。它不含游戏本体、存档、第三方人物 MOD 或 AI 服务账号。
 
@@ -73,3 +73,9 @@ Get-FileHash -Algorithm SHA256 .\CosyVoice3-q8_0-model-win64.7z
 ```
 
 两包内都提供许可说明。程序包包含运行组件和录音；模型包仅包含模型及其安装辅助文件。请按各组件许可和素材授权使用。
+
+## 0.7.7 ASR 可选包与旧版升级
+
+已安装 0.7.6 分体语音包时，可使用 0.7.6 → 0.7.7 主程序补丁，配置、参考音与 CosyVoice GGUF 保留。语音输入单独安装 CUDA 14M 或 DirectML 14M 资源包。AMD/Intel 的 ASR 使用 DirectML 并固定 14M；NVIDIA CUDA 可沿用已安装的 160M，或使用 CUDA 包附带的固定版本下载脚本。安装和升级时先关闭游戏，完成后重新启动以自动检测和预热。
+
+未安装 ASR 时不显示麦克风和第四页；完整安装但关闭语音输入时，保留第四页以便重新启用。旧 v1/v2 ASR 原生库需要一并更新到 v3。详情见 [实现、资源占用与离线结果](../docs/ASR-MODULAR-DIRECTML-20261009.md)。

@@ -64,7 +64,7 @@ try {
 
     if (-not $SplitModel) { Copy-Item -LiteralPath $cosyModel -Destination (Join-Path $models 'cosyvoice3-q8_0.gguf') }
     Copy-Item -LiteralPath (Join-Path $project 'src\bin\Release\net6.0\A1IndexTTSMod.dll') -Destination $pluginDir
-    foreach ($dependency in @('NAudio.Core.dll', 'NAudio.Wasapi.dll', 'NAudio.WinMM.dll')) {
+    foreach ($dependency in @('NAudio.Core.dll', 'NAudio.Wasapi.dll', 'NAudio.WinMM.dll', 'sherpa-onnx.dll')) {
         Copy-Item -LiteralPath (Join-Path $project "src\bin\Release\net6.0\$dependency") -Destination $pluginDir
     }
     Copy-Item -LiteralPath (Join-Path $project 'src\managed-feature-api\bin\Release\net6.0\LocalModManager.Abstractions.dll') -Destination $plugins
@@ -72,6 +72,10 @@ try {
     foreach ($scriptName in @('Run-AudioCppForGame.ps1', 'Start-AudioCpp.ps1', 'Stop-AudioCpp.ps1')) {
         Copy-Item -LiteralPath (Join-Path $PSScriptRoot $scriptName) -Destination $scripts
     }
+    $asrAssets = Join-Path $mod 'assets/asr'
+    New-Item -ItemType Directory -Path $asrAssets -Force | Out-Null
+    Copy-Item -LiteralPath (Join-Path $project 'assets/asr/microphone-normal.png'),(Join-Path $project 'assets/asr/microphone-highlight.png') -Destination $asrAssets
+    Copy-Item -LiteralPath (Join-Path $project 'config/asr-hotwords.zh-CN.txt') -Destination (Join-Path $mod 'config')
     Copy-Item -LiteralPath (Join-Path $project 'config\emotions.json') -Destination (Join-Path $mod 'config\emotions.json') -Force
     Copy-Item -LiteralPath (Join-Path $project 'references\demo.wav') -Destination $references
     Copy-Item -LiteralPath (Join-Path $project 'references\default_female.wav') -Destination $references
@@ -115,7 +119,7 @@ AudioCppModelId = cosyvoice3
 TimeoutSeconds = 180
 AutoStartAudioCpp = true
 AudioCppPrecision = q8_0
-GpuBackend = Nvidia
+GpuBackend = Auto
 GpuDevice = 0
 '@
     $pluginConfig | Set-Content -LiteralPath (Join-Path $payload 'BepInEx\config\org.a1indextts.mod.cfg') -Encoding utf8

@@ -7,7 +7,7 @@ internal sealed record AsrModelProfile(string Id, string Label, string Directory
     internal bool UsesBpe => Id == "accurate160m";
     internal bool IsInstalled(string gameRoot) => new[] { Encoder, Decoder, Joiner, "tokens.txt" }
         .Concat(UsesBpe ? new[] { "bpe.model" } : Array.Empty<string>())
-        .All(name => File.Exists(Path.Combine(ModelDirectory(gameRoot), name)));
+        .All(name => File.Exists(Path.Combine(ModelDirectory(gameRoot), name)) && new FileInfo(Path.Combine(ModelDirectory(gameRoot), name)).Length > 0);
 }
 
 internal static class AsrModelProfiles

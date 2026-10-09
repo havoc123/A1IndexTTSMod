@@ -4,6 +4,7 @@
     <Nullable>enable</Nullable><ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="../../src/GpuRouting.cs" Link="GpuRouting.cs" />
     <Compile Include="../../src/StreamingAsr.cs" Link="StreamingAsr.cs" />
     <Compile Include="../../src/AsrModelProfiles.cs" Link="AsrModelProfiles.cs" />
     <Compile Include="../../src/AsrSendGate.cs" Link="AsrSendGate.cs" />

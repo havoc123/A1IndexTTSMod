@@ -40,6 +40,17 @@ internal static class AudioCppLifecycle
                 return;
             }
             if (!autoStart) throw new InvalidOperationException("TTS endpoint is unavailable and AutoStartAudioCpp is disabled.");
+            var project = Path.Combine(Paths.GameRootPath, "A1IndexTTSMod");
+            var adapters = GpuRouting.Adapters.Value;
+            // Migrate the legacy CUDA default on AMD-only systems. Explicit
+            // viable routes remain respected, including mixed GPU systems.
+            if (gpuBackend.Equals("Auto", StringComparison.OrdinalIgnoreCase) ||
+                (gpuBackend.Equals("Nvidia", StringComparison.OrdinalIgnoreCase) && !adapters.Any(g => g.Vendor == 0x10de) && adapters.Any(g => g.Vendor == 0x1002)))
+            {
+                var route = await GpuRouting.ResolveTtsAsync(project, token).ConfigureAwait(false);
+                gpuBackend = route.Provider == "cuda" ? "Nvidia" : "Vulkan"; gpuDevice = route.Device;
+                log.LogInfo($"TTS GPU selected: {gpuBackend}:{gpuDevice} {route.Name}");
+            }
             if (!gpuBackend.Equals("Nvidia", StringComparison.OrdinalIgnoreCase) && !gpuBackend.Equals("Vulkan", StringComparison.OrdinalIgnoreCase))
                 throw new InvalidOperationException("GpuBackend must be Nvidia or Vulkan.");
             if (gpuDevice is < 0 or > 15) throw new InvalidOperationException("GpuDevice must be between 0 and 15.");
@@ -48,7 +59,6 @@ internal static class AudioCppLifecycle
                 backend == TtsBackend.IndexTtsLegacyApi)
                 throw new InvalidOperationException("Unsupported audio.cpp model ID or precision.");
 
-            var project = Path.Combine(Paths.GameRootPath, "A1IndexTTSMod");
             var script = Path.Combine(project, "scripts", "Run-AudioCppForGame.ps1");
             var server = Path.Combine(project, ".cache", "audiocpp", "runtime", gpuBackend.Equals("Vulkan", StringComparison.OrdinalIgnoreCase) ? "audiocpp_server-vulkan.exe" : "audiocpp_server.exe");
             var model = backend == TtsBackend.CosyVoiceAudioCpp

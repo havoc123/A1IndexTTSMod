@@ -8,9 +8,38 @@ if (Get-Process WorldApart -ErrorAction SilentlyContinue) { throw 'Close WorldAp
 $artifact = Get-Content -LiteralPath (Join-Path $ArtifactDirectory 'manifest.json') -Raw | ConvertFrom-Json
 $source = Join-Path $ArtifactDirectory 'sherpa-onnx-c-api.dll'
 $patch = Join-Path $PSScriptRoot '../native/asr/sherpa-onnx-1.13.8-hotwords.patch'
-if ($artifact.upstreamCommit -ne '11afbd009a7f8c08f4bcf2fc1b265d0df4670fbf' -or $artifact.revision -ne 'a1-context-before-topk-finalize-v2') { throw 'Unexpected native ASR artifact revision.' }
+if ($artifact.upstreamCommit -ne '11afbd009a7f8c08f4bcf2fc1b265d0df4670fbf' -or $artifact.revision -ne 'a1-context-before-topk-finalize-v3') { throw 'Unexpected native ASR artifact revision.' }
 if ($artifact.patchSha256 -ne (Get-FileHash -LiteralPath $patch -Algorithm SHA256).Hash.ToLowerInvariant()) { throw 'Artifact does not match the current native patch.' }
 if ($artifact.dllSha256 -ne (Get-FileHash -LiteralPath $source -Algorithm SHA256).Hash.ToLowerInvariant()) { throw 'Native artifact DLL SHA256 mismatch.' }
+if ($artifact.provider -eq 'DirectML') {
+    foreach ($file in $artifact.runtimeFiles) {
+        if ((Get-FileHash -LiteralPath (Join-Path $ArtifactDirectory $file.file) -Algorithm SHA256).Hash.ToLowerInvariant() -ne $file.sha256) { throw "DirectML artifact checksum mismatch: $($file.file)" }
+    }
+    $runtime = Join-Path $GameRoot 'A1IndexTTSMod/asr/runtime-directml'
+    $dependencies = @('sherpa-onnx-c-api.dll','onnxruntime.dll','DirectML.dll','sherpa-onnx-LICENSE','LICENSE-onnxruntime.txt','ThirdPartyNotices-onnxruntime.txt','LICENSE-DirectML.txt','ThirdPartyNotices-DirectML.txt')
+    foreach ($name in $dependencies) {
+        if (-not (Test-Path -LiteralPath (Join-Path $ArtifactDirectory $name))) { throw "Missing DirectML artifact: $name" }
+    }
+    New-Item -ItemType Directory -Path $runtime -Force | Out-Null
+    $backup = Join-Path $runtime ('.backups/' + [DateTime]::UtcNow.ToString('yyyyMMddTHHmmssffffZ'))
+    New-Item -ItemType Directory -Path $backup -Force | Out-Null
+    foreach ($name in $dependencies + @('a1-native-manifest.json')) {
+        if (Test-Path -LiteralPath (Join-Path $runtime $name)) { Copy-Item -LiteralPath (Join-Path $runtime $name) -Destination $backup }
+    }
+    try {
+        foreach ($name in $dependencies) { Copy-Item -LiteralPath (Join-Path $ArtifactDirectory $name) -Destination $runtime -Force }
+        $artifact | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $runtime 'a1-native-manifest.json') -Encoding utf8
+    } catch {
+        foreach ($name in $dependencies + @('a1-native-manifest.json')) {
+            $saved = Join-Path $backup $name
+            if (Test-Path -LiteralPath $saved) { Copy-Item -LiteralPath $saved -Destination $runtime -Force }
+            elseif (Test-Path -LiteralPath (Join-Path $runtime $name)) { Remove-Item -LiteralPath (Join-Path $runtime $name) }
+        }
+        throw
+    }
+    Write-Host "Installed DirectML 14M runtime: $runtime"
+    return
+}
 $runtime = Join-Path $GameRoot 'A1IndexTTSMod/asr/runtime'
 foreach ($name in @('sherpa-onnx-c-api.dll','onnxruntime.dll','onnxruntime_providers_shared.dll','onnxruntime_providers_cuda.dll')) {
     if (-not (Test-Path -LiteralPath (Join-Path $runtime $name))) { throw "Install the base CUDA ASR runtime first: missing $name" }

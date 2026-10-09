@@ -32,8 +32,13 @@ $patchFiles = @(
     [pscustomobject]@{ Source = (Join-Path $PSScriptRoot 'Run-AudioCppForGame.ps1'); Relative = 'A1\A1IndexTTSMod\scripts\Run-AudioCppForGame.ps1' },
     [pscustomobject]@{ Source = (Join-Path $PSScriptRoot 'Stop-AudioCpp.ps1'); Relative = 'A1\A1IndexTTSMod\scripts\Stop-AudioCpp.ps1' }
 )
+foreach ($name in @('NAudio.Core.dll','NAudio.Wasapi.dll','NAudio.WinMM.dll','sherpa-onnx.dll')) {
+    $patchFiles += [pscustomobject]@{ Source = (Join-Path $sourceBin $name); Relative = ('A1\BepInEx\plugins\A1IndexTTSMod\' + $name) }
+}
+foreach ($name in @('microphone-normal.png','microphone-highlight.png')) {
+    $patchFiles += [pscustomobject]@{ Source = (Join-Path $project ('assets\asr\' + $name)); Relative = ('A1\A1IndexTTSMod\assets\asr\' + $name) }
+}
 if ($legacyPayload) {
-    $patchFiles += [pscustomobject]@{ Source = (Join-Path $sourceBin 'NAudio.WinMM.dll'); Relative = 'A1\BepInEx\plugins\A1IndexTTSMod\NAudio.WinMM.dll' }
     $patchFiles += [pscustomobject]@{ Source = (Join-Path $project '.cache\audiocpp\runtime\audiocpp_server-vulkan.exe'); Relative = 'A1\A1IndexTTSMod\.cache\audiocpp\runtime\audiocpp_server-vulkan.exe' }
 }
 foreach ($file in $patchFiles) {

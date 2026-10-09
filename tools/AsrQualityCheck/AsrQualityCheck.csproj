@@ -5,6 +5,7 @@
     <NoWarn>$(NoWarn);NETSDK1138</NoWarn>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="../../src/GpuRouting.cs" Link="GpuRouting.cs" />
     <Compile Include="../../src/AsrModelProfiles.cs" Link="AsrModelProfiles.cs" />
     <Compile Include="../../src/AsrBpeTokenizer.cs" Link="AsrBpeTokenizer.cs" />
     <Compile Include="../../src/AsrDecoderSession.cs" Link="AsrDecoderSession.cs" />

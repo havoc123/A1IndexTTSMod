@@ -12,6 +12,7 @@ internal sealed class AsrDecoderSession : IDisposable
 {
     private static readonly object NativeGate = new();
     private static string? _runtimeDirectory;
+    private static IntPtr _nativeHandle;
     private readonly OnlineRecognizer _recognizer;
     private readonly bool _usesTokenAliases;
     private OnlineStream? _stream;
@@ -39,32 +40,50 @@ internal sealed class AsrDecoderSession : IDisposable
 
     internal AsrDecoderSession(string gameRoot, AsrModelProfile profile, bool useHotwords = true,
         string decodingMethod = "modified_beam_search", bool debug = false, float? hotwordScore = null,
-        int maxActivePaths = 4, float? rareHotwordScore = null, string? runtimeOverride = null)
+        int maxActivePaths = 4, float? rareHotwordScore = null, string? runtimeOverride = null, string provider = "cuda", int device = 0, string? ortProfilePrefix = null)
     {
+        if (provider is not ("cuda" or "directml") || device < 0 || device > 15) throw new ArgumentException("Unsupported ASR GPU provider/device.");
+        if (!GpuRouting.AllowsModel(provider, profile)) throw new NotSupportedException("DirectML 仅允许 14M 流式模型。");
         if (!profile.IsInstalled(gameRoot)) throw new FileNotFoundException($"{profile.Label} 模型未完整安装。");
-        var runtime = Path.GetFullPath(runtimeOverride ?? Path.Combine(gameRoot, "A1IndexTTSMod", "asr", "runtime"));
-        EnsureNative(runtime, gameRoot);
+        var runtime = Path.GetFullPath(runtimeOverride ?? GpuRouting.RuntimeDirectory(gameRoot, provider));
+        EnsureNative(runtime, gameRoot, provider);
+        ResetGpuFunction? resetGpu = null; GpuCountFunction? gpuCount = null;
         var native = NativeLibrary.Load(Path.Combine(runtime, "sherpa-onnx-c-api.dll"));
         try
         {
             if (NativeLibrary.TryGetExport(native, "A1SherpaOnnxHotwordRevision", out var revision))
                 NativeRevision = Marshal.PtrToStringAnsi(Marshal.GetDelegateForFunctionPointer<RevisionFunction>(revision)()) ?? "unknown";
+            if (!NativeLibrary.TryGetExport(native, "A1SherpaOnnxResetGpuSessions", out var reset) ||
+                !NativeLibrary.TryGetExport(native, "A1SherpaOnnxGpuSessions", out var count))
+                throw new NotSupportedException("ASR 原生运行库需要升级到 v3，才能验证 GPU 初始化。");
+            resetGpu = Marshal.GetDelegateForFunctionPointer<ResetGpuFunction>(reset);
+            gpuCount = Marshal.GetDelegateForFunctionPointer<GpuCountFunction>(count);
         }
         finally { NativeLibrary.Free(native); }
-        _supportsReview = NativeRevision == "a1-context-before-topk-finalize-v2" && decodingMethod == "modified_beam_search";
+        _supportsReview = NativeRevision == "a1-context-before-topk-finalize-v3" && decodingMethod == "modified_beam_search";
         var directory = profile.ModelDirectory(gameRoot);
         var tokens = Path.Combine(directory, "tokens.txt");
         var hotwords = PrepareHotwords(gameRoot, profile, tokens, useHotwords && decodingMethod != "greedy_search", hotwordScore, rareHotwordScore,
-            NativeRevision is "a1-context-before-topk-finalize-v1" or "a1-context-before-topk-finalize-v2");
+            NativeRevision is "a1-context-before-topk-finalize-v1" or "a1-context-before-topk-finalize-v2" or "a1-context-before-topk-finalize-v3");
         HotwordCount = hotwords.Count; SkippedHotwordCount = hotwords.Skipped;
         _hotwords = hotwords.Words;
         _usesTokenAliases = hotwords.Tokens != tokens;
+        var configuredProvider = provider;
+        if (ortProfilePrefix != null)
+        {
+            var prefix = Path.GetFullPath(ortProfilePrefix);
+            if (prefix.Contains('\n') || prefix.Contains('\r')) throw new ArgumentException("Invalid profiling path.");
+            Directory.CreateDirectory(Path.GetDirectoryName(prefix)!);
+            var providerFile = prefix + ".config";
+            File.WriteAllText(providerFile, "ProfilingFilePrefix=" + prefix + "\n");
+            configuredProvider += ":" + providerFile;
+        }
         var config = new OnlineRecognizerConfig
         {
             FeatConfig = new FeatureConfig { SampleRate = 16000, FeatureDim = 80 },
             ModelConfig = new OnlineModelConfig
             {
-                NumThreads = 1, Provider = "cuda", Tokens = hotwords.Tokens,
+                NumThreads = 1, Provider = configuredProvider, Tokens = hotwords.Tokens,
                 ModelingUnit = "cjkchar", Debug = debug ? 1 : 0,
                 Transducer = new OnlineTransducerModelConfig
                 {
@@ -75,7 +94,9 @@ internal sealed class AsrDecoderSession : IDisposable
             DecodingMethod = decodingMethod, MaxActivePaths = maxActivePaths, EnableEndpoint = 0,
             HotwordsFile = hotwords.Path, HotwordsScore = 1.5f
         };
+        resetGpu!(device);
         _recognizer = new OnlineRecognizer(config);
+        if (gpuCount!() < 3) { _recognizer.Dispose(); throw new InvalidOperationException($"{provider} GPU 初始化失败，未启用 CPU 回退。"); }
         // CUDA/cuDNN may spend seconds preparing kernels on its first Decode. Warm
         // them before microphone capture, so that cold work cannot overflow audio.
         try { Begin(); Accept(new float[16000]); Finish(review: _supportsReview); AcceptedSamples = 0; SessionSamples = 0; Text = ""; }
@@ -165,6 +186,8 @@ internal sealed class AsrDecoderSession : IDisposable
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     private delegate IntPtr RevisionFunction();
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)] private delegate void ResetGpuFunction(int device);
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)] private delegate int GpuCountFunction();
 
     private static (string Path, int Count, int Skipped, string Tokens, string[] Words) PrepareHotwords(string root, AsrModelProfile profile,
         string tokensPath, bool enabled, float? hotwordScore, float? rareHotwordScore, bool contextualPruning)
@@ -218,7 +241,7 @@ internal sealed class AsrDecoderSession : IDisposable
         return (valid.Count == 0 ? "" : path, valid.Count, skipped.Count, nativeTokens, words.ToArray());
     }
 
-    private static void EnsureNative(string runtime, string root)
+    private static void EnsureNative(string runtime, string root, string provider)
     {
         lock (NativeGate)
         {
@@ -228,12 +251,14 @@ internal sealed class AsrDecoderSession : IDisposable
                 return;
             }
             if (!File.Exists(Path.Combine(runtime, "sherpa-onnx-c-api.dll")) || !File.Exists(Path.Combine(runtime, "onnxruntime.dll")))
-                throw new FileNotFoundException("ASR CUDA 原生运行库未安装。");
+                throw new FileNotFoundException("ASR 原生运行库未安装。");
             var directories = new[] { runtime, root }.Concat((Environment.GetEnvironmentVariable("PATH") ?? "").Split(Path.PathSeparator));
-            var missing = new[] { "cudnn64_9.dll", "cublas64_12.dll", "cublasLt64_12.dll", "cudart64_12.dll" }
+            var dependencies = provider == "directml" ? new[] { "DirectML.dll" } : new[] { "cudnn64_9.dll", "cublas64_12.dll", "cublasLt64_12.dll", "cudart64_12.dll" };
+            var missing = dependencies
                 .Where(name => !directories.Any(dir => File.Exists(Path.Combine(dir, name)))).ToArray();
-            if (missing.Length > 0) throw new DllNotFoundException("CUDA 依赖缺失：" + string.Join(", ", missing));
+            if (missing.Length > 0) throw new DllNotFoundException(provider + " 依赖缺失：" + string.Join(", ", missing));
             Environment.SetEnvironmentVariable("PATH", runtime + Path.PathSeparator + Environment.GetEnvironmentVariable("PATH"));
+            _nativeHandle = NativeLibrary.Load(Path.Combine(runtime, "sherpa-onnx-c-api.dll"));
             NativeLibrary.SetDllImportResolver(typeof(OnlineRecognizer).Assembly, ResolveNative);
             _runtimeDirectory = runtime;
         }

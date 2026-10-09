@@ -104,7 +104,7 @@ public sealed class Plugin : BasePlugin, IManagedFeaturePlugin
                 Config.Bind("Stage3Mvp", "TimeoutSeconds", 180, "Maximum wait for one synthesis request."),
                 Config.Bind("Stage3Mvp", "AutoStartAudioCpp", true, "Start the project audio.cpp service and close it when this game exits."),
                 Config.Bind("Stage3Mvp", "AudioCppPrecision", "q8_0", "Auto-start model precision: q8_0, f16, or orig (model file must already exist)."),
-                Config.Bind("Stage3Mvp", "GpuBackend", "Nvidia", "GPU route for auto-started audio.cpp: Nvidia (default CUDA) or Vulkan (AMD/community Vulkan server)."),
+                Config.Bind("Stage3Mvp", "GpuBackend", "Auto", "GPU route for auto-started audio.cpp: Auto (NVIDIA CUDA / AMD Vulkan), Nvidia, or Vulkan."),
                 Config.Bind("Stage3Mvp", "GpuDevice", 0, "Vulkan device index (default 0; change only when a multi-GPU system lists AMD at another index)."),
                 backend);
             SpeechMvp.SetAutoRead(_autoRead.Value);
@@ -1179,5 +1179,5 @@ internal static class PluginInfo
 {
     public const string Guid = "org.a1indextts.mod";
     public const string Name = "A1-TTS-Mod";
-    public const string Version = "0.7.6";
+    public const string Version = "0.7.7";
 }

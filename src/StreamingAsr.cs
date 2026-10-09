@@ -54,6 +54,11 @@ internal static class StreamingAsr
     private static Action<string>? _log;
     private static string _root = AppContext.BaseDirectory;
     private static bool _enabled, _warmQueued;
+    private static GpuRoute? _gpu;
+    internal static bool Available { get; private set; }
+    internal static bool ShowMicrophone => Available && _enabled;
+    internal static string UnavailableReason { get; private set; } = "ASR 未安装";
+    internal static string Provider => _gpu?.Provider ?? "cuda";
     private static string Root => _root;
     internal static string GameRoot => Root;
     internal static void ConfigureRoot(string root)
@@ -62,6 +67,21 @@ internal static class StreamingAsr
         {
             if (IsActive || _decoder != null) throw new InvalidOperationException("Cannot change root while the ASR engine is loaded.");
             _root = Path.GetFullPath(root);
+            try
+            {
+                _gpu = GpuRouting.SelectAsr(GpuRouting.Adapters.Value);
+                if (_gpu?.Provider == "cuda" && !GpuRouting.RuntimeInstalled(_root, "cuda") &&
+                    GpuRouting.RuntimeInstalled(_root, "directml") && AsrModelProfiles.Lightweight.IsInstalled(_root))
+                {
+                    var adapter = GpuRouting.Adapters.Value.First(g => g.Vendor == 0x10de);
+                    _gpu = adapter.SupportsDirectML ? new GpuRoute("directml", adapter.Index, adapter.Name) : null;
+                }
+                Available = _gpu != null && GpuRouting.RuntimeInstalled(_root, _gpu.Provider)
+                    && AsrModelProfiles.All.Any(p => GpuRouting.AllowsModel(_gpu.Provider, p) && p.IsInstalled(_root));
+                UnavailableReason = _gpu == null ? "未发现支持的显卡" : Available ? "" : "ASR 可选包未完整安装";
+                if (_gpu?.Provider == "directml") _profileId = AsrModelProfiles.Lightweight.Id;
+            }
+            catch (Exception e) { Available = false; UnavailableReason = "显卡检测失败：" + e.Message; }
         }
     }
 
@@ -73,7 +93,7 @@ internal static class StreamingAsr
     internal static bool IsActive => Snapshot.IsActive;
     internal static bool TestMode => Snapshot.TestMode;
     internal static AsrModelProfile Profile => AsrModelProfiles.Resolve(_profileId);
-    internal static string EngineDescription => $"{Profile.Label} · {Profile.Precision} · CUDA 请求 · 流式 4 路{(_decoder?.SupportsReview == true ? " / 终稿 8 路" : "")} · 热词 {_decoder?.HotwordCount ?? 0} 个";
+    internal static string EngineDescription => $"{Profile.Label} · {Profile.Precision} · {Provider.ToUpperInvariant()} GPU {_gpu?.Device ?? 0} · 流式 4 路{(_decoder?.SupportsReview == true ? " / 终稿 8 路" : "")} · 热词 {_decoder?.HotwordCount ?? 0} 个";
     internal static void SetLog(Action<string> log) => _log = log;
     internal static void SetDevice(string id) { lock (Control) _deviceId = id ?? ""; }
     internal static void SetEnabled(bool enabled)
@@ -90,6 +110,7 @@ internal static class StreamingAsr
     {
         lock (Control)
         {
+            if (!Available) { Volatile.Write(ref _snapshot, Snapshot with { State = UnavailableReason }); return; }
             if (!_enabled || Snapshot.IsActive || _warmQueued || (Snapshot.State == "就绪" && _loadedProfile == _profileId)) return;
             var profile = Profile;
             _warmQueued = true;
@@ -115,7 +136,7 @@ internal static class StreamingAsr
         {
             if (Snapshot.IsActive) return false;
             var profile = AsrModelProfiles.Resolve(id);
-            if (!profile.IsInstalled(Root)) return false;
+            if (!GpuRouting.AllowsModel(Provider, profile) || !profile.IsInstalled(Root)) return false;
             _profileId = profile.Id;
             Work.Add(() => { if (_loadedProfile != profile.Id && _capture == null) DisposeDecoder(); WarmUp(); });
             WarmUp();
@@ -127,7 +148,7 @@ internal static class StreamingAsr
     {
         lock (Control)
         {
-            if (Snapshot.IsActive) return;
+            if (!_enabled || !Available || Snapshot.IsActive) return;
             var id = Interlocked.Increment(ref _session);
             Volatile.Write(ref _snapshot, new(id, "准备中", "", 0, testMode));
             var profile = Profile; var device = _deviceId;
@@ -155,6 +176,10 @@ internal static class StreamingAsr
             Work.Add(() =>
             {
                 AbortCapture(); _decoder?.End(); if (releaseRecognizer) DisposeDecoder();
+                // An earlier disable may still be queued behind a cold load when
+                // the user enables ASR again. Reconcile with the current switch
+                // after releasing, rather than leaving a ready state with no model.
+                if (releaseRecognizer && _enabled) WarmUp();
                 if (!releaseRecognizer && _enabled && _decoder != null) Publish(id, "就绪", Snapshot.Text, 0);
             });
         }
@@ -199,8 +224,8 @@ internal static class StreamingAsr
         if (_decoder == null || _loadedProfile != profile.Id)
         {
             DisposeDecoder();
-            _decoder = new AsrDecoderSession(Root, profile); _loadedProfile = profile.Id;
-            _log?.Invoke($"ASR engine initialized: profile={profile.Id}, precision={profile.Precision}, requestedProvider=cuda, beam=4, hotwords={_decoder.HotwordCount}, skipped={_decoder.SkippedHotwordCount}, native={_decoder.NativeRevision}.");
+            _decoder = new AsrDecoderSession(Root, profile, provider: Provider, device: _gpu?.Device ?? 0); _loadedProfile = profile.Id;
+            _log?.Invoke($"ASR engine initialized: profile={profile.Id}, precision={profile.Precision}, requestedProvider={Provider}, beam=4, hotwords={_decoder.HotwordCount}, skipped={_decoder.SkippedHotwordCount}, native={_decoder.NativeRevision}.");
         }
     }
 

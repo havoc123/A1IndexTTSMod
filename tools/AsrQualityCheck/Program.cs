@@ -8,6 +8,14 @@ using NAudio.Wave.SampleProviders;
 
 string? Option(string key) { var index = Array.IndexOf(args, key); return index >= 0 && index + 1 < args.Length ? args[index + 1] : null; }
 var root = Option("--game-root") ?? throw new ArgumentException("--game-root required");
+if (args.Contains("--list-gpus")) { Console.WriteLine(JsonSerializer.Serialize(GpuRouting.Adapters.Value)); return; }
+if (args.Contains("--availability-only")) {
+    StreamingAsr.ConfigureRoot(root);
+    Console.WriteLine(JsonSerializer.Serialize(new { available = StreamingAsr.Available, provider = StreamingAsr.Provider,
+        profile = StreamingAsr.Profile.Id, microphone = StreamingAsr.ShowMicrophone, reason = StreamingAsr.UnavailableReason }));
+    return;
+}
+var provider = Option("--provider") ?? "cuda"; var device = int.Parse(Option("--device") ?? "0");
 var profile = AsrModelProfiles.Resolve(Option("--profile") ?? "lightweight14m");
 if (args.Contains("--warm-only"))
 {
@@ -21,7 +29,7 @@ if (args.Contains("--warm-only"))
     }
     Resource("baseline");
     var watch = Stopwatch.StartNew();
-    using var engine = new AsrDecoderSession(root, profile, runtimeOverride: Option("--runtime-dir"));
+    using var engine = new AsrDecoderSession(root, profile, runtimeOverride: Option("--runtime-dir"), provider: provider, device: device, ortProfilePrefix: Option("--ort-profile"));
     Resource("ready", new { loadMs = watch.Elapsed.TotalMilliseconds, native = engine.NativeRevision, hotwords = engine.HotwordCount });
     await Task.Delay(int.Parse(Option("--hold-seconds") ?? "15") * 1000);
     Resource("idle");
@@ -75,7 +83,7 @@ if (maxActivePaths < 1 || maxActivePaths > 32) throw new ArgumentException("--pa
 if (hotwordScore.HasValue && (!float.IsFinite(hotwordScore.Value) || hotwordScore <= 0)) throw new ArgumentException("--hotword-score must be finite and positive.");
 if (rareHotwordScore.HasValue && (!float.IsFinite(rareHotwordScore.Value) || rareHotwordScore <= 0)) throw new ArgumentException("--rare-hotword-score must be finite and positive.");
 var timer = Stopwatch.StartNew();
-using var decoder = new AsrDecoderSession(root, profile, hotwords, greedy ? "greedy_search" : "modified_beam_search", args.Contains("--debug"), hotwordScore, maxActivePaths, rareHotwordScore, Option("--runtime-dir"));
+using var decoder = new AsrDecoderSession(root, profile, hotwords, greedy ? "greedy_search" : "modified_beam_search", args.Contains("--debug"), hotwordScore, maxActivePaths, rareHotwordScore, Option("--runtime-dir"), provider, device, Option("--ort-profile"));
 if (Option("--expected-hotwords") is string expectedHotwords && (decoder.HotwordCount != int.Parse(expectedHotwords, CultureInfo.InvariantCulture) || decoder.SkippedHotwordCount != 0))
     throw new Exception($"Hotword coverage mismatch: {decoder.HotwordCount} enabled, {decoder.SkippedHotwordCount} skipped.");
 var loadMs = timer.Elapsed.TotalMilliseconds;

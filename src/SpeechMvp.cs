@@ -112,6 +112,7 @@ internal static class SpeechMvp
             endpoint.AbsolutePath is not ("/v1/tts" or "/v1/audio/speech") ||
             _referenceId.Length == 0 || _referenceId.Any(c => !(char.IsLetterOrDigit(c) || c is '_' or '-')) ||
             _audioCppModelId.Length == 0 || _audioCppModelId.Any(c => !(char.IsLetterOrDigit(c) || c is '_' or '-' or '.')) ||
+            !selectedGpuBackend.Equals("Auto", StringComparison.OrdinalIgnoreCase) &&
             !selectedGpuBackend.Equals("Nvidia", StringComparison.OrdinalIgnoreCase) &&
             !selectedGpuBackend.Equals("Vulkan", StringComparison.OrdinalIgnoreCase))
         {

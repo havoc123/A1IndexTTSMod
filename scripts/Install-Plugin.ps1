@@ -39,7 +39,7 @@ if (Test-Path -LiteralPath $PluginTarget) {
     }
     $state = Get-Content -LiteralPath $StatePath -Raw | ConvertFrom-Json
     $existingHash = (Get-FileHash -LiteralPath $PluginTarget -Algorithm SHA256).Hash.ToLowerInvariant()
-    if ($existingHash -ne $state.sha256) { throw "Installed plugin was changed outside this script: $PluginTarget" }
+    if ($existingHash -ne $state.sha256 -and $existingHash -ne $hash) { throw "Installed plugin was changed outside this script: $PluginTarget" }
 }
 
 foreach ($name in @($DependencyNames) + @($SharedDependencyNames)) {
@@ -51,7 +51,7 @@ foreach ($name in @($DependencyNames) + @($SharedDependencyNames)) {
         $actual = (Get-FileHash -LiteralPath $target -Algorithm SHA256).Hash.ToLowerInvariant()
         $sourceHash = (Get-FileHash -LiteralPath $source -Algorithm SHA256).Hash.ToLowerInvariant()
         $sharedMatch = ($SharedDependencyNames -contains $name) -and ($actual -eq $sourceHash)
-        if ((-not $known -and -not $sharedMatch) -or ($known -and $actual -ne $known.sha256)) {
+        if ((-not $known -and -not $sharedMatch) -or ($known -and $actual -ne $known.sha256 -and $actual -ne $sourceHash)) {
             throw "Installed dependency was changed outside this script: $target"
         }
     }
@@ -77,7 +77,7 @@ foreach ($name in @('asr-hotwords.zh-CN.txt','asr-hotwords.sources.json')) {
     Copy-Item -LiteralPath (Join-Path $ProjectRoot ('config\' + $name)) -Destination (Join-Path $asrConfigTarget $name) -Force
 }
 [pscustomobject]@{
-    path = [IO.Path]::GetRelativePath($GameRoot, $PluginTarget)
+    path = $PluginTarget.Substring($GameRoot.TrimEnd('\').Length + 1)
     sha256 = $hash
     dependencies = @((@($DependencyNames) + @($SharedDependencyNames)) | ForEach-Object {
         [pscustomobject]@{ name = $_; sha256 = (Get-FileHash -LiteralPath (Join-Path (Split-Path -Parent $PluginSource) $_) -Algorithm SHA256).Hash.ToLowerInvariant() }

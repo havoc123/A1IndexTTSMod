@@ -161,7 +161,8 @@ internal sealed class SpeechPanelUi : MonoBehaviour
     {
         _asrEnabled = enabled; _asrDevice = device; _asrModel = model;
         StreamingAsr.SetDevice(device.Value);
-        StreamingAsr.SetProfile(model.Value);
+        if (!StreamingAsr.SetProfile(model.Value))
+            StreamingAsr.SetProfile(AsrModelProfiles.All.FirstOrDefault(p => GpuRouting.AllowsModel(StreamingAsr.Provider, p) && p.IsInstalled(StreamingAsr.GameRoot))?.Id ?? AsrModelProfiles.Lightweight.Id);
         StreamingAsr.SetEnabled(enabled.Value);
         model.Value = StreamingAsr.Profile.Id;
     }
@@ -505,8 +506,9 @@ internal sealed class SpeechPanelUi : MonoBehaviour
             if (submitRect == null && submitComponent != null) submitRect = submitComponent.GetComponent<RectTransform>();
             if (submitRect == null || submitComponent == null) return;
             EnsureEntryVisual(submitComponent, submitRect);
-            EnsureMicVisual(submitComponent, submitRect);
-            PositionMicAndInput(submitRect);
+            if (StreamingAsr.ShowMicrophone)
+            { EnsureMicVisual(submitComponent, submitRect); PositionMicAndInput(submitRect); }
+            else if (_micVisual != null) DestroyMicVisual();
             if (_entryVisual == null) return;
             var entryTransform = _entryVisual.transform;
             var entryRectTransform = entryTransform as RectTransform ?? entryTransform.GetComponent<RectTransform>();
@@ -847,7 +849,8 @@ internal sealed class SpeechPanelUi : MonoBehaviour
         if (GUILayout.Toggle(_tab == 0, "音色与参数", _tabStyle)) SetTab(0);
         if (GUILayout.Toggle(_tab == 1, "最近语音", _tabStyle)) SetTab(1);
         if (GUILayout.Toggle(_tab == 2, "本轮数据", _tabStyle)) SetTab(2);
-        if (GUILayout.Toggle(_tab == 3, "语音输入", _tabStyle)) SetTab(3);
+        if (!StreamingAsr.Available && _tab == 3) SetTab(0);
+        if (StreamingAsr.Available && GUILayout.Toggle(_tab == 3, "语音输入", _tabStyle)) SetTab(3);
         GUILayout.EndHorizontal();
         GUILayout.Space(12);
         switch (_tab)
@@ -891,6 +894,7 @@ internal sealed class SpeechPanelUi : MonoBehaviour
     private void DrawVoiceTab()
     {
         GUILayout.Label("当前角色 · " + _npcName, _sectionStyle);
+        if (!StreamingAsr.Available) GUILayout.Label("语音输入 · " + StreamingAsr.UnavailableReason, _mutedStyle);
         GUILayout.Label("播放服务 · " + _featureState + (string.IsNullOrWhiteSpace(_featureStatus) ? "" : " · " + _featureStatus), _mutedStyle);
         var featureEnabled = _featureEnabled;
         if (featureEnabled != null)
@@ -970,7 +974,7 @@ internal sealed class SpeechPanelUi : MonoBehaviour
         GUILayout.Label("运行状态 · " + StreamingAsr.State, _mutedStyle);
         GUILayout.Label("识别模型", _bodyStyle);
         GUILayout.BeginHorizontal();
-        foreach (var profile in AsrModelProfiles.All)
+        foreach (var profile in AsrModelProfiles.All.Where(p => GpuRouting.AllowsModel(StreamingAsr.Provider, p)))
         {
             var installed = profile.IsInstalled(StreamingAsr.GameRoot);
             GUI.enabled = installed && !StreamingAsr.IsActive;
@@ -981,10 +985,10 @@ internal sealed class SpeechPanelUi : MonoBehaviour
         GUI.enabled = true;
         GUILayout.EndHorizontal();
         GUILayout.Label(StreamingAsr.EngineDescription, _mutedStyle);
-        GUILayout.Label("录音中文字可能调整；停止后定稿并手动发送。", _bodyStyle);
-        GUILayout.Label("CUDA 执行状态会与依赖检查结果分开报告；未验证时不会显示为显卡已运行。", _bodyStyle);
+        GUILayout.Label("录音中文字可能调整；点击发送会先停止录音、校验终稿，再发送。", _bodyStyle);
+        GUILayout.Label("GPU 初始化失败会报告错误；DirectML 仅使用 14M 模型。", _bodyStyle);
         GUILayout.Label("测试结果不会进入 NPC 草稿。", _bodyStyle);
-        GUILayout.Label("对话录音中暂停 NPC 朗读；再次点击停止后检查草稿并手动发送。60 秒上限，ESC 取消。", _bodyStyle);
+        GUILayout.Label("对话录音中暂停 NPC 朗读；点击麦克风停止后可检查草稿，或直接点击发送。60 秒上限，ESC 取消。", _bodyStyle);
     }
 
     private static void RefreshAsrDevices()

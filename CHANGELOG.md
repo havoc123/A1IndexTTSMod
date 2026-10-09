@@ -1,5 +1,14 @@
 # 更新记录
 
+## v0.7.7（2026-10-09，可选流式 ASR 与显卡自动路由）
+
+- ASR 作为独立可选资源包；缺包隐藏麦克风及第四页并恢复输入框，安装后关闭语音输入仍保留设置页。
+- NVIDIA ASR 使用 CUDA，支持 14M / 160M；AMD/Intel DirectX 12 使用 DirectML，固定 14M，旧配置在加载前迁移。
+- TTS 新装默认 Auto，NVIDIA CUDA / AMD Vulkan；从实际后端设备列表解析编号，兼容核显与混合显卡，保留可行的手动配置。
+- 原生补丁升级 v3，验证三个 GPU 图初始化，失败直接报告；保留启动预热、持续常驻、发送前整段校验与单次发送保护。
+- 提供 0.7.6 → 0.7.7 主程序补丁、CUDA 14M 和 DirectML 14M 可选包；160M 沿用现有模型或固定版本下载，CosyVoice 模型不需要重下载。
+- CUDA 与 DirectML 离线回归、GPU provider 执行及安装器检查通过；未启动游戏。详见 [实现与验证](docs/ASR-MODULAR-DIRECTML-20261009.md)。
+
 ## v0.7.6（2026-10-09，预设开场白情感库与 CosyVoice 主线）
 
 - README 按 v0.7.0 起的 CosyVoice 与增强情感主线重写，IndexTTS 停止维护并保留归档说明；源码新装后端、模型 ID 及启动脚本默认改为 CosyVoice，保留已有配置。
