@@ -78,4 +78,10 @@ Get-FileHash -Algorithm SHA256 .\CosyVoice3-q8_0-model-win64.7z
 
 已安装 0.7.6 分体语音包时，可使用 0.7.6 → 0.7.7 主程序补丁，配置、参考音与 CosyVoice GGUF 保留。语音输入单独安装 CUDA 14M 或 DirectML 14M 资源包。AMD/Intel 的 ASR 使用 DirectML 并固定 14M；NVIDIA CUDA 可沿用已安装的 160M，或使用 CUDA 包附带的固定版本下载脚本。安装和升级时先关闭游戏，完成后重新启动以自动检测和预热。
 
+## 0.7.8 自动标点与升级
+
+0.7.6、0.7.7 分别使用对应的主程序补丁升级到 0.7.8。此版本取消停止／发送前整段音频复核，保留流式尾部收尾，并支持独立共享的自动标点模型。
+
+已有 ASR 用户升级主程序后，解压 `A1IndexTTSMod-v0.7.8-ASR-Punctuation-win64.zip`，运行“安装自动标点.bat”即可；不用重新下载 14M、160M、v3 原生库或 CosyVoice GGUF。新构建的 0.7.8 ASR 可选包已含标点模型。缺少标点资源时 ASR 仍可输入、停止和发送。安装后重启生效。
+
 未安装 ASR 时不显示麦克风和第四页；完整安装但关闭语音输入时，保留第四页以便重新启用。旧 v1/v2 ASR 原生库需要一并更新到 v3。详情见 [实现、资源占用与离线结果](../docs/ASR-MODULAR-DIRECTML-20261009.md)。

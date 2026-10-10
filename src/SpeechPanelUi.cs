@@ -714,7 +714,7 @@ internal sealed class SpeechPanelUi : MonoBehaviour
         var message = recording ? StreamingAsr.State switch
         {
             "准备中" => "语音输入准备中 · 再次点击麦克风取消",
-            "收尾中" => _asrSend.Pending ? "正在校验整段语音 · 完成后自动发送" : "正在校验整段语音 · 完成后可编辑并发送",
+            "收尾中" => _asrSend.Pending ? "正在完成语音输入 · 完成后自动发送" : "正在完成语音输入 · 完成后可编辑并发送",
             _ => "语音输入中，文字可能调整 · 点击发送结束并发送，点击麦克风仅停止"
         } : _open ? "关闭语音设置后可输入对话"
             : _asrEnabled?.Value != true ? "点击输入框打字 · 语音输入已关闭"
@@ -985,7 +985,8 @@ internal sealed class SpeechPanelUi : MonoBehaviour
         GUI.enabled = true;
         GUILayout.EndHorizontal();
         GUILayout.Label(StreamingAsr.EngineDescription, _mutedStyle);
-        GUILayout.Label("录音中文字可能调整；点击发送会先停止录音、校验终稿，再发送。", _bodyStyle);
+        GUILayout.Label(StreamingAsr.PunctuationStatus, _mutedStyle);
+        GUILayout.Label("边说边输入并补标点；点击发送会结束录音并发送，不再整段重新识别。", _bodyStyle);
         GUILayout.Label("GPU 初始化失败会报告错误；DirectML 仅使用 14M 模型。", _bodyStyle);
         GUILayout.Label("测试结果不会进入 NPC 草稿。", _bodyStyle);
         GUILayout.Label("对话录音中暂停 NPC 朗读；点击麦克风停止后可检查草稿，或直接点击发送。60 秒上限，ESC 取消。", _bodyStyle);

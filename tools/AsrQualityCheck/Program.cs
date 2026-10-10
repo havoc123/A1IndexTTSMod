@@ -16,6 +16,24 @@ if (args.Contains("--availability-only")) {
     return;
 }
 var provider = Option("--provider") ?? "cuda"; var device = int.Parse(Option("--device") ?? "0");
+if (args.Contains("--punctuation-only"))
+{
+    // Text-only integration smoke check: no ASR weights, microphone or private samples.
+    AsrDecoderSession.EnsureNative(Option("--runtime-dir") ?? GpuRouting.RuntimeDirectory(root, provider), root, provider);
+    using var punctuation = new AsrPunctuationEngine(root);
+    var formatter = new AsrPunctuationFormatter();
+    var results = new List<string>();
+    foreach (var text in new[] { "今天天气很好我们一起去公园散步", "你明天有时间吗", "你好请问现在几点了" })
+    {
+        var result = formatter.Render(text, true, punctuation.Add);
+        if (result == text) throw new Exception("Punctuation model did not add punctuation to the synthetic text.");
+        results.Add(result);
+    }
+    var combined = string.Concat(results);
+    if (!combined.Contains('，') || !combined.Contains('。') || !combined.Contains('？')) throw new Exception("Native punctuation smoke check is missing comma, period or question mark.");
+    Console.WriteLine("PASS native punctuation: comma, period, question mark, lexical preservation; no acoustic model loaded.");
+    return;
+}
 var profile = AsrModelProfiles.Resolve(Option("--profile") ?? "lightweight14m");
 if (args.Contains("--warm-only"))
 {
@@ -83,7 +101,7 @@ if (maxActivePaths < 1 || maxActivePaths > 32) throw new ArgumentException("--pa
 if (hotwordScore.HasValue && (!float.IsFinite(hotwordScore.Value) || hotwordScore <= 0)) throw new ArgumentException("--hotword-score must be finite and positive.");
 if (rareHotwordScore.HasValue && (!float.IsFinite(rareHotwordScore.Value) || rareHotwordScore <= 0)) throw new ArgumentException("--rare-hotword-score must be finite and positive.");
 var timer = Stopwatch.StartNew();
-using var decoder = new AsrDecoderSession(root, profile, hotwords, greedy ? "greedy_search" : "modified_beam_search", args.Contains("--debug"), hotwordScore, maxActivePaths, rareHotwordScore, Option("--runtime-dir"), provider, device, Option("--ort-profile"));
+using var decoder = new AsrDecoderSession(root, profile, hotwords, greedy ? "greedy_search" : "modified_beam_search", args.Contains("--debug"), hotwordScore, maxActivePaths, rareHotwordScore, Option("--runtime-dir"), provider, device, Option("--ort-profile"), enableReplay: args.Contains("--review") || args.Contains("--cancel-review-test"));
 if (Option("--expected-hotwords") is string expectedHotwords && (decoder.HotwordCount != int.Parse(expectedHotwords, CultureInfo.InvariantCulture) || decoder.SkippedHotwordCount != 0))
     throw new Exception($"Hotword coverage mismatch: {decoder.HotwordCount} enabled, {decoder.SkippedHotwordCount} skipped.");
 var loadMs = timer.Elapsed.TotalMilliseconds;
@@ -95,7 +113,7 @@ if (args.Contains("--cancel-review-test"))
     var checks = 0;
     try
     {
-        decoder.Finish(isCurrent: () => ++checks < 2);
+        decoder.Finish(review: true, isCurrent: () => ++checks < 2);
         throw new Exception("Native final review ignored cancellation.");
     }
     catch (OperationCanceledException) { Console.Error.WriteLine("PASS native review cancellation; following WAV cases reuse the resident model."); }
@@ -113,7 +131,7 @@ foreach (var testCase in cases)
         samples += count; var text = decoder.Accept(buffer.AsSpan(0, count).ToArray());
         if (text != previous) { partials.Add(text); previous = text; }
     }
-    var stopTimer = Stopwatch.StartNew(); var final = decoder.Finish(!args.Contains("--no-tail"), verifyStableResult: true, review: !args.Contains("--no-review"));
+    var stopTimer = Stopwatch.StartNew(); var final = decoder.Finish(!args.Contains("--no-tail"), verifyStableResult: true, review: args.Contains("--review"));
     var stopMs = stopTimer.Elapsed.TotalMilliseconds;
     if (samples != decoder.SessionSamples) throw new Exception("Input sample count mismatch.");
     var decodeMs = timer.Elapsed.TotalMilliseconds;

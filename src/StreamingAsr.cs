@@ -6,7 +6,7 @@ using NAudio.CoreAudioApi;
 
 namespace A1IndexTTSMod;
 
-internal sealed record AsrSnapshot(long SessionId, string State, string Text, float Level, bool TestMode)
+internal sealed record AsrSnapshot(long SessionId, string State, string Text, float Level, bool TestMode, string RawText = "")
 {
     internal bool IsActive => State is "准备中" or "录音中" or "收尾中";
 }
@@ -46,6 +46,7 @@ internal static class StreamingAsr
     private static readonly BlockingCollection<AudioFrame> Audio = new(32);
     private static AsrSnapshot _snapshot = new(0, "未加载", "", 0, false);
     private static AsrDecoderSession? _decoder;
+    private static AsrPunctuationService? _punctuation;
     private static CaptureSession? _capture;
     private static string _profileId = AsrModelProfiles.Lightweight.Id;
     private static string _loadedProfile = "";
@@ -93,7 +94,8 @@ internal static class StreamingAsr
     internal static bool IsActive => Snapshot.IsActive;
     internal static bool TestMode => Snapshot.TestMode;
     internal static AsrModelProfile Profile => AsrModelProfiles.Resolve(_profileId);
-    internal static string EngineDescription => $"{Profile.Label} · {Profile.Precision} · {Provider.ToUpperInvariant()} GPU {_gpu?.Device ?? 0} · 流式 4 路{(_decoder?.SupportsReview == true ? " / 终稿 8 路" : "")} · 热词 {_decoder?.HotwordCount ?? 0} 个";
+    internal static string EngineDescription => $"{Profile.Label} · {Profile.Precision} · {Provider.ToUpperInvariant()} GPU {_gpu?.Device ?? 0} · 热词 {_decoder?.HotwordCount ?? 0} 个";
+    internal static string PunctuationStatus => _punctuation?.Status ?? "自动标点 · 随语音输入预热";
     internal static void SetLog(Action<string> log) => _log = log;
     internal static void SetDevice(string id) { lock (Control) _deviceId = id ?? ""; }
     internal static void SetEnabled(bool enabled)
@@ -175,7 +177,9 @@ internal static class StreamingAsr
             Volatile.Write(ref _snapshot, Snapshot with { SessionId = id, State = "已取消", Level = 0 });
             Work.Add(() =>
             {
-                AbortCapture(); _decoder?.End(); if (releaseRecognizer) DisposeDecoder();
+                AbortCapture(); _decoder?.End();
+                _punctuation?.Begin(id);
+                if (releaseRecognizer) { DisposeDecoder(); _punctuation?.Dispose(); _punctuation = null; }
                 // An earlier disable may still be queued behind a cold load when
                 // the user enables ASR again. Reconcile with the current switch
                 // after releasing, rather than leaving a ready state with no model.
@@ -211,6 +215,7 @@ internal static class StreamingAsr
         EnsureDecoder(profile);
         if (id != Interlocked.Read(ref _session)) return;
         _decoder!.Begin();
+        _punctuation?.Begin(id);
         var capture = new CaptureSession(id, device); _capture = capture;
         capture.Capture.DataAvailable += (_, e) => OnData(capture, e);
         capture.Capture.RecordingStopped += (_, e) => Work.Add(() => FinishStoppedCapture(capture, e.Exception));
@@ -225,6 +230,7 @@ internal static class StreamingAsr
         {
             DisposeDecoder();
             _decoder = new AsrDecoderSession(Root, profile, provider: Provider, device: _gpu?.Device ?? 0); _loadedProfile = profile.Id;
+            _punctuation ??= new AsrPunctuationService(() => new AsrPunctuationEngine(Root), PublishPunctuation, _log);
             _log?.Invoke($"ASR engine initialized: profile={profile.Id}, precision={profile.Precision}, requestedProvider={Provider}, beam=4, hotwords={_decoder.HotwordCount}, skipped={_decoder.SkippedHotwordCount}, native={_decoder.NativeRevision}.");
         }
     }
@@ -264,7 +270,15 @@ internal static class StreamingAsr
         var text = _decoder.Accept(frame.Samples);
         if (_capture?.Id == frame.SessionId) _capture.ProcessedSamples += frame.Samples.Length;
         lock (Control)
-            if (frame.SessionId == _session) Volatile.Write(ref _snapshot, Snapshot with { Text = text });
+            if (frame.SessionId == _session && text != Snapshot.RawText) Volatile.Write(ref _snapshot, Snapshot with { Text = text, RawText = text });
+        _punctuation?.Submit(frame.SessionId, text);
+    }
+
+    private static void PublishPunctuation(long id, string raw, string display)
+    {
+        lock (Control)
+            if (id == _session && Snapshot.State == "录音中" && Snapshot.RawText == raw)
+                Volatile.Write(ref _snapshot, Snapshot with { Text = display });
     }
 
     private static void BeginStop(long id)
@@ -290,10 +304,17 @@ internal static class StreamingAsr
         }
         while (Audio.TryTake(out var frame)) Process(frame);
         if (capture.ProcessedSamples != capture.QueuedSamples) throw new InvalidOperationException("音频收尾样本不完整。");
-        var final = _decoder!.Finish(isCurrent: () => capture.Id == Interlocked.Read(ref _session));
-        _log?.Invoke($"ASR finalized: session={capture.Id}, deliveredBytes={capture.DeliveredBytes}, queuedSamples={capture.QueuedSamples}, processedSamples={capture.ProcessedSamples}, tailSamples={AsrDecoderSession.TailSamples}, review={_decoder.FinalReviewApplied}, reviewSelection={_decoder.FinalReviewSelection}, reviewChanged={_decoder.FinalReviewChanged}, reviewSamples={_decoder.FinalReviewSamples}, reviewMs={_decoder.FinalReviewMilliseconds:0}, stopMs={capture.StopTimer.ElapsedMilliseconds}.");
+        var final = _decoder!.Finish();
+        _log?.Invoke($"ASR finalized: session={capture.Id}, deliveredBytes={capture.DeliveredBytes}, queuedSamples={capture.QueuedSamples}, processedSamples={capture.ProcessedSamples}, tailSamples={AsrDecoderSession.TailSamples}, replay=False, stopMs={capture.StopTimer.ElapsedMilliseconds}.");
         DisposeCapture(capture); _capture = null;
-        Publish(capture.Id, "就绪", final, 0);
+        if (_punctuation == null) Publish(capture.Id, "就绪", final, 0);
+        else _ = FinishPunctuation(capture.Id, final, _punctuation);
+    }
+
+    private static async Task FinishPunctuation(long id, string raw, AsrPunctuationService punctuation)
+    {
+        var display = await punctuation.Finish(id, raw).ConfigureAwait(false);
+        Work.Add(() => Publish(id, "就绪", display, 0));
     }
 
     private static void Publish(long id, string state, string text, float? level = null)

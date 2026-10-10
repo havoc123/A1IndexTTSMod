@@ -1,0 +1,9 @@
+CT-Transformer Chinese/English punctuation model, INT8 ONNX conversion.
+Original model: iic/punc_ct-transformer_zh-cn-common-vocab272727-pytorch (Alibaba / FunASR).
+https://modelscope.cn/models/iic/punc_ct-transformer_zh-cn-common-vocab272727-pytorch/summary
+The upstream ModelScope metadata declares Apache License 2.0.
+ONNX conversion distributed by the sherpa-onnx project:
+https://github.com/k2-fsa/sherpa-onnx/releases/tag/punctuation-models
+Asset: sherpa-onnx-punct-ct-transformer-zh-en-vocab272727-2024-04-12-int8.tar.bz2
+model.int8.onnx SHA256: 65a3fb9f5ad7bfb96bf69e0dc4481df97f6ee60513c1d94ce981ba6effd524b1
+Weights are unchanged. The Mod validates inserted punctuation and processes text in bounded windows.

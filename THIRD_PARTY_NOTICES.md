@@ -2,6 +2,13 @@
 
 本仓库的 `LICENSE` 仅适用于本项目自写的源码、脚本和文档。下列组件和内容有各自的权利归属：
 
+0.7.8 的独立自动标点资源使用 Alibaba / FunASR 的
+`iic/punc_ct-transformer_zh-cn-common-vocab272727-pytorch`，其 ModelScope
+元数据声明 Apache License 2.0。采用 sherpa-onnx 官方 punctuation-models
+发行中的 2024-04-12 INT8 ONNX 转换权重，未经修改。安装器验证压缩包和
+模型 SHA256；完整许可证与来源说明随标点包保存于模型目录，源码副本位于
+`licenses/asr-punctuation`。该模型与 ASR checkpoint 的许可证分别适用。
+
 | 内容 | 发布方式与适用条款 |
 | --- | --- |
 | 《不问凡尘》及 NPC 名称、ID、设定 | 游戏权利人保留权利。本 MOD 非官方作品；用户需自行取得并安装游戏。`npc_id_name.csv` 只用于把游戏内 NPC ID 与参考音对应起来，不按项目 MIT 许可证重新授权游戏素材。 |

@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType><TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable><ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../src/AsrPunctuation.cs" Link="AsrPunctuation.cs" />
+    <Compile Include="../../src/AsrSendGate.cs" Link="AsrSendGate.cs" />
+    <Reference Include="sherpa-onnx"><HintPath>../../src/bin/Release/net6.0/sherpa-onnx.dll</HintPath></Reference>
+  </ItemGroup>
+</Project>

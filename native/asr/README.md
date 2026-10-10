@@ -22,7 +22,9 @@ The DLL exports `A1SherpaOnnxHotwordRevision`, returning
 for separately validated contextual hotword budgets; an upstream DLL keeps the
 previous budgets. Streaming search remains 4 paths. In v2, the public stream
 option `a1_final_paths` permits 8, 12 or 16 paths for a single-stream replay;
-production final review uses 8. Each Decode resets the path limit from that
+0.7.7 production final review used 8; from 0.7.8 replay is disabled in the
+game and can only be explicitly enabled with `--review` in the offline
+diagnostic tool. Each Decode resets the path limit from that
 stream, so subsequent ordinary streams return to 4. The recognizer and CUDA
 weights are reused. Managed selection preserves the original complete
 hypothesis when replay loses an already completed hotword; it never rewrites

@@ -18,6 +18,7 @@ internal sealed class AsrDecoderSession : IDisposable
     private OnlineStream? _stream;
     private readonly List<float[]> _reviewAudio = new();
     private readonly bool _supportsReview;
+    private readonly bool _enableReplay;
     internal bool SupportsReview => _supportsReview;
     private readonly string[] _hotwords;
     private bool _canReview;
@@ -40,7 +41,7 @@ internal sealed class AsrDecoderSession : IDisposable
 
     internal AsrDecoderSession(string gameRoot, AsrModelProfile profile, bool useHotwords = true,
         string decodingMethod = "modified_beam_search", bool debug = false, float? hotwordScore = null,
-        int maxActivePaths = 4, float? rareHotwordScore = null, string? runtimeOverride = null, string provider = "cuda", int device = 0, string? ortProfilePrefix = null)
+        int maxActivePaths = 4, float? rareHotwordScore = null, string? runtimeOverride = null, string provider = "cuda", int device = 0, string? ortProfilePrefix = null, bool enableReplay = false)
     {
         if (provider is not ("cuda" or "directml") || device < 0 || device > 15) throw new ArgumentException("Unsupported ASR GPU provider/device.");
         if (!GpuRouting.AllowsModel(provider, profile)) throw new NotSupportedException("DirectML 仅允许 14M 流式模型。");
@@ -61,6 +62,7 @@ internal sealed class AsrDecoderSession : IDisposable
         }
         finally { NativeLibrary.Free(native); }
         _supportsReview = NativeRevision == "a1-context-before-topk-finalize-v3" && decodingMethod == "modified_beam_search";
+        _enableReplay = enableReplay;
         var directory = profile.ModelDirectory(gameRoot);
         var tokens = Path.Combine(directory, "tokens.txt");
         var hotwords = PrepareHotwords(gameRoot, profile, tokens, useHotwords && decodingMethod != "greedy_search", hotwordScore, rareHotwordScore,
@@ -99,14 +101,14 @@ internal sealed class AsrDecoderSession : IDisposable
         if (gpuCount!() < 3) { _recognizer.Dispose(); throw new InvalidOperationException($"{provider} GPU 初始化失败，未启用 CPU 回退。"); }
         // CUDA/cuDNN may spend seconds preparing kernels on its first Decode. Warm
         // them before microphone capture, so that cold work cannot overflow audio.
-        try { Begin(); Accept(new float[16000]); Finish(review: _supportsReview); AcceptedSamples = 0; SessionSamples = 0; Text = ""; }
+        try { Begin(); Accept(new float[16000]); Finish(); AcceptedSamples = 0; SessionSamples = 0; Text = ""; }
         catch { Dispose(); throw; }
     }
 
     internal void Begin()
     {
         _stream?.Dispose(); _stream = _recognizer.CreateStream(); Text = ""; Tokens = Array.Empty<string>(); SessionSamples = 0;
-        _reviewAudio.Clear(); _canReview = _supportsReview;
+        _reviewAudio.Clear(); _canReview = _supportsReview && _enableReplay;
         StreamingFinal = ""; ReviewFinal = ""; FinalReviewSelection = "not-run";
         FinalReviewApplied = false; FinalReviewSamples = 0; FinalReviewMilliseconds = 0;
     }
@@ -123,7 +125,7 @@ internal sealed class AsrDecoderSession : IDisposable
         DecodeReady(); return Text;
     }
 
-    internal string Finish(bool padTail = true, bool verifyStableResult = false, bool review = true, Func<bool>? isCurrent = null)
+    internal string Finish(bool padTail = true, bool verifyStableResult = false, bool review = false, Func<bool>? isCurrent = null)
     {
         if (_stream == null) throw new InvalidOperationException("ASR stream is not active.");
         try
@@ -241,7 +243,7 @@ internal sealed class AsrDecoderSession : IDisposable
         return (valid.Count == 0 ? "" : path, valid.Count, skipped.Count, nativeTokens, words.ToArray());
     }
 
-    private static void EnsureNative(string runtime, string root, string provider)
+    internal static void EnsureNative(string runtime, string root, string provider)
     {
         lock (NativeGate)
         {

@@ -38,6 +38,9 @@ foreach ($model in $models) {
     $source = Join-Path $GameRoot ('A1IndexTTSMod/asr/' + $model)
     Copy-Item -LiteralPath $source -Destination $payload -Recurse
 }
+$punctuation = Join-Path $GameRoot 'A1IndexTTSMod/asr/punctuation-ct-transformer-zh-en-int8'
+if ((Get-FileHash -LiteralPath (Join-Path $punctuation 'model.int8.onnx') -Algorithm SHA256).Hash.ToLowerInvariant() -ne '65a3fb9f5ad7bfb96bf69e0dc4481df97f6ee60513c1d94ce981ba6effd524b1') { throw 'Install the pinned punctuation model first.' }
+Copy-Item -LiteralPath $punctuation -Destination $payload -Recurse
 $config = Join-Path $stage 'A1IndexTTSMod/config'
 New-Item -ItemType Directory -Path $config -Force | Out-Null
 Copy-Item -LiteralPath (Join-Path $project 'config/asr-hotwords.zh-CN.txt') -Destination $config
@@ -54,7 +57,7 @@ if (Test-Path -LiteralPath $game -PathType Leaf) { $game = Split-Path -Parent $g
 if (-not (Test-Path -LiteralPath (Join-Path $game 'WorldApart.exe'))) { throw '未找到 WorldApart.exe。' }
 if (Get-Process WorldApart -ErrorAction SilentlyContinue) { throw '请先正常退出游戏。' }
 $plugin = Join-Path $game 'BepInEx/plugins/A1IndexTTSMod/A1IndexTTSMod.dll'
-if (-not (Test-Path -LiteralPath $plugin) -or [Reflection.AssemblyName]::GetAssemblyName($plugin).Version -lt [Version]'0.7.7.0') { throw '请先安装 0.7.7 或以上版本主程序。' }
+if (-not (Test-Path -LiteralPath $plugin) -or [Reflection.AssemblyName]::GetAssemblyName($plugin).Version -lt [Version]'0.7.8.0') { throw '请先安装 0.7.8 或以上版本主程序。' }
 $files = Get-Content (Join-Path $PSScriptRoot 'files.json') -Raw | ConvertFrom-Json
 foreach ($file in $files) {
     $source = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot $file.path))
@@ -94,6 +97,9 @@ Write-Host 'ASR 可选包安装完成，下次启动游戏会自动检测并预�
 "ASR 可选包 $version / $Provider。先升级主程序，再关闭游戏安装此包。DirectML 固定 14M，适用于 AMD/Intel DirectX 12 显卡；NVIDIA 推荐 CUDA 包。未安装时不显示麦克风和语音输入页。不同运行库切换需要重启游戏。热词文件已有修改会保留。" | Set-Content (Join-Path $stage '说明.txt') -Encoding utf8
 if ($Provider -eq 'CUDA') {
     Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'Install-ASR.ps1') -Destination (Join-Path $stage 'Download-AsrModel.ps1')
+    Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'Install-AsrPunctuation.ps1') -Destination $stage
+    New-Item -ItemType Directory -Path (Join-Path $stage 'licenses') -Force | Out-Null
+    Copy-Item -LiteralPath (Join-Path $project 'licenses/asr-punctuation') -Destination (Join-Path $stage 'licenses') -Recurse
     [IO.File]::WriteAllText((Join-Path $stage '下载160M模型.bat'), "@echo off`r`nset /p game=请输入游戏文件夹路径: `r`npowershell -NoProfile -ExecutionPolicy Bypass -File `"%~dp0Download-AsrModel.ps1`" -GameRoot `"%game%`" -Profile accurate160m -Provider CUDA`r`npause`r`n", [Text.Encoding]::GetEncoding(936))
 }
 $sevenZip = 'C:\Program Files\7-Zip\7z.exe'

@@ -1179,5 +1179,5 @@ internal static class PluginInfo
 {
     public const string Guid = "org.a1indextts.mod";
     public const string Name = "A1-TTS-Mod";
-    public const string Version = "0.7.7";
+    public const string Version = "0.7.8";
 }

@@ -142,4 +142,5 @@ Remove-Item -LiteralPath $temp -Recurse -Force
 if ($Provider -eq 'CUDA') { Remove-Item -LiteralPath $archive,$cudnn -Force -ErrorAction SilentlyContinue }
 Write-Host "ASR model installed at $model"
 Write-Host "sherpa-onnx 1.13.8 $Provider runtime installed at $runtime"
+& (Join-Path $PSScriptRoot 'Install-AsrPunctuation.ps1') -GameRoot $GameRoot
 if ($Provider -eq 'CUDA') { Write-Host 'The NVIDIA driver and CUDA 12.x runtime must be available on this PC; cuDNN 9.14 CUDA 12 DLLs were installed app-local.' }

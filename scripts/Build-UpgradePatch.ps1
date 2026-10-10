@@ -184,6 +184,19 @@ A1 CosyVoice NPC 语音 MOD 升级补丁：$BasePackageName -> $toVersion
     if ($legacyPayload) {
         $instructions += "`r`n从早期版本升级的此包额外包含 NAudio.WinMM.dll 和 audiocpp_server-vulkan.exe；独立 Vulkan exe 不覆盖 Nvidia 服务端。`r`n"
     }
+    if ([Version]($versionMatch.Groups[1].Value) -ge [Version]'0.7.8') {
+        $instructions = @"
+A1 CosyVoice NPC 语音 MOD：$BasePackageName -> $toVersion
+
+先正常退出游戏并等待 Steam 云同步完成，完整解压，双击“安装补丁.bat”，输入 WorldApart.exe 的路径或游戏文件夹。此补丁只接受已安装的 $FromVersion（程序集 $fromAssemblyVersion）。安装器校验所有文件并备份被替换文件，保留配置、声学模型、CosyVoice GGUF 和参考音。
+
+0.7.8 保留 14M / 160M 及现有显卡路由，取消停止／发送前整段音频二次识别，只保留流式尾部收尾。自动标点由独立共享 INT8 文本模型提供，不改识别字词；直接点发送会结束录音并发送一次。标点超时或缺包仍可输入发送。
+
+主程序补丁不含标点权重、ASR 声学模型或 GPU 运行库。已有 0.7.7 ASR 用户升级后，再安装 A1IndexTTSMod-v0.7.8-ASR-Punctuation-win64.zip，无需重新下载声学模型或 v3 原生库。没有 ASR 的用户可另装新版 CUDA 14M 或 DirectML 14M 可选包，新包包含共享标点模型。NVIDIA 使用 CUDA；AMD/Intel DirectML 固定 14M。缺少 ASR 包时隐藏麦克风及第四页。
+
+安装后下一次从 Steam 启动游戏生效，加载日志应显示 Loading [A1-TTS-Mod $($versionMatch.Groups[1].Value)]。回退时关闭游戏，将安装器报告的备份文件复制回原位置。此变更通过离线功能与原生标点接口检查，未启动游戏，不构成游戏内验收或识别正确率保证。
+"@
+    }
     [IO.File]::WriteAllText((Join-Path $stage '升级说明.txt'), $instructions, [Text.UTF8Encoding]::new($true))
 
     $manifest = @($patchFiles | ForEach-Object {

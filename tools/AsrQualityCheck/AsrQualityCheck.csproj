@@ -11,6 +11,7 @@
     <Compile Include="../../src/AsrDecoderSession.cs" Link="AsrDecoderSession.cs" />
     <Compile Include="../../src/AsrFinalSelection.cs" Link="AsrFinalSelection.cs" />
     <Compile Include="../../src/StreamingAsr.cs" Link="StreamingAsr.cs" />
+    <Compile Include="../../src/AsrPunctuation.cs" Link="AsrPunctuation.cs" />
     <PackageReference Include="org.k2fsa.sherpa.onnx" Version="1.13.8" />
     <PackageReference Include="NAudio.Wasapi" Version="2.3.0" />
     <PackageReference Include="NAudio.WinMM" Version="2.3.0" />
