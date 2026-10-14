@@ -33,6 +33,8 @@ internal sealed class SpeechPanelUi : MonoBehaviour
     private Rect _scroll;
     private Vector2 _scrollPosition;
     private Vector2 _dataScrollPosition;
+    private Vector2 _diagnosticsScrollPosition;
+    private bool _diagnosticsTechnicalExpanded;
     private bool _positioned;
     private bool _dragging;
     private bool _pointerCaptured;
@@ -312,6 +314,8 @@ internal sealed class SpeechPanelUi : MonoBehaviour
             GUI.matrix = priorMatrix;
         }
     }
+
+    private void OnApplicationQuit() => TtsDiagnostics.MarkNormalExit();
 
     private void LateUpdate() => RefreshEntryPosition();
 
@@ -851,14 +855,23 @@ internal sealed class SpeechPanelUi : MonoBehaviour
         if (GUILayout.Toggle(_tab == 2, "本轮数据", _tabStyle)) SetTab(2);
         if (!StreamingAsr.Available && _tab == 3) SetTab(0);
         if (StreamingAsr.Available && GUILayout.Toggle(_tab == 3, "语音输入", _tabStyle)) SetTab(3);
+        if (GUILayout.Toggle(_tab == 4, "诊断", _tabStyle)) SetTab(4);
         GUILayout.EndHorizontal();
         GUILayout.Space(12);
-        switch (_tab)
+        if (_tab == 4)
+        {
+            _diagnosticsScrollPosition = GUILayout.BeginScrollView(_diagnosticsScrollPosition, false, true,
+                GUILayout.ExpandHeight(true), GUILayout.ExpandWidth(true));
+            DrawDiagnosticsTab();
+            GUILayout.EndScrollView();
+        }
+        else switch (_tab)
         {
             case 0: DrawVoiceTab(); break;
             case 1: DrawRecentTab(); break;
             case 2: DrawDataTab(); break;
-            default: DrawAsrTab(); break;
+            case 3: DrawAsrTab(); break;
+            default: break;
         }
         if (!string.IsNullOrWhiteSpace(_uiMessage))
         {
@@ -1260,6 +1273,92 @@ internal sealed class SpeechPanelUi : MonoBehaviour
         if (_dataLayer == 3 && !string.IsNullOrWhiteSpace(turn.TtsInstruction))
             GUILayout.Label("实际 instruction：" + turn.TtsInstruction, _bodyStyle);
         DrawDataActions(turn);
+    }
+
+    private void DrawDiagnosticsTab()
+    {
+        var diagnostics = TtsDiagnostics.Snapshot();
+        long Count(string name) => diagnostics.Counts.TryGetValue(name, out var value) ? value : 0;
+        string LocalTime(DateTimeOffset? value) => value?.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss") ?? "暂无";
+
+        GUILayout.Label("TTS 运行诊断", _sectionStyle);
+        GUILayout.Label("只汇总本机阶段计数、进程退出证据与错误摘要；不会记录完整台词或自动发起请求。", _mutedStyle);
+        GUILayout.Space(6);
+        GUILayout.Label("插件加载 · " + (diagnostics.PluginLoaded ? "已加载 " + PluginInfo.Version : "未确认"), _bodyStyle);
+        GUILayout.Label("游戏兼容性 · " + diagnostics.CompatibilityStatus, _bodyStyle);
+        GUILayout.Label("必要回复钩子 · " + diagnostics.RequiredHookStatus +
+            $"\n已安装 {diagnostics.RequiredHookInstalled} · 实际触发 {diagnostics.RequiredHookFired}", _bodyStyle);
+        if (diagnostics.RequiredHookInstalled == 0)
+            GUILayout.Label("必要钩子不可用时，插件状态会显示失败，NPC 游戏对话仍保持原样。", _mutedStyle);
+        else if (diagnostics.RequiredHookFired == 0)
+            GUILayout.Label("本会话尚未收到新的 NPC 回复；这属于等待状态，不是故障。", _mutedStyle);
+        GUILayout.Label("可选提示增强 · " + diagnostics.OptionalPromptHookStatus, _mutedStyle);
+        GUILayout.Label("语音服务 · " + SpeechMvp.State + " · " + TtsDiagnostics.Sanitize(SpeechMvp.StatusMessage, 180), _bodyStyle);
+        GUILayout.Label("配置 · " + diagnostics.TtsSettingsSummary, _mutedStyle);
+
+        GUILayout.Space(8);
+        GUILayout.Label("本次会话阶段计数", _sectionStyle);
+        GUILayout.Label($"NPC回复捕获 {Count("capture.received")} · 正文解析 {Count("capture.parsed")} · 过滤 {Count("capture.filtered")}", _bodyStyle);
+        GUILayout.Label($"朗读提交 {Count("reply.received")} · 合成开始 {Count("synthesis.started")} · 成功 {Count("synthesis.succeeded")} · 失败 {Count("synthesis.failed")}", _bodyStyle);
+        GUILayout.Label($"播放开始 {Count("playback.started")} · 播放失败 {Count("playback.failed")} · 服务进程退出 {Count("service_process.failed")} · 服务失联 {Count("service_health.failed")}", _bodyStyle);
+        GUILayout.Label($"最近阶段 · {(diagnostics.LastEvent == null ? "尚无新事件" : diagnostics.LastEvent + "." + diagnostics.LastEventOutcome + " · " + LocalTime(diagnostics.LastEventUtc) + (string.IsNullOrWhiteSpace(diagnostics.LastEventContext) ? "" : " · " + diagnostics.LastEventContext))}", _mutedStyle);
+        GUILayout.Label("最近成功 · " + LocalTime(diagnostics.LastSuccessUtc) +
+            (string.IsNullOrWhiteSpace(diagnostics.LastSuccessStage) ? "" : " · " + diagnostics.LastSuccessStage), _mutedStyle);
+
+        if (diagnostics.PreviousRunEndedUnexpectedly)
+        {
+            GUILayout.Space(6);
+            GUILayout.Label("上次会话未正常结束 · " + (diagnostics.PreviousRunSummary ?? "原因未确认") +
+                "。这不能单独证明是插件导致闪退；请结合最近错误和 Windows 事件记录判断。", _mutedStyle);
+        }
+        if (diagnostics.LastFailure != null)
+        {
+            var failure = diagnostics.LastFailure;
+            GUILayout.Space(6);
+            GUILayout.Label("最近错误 · " + LocalTime(failure.LastSeenUtc) + $" · {failure.Stage} · {failure.ExceptionType} · {failure.Occurrences} 次", _sectionStyle);
+            GUILayout.Label(failure.Summary + (string.IsNullOrWhiteSpace(failure.Context) ? "" : "\n" + failure.Context), _bodyStyle);
+        }
+
+        GUILayout.Space(8);
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button("复制诊断报告", _buttonStyle))
+        {
+            GUIUtility.systemCopyBuffer = TtsDiagnostics.BuildReport();
+            _uiMessage = "已复制脱敏的本机诊断报告；报告不含完整台词。";
+        }
+        if (GUILayout.Button("导出诊断报告", _buttonStyle))
+        {
+            var reportPath = TtsDiagnostics.ExportReport();
+            _uiMessage = reportPath == null ? "导出失败；请检查插件目录权限。" : "报告已保存到本机：" + reportPath;
+        }
+        GUILayout.EndHorizontal();
+
+        _diagnosticsTechnicalExpanded = GUILayout.Toggle(_diagnosticsTechnicalExpanded, "展开技术详情", _tabStyle);
+        if (!_diagnosticsTechnicalExpanded) return;
+        var fingerprint = diagnostics.Fingerprint;
+        GUILayout.Label("会话 · " + diagnostics.SessionId + " · 开始于 " + LocalTime(diagnostics.SessionStartedUtc), _mutedStyle);
+        if (fingerprint != null)
+        {
+            GUILayout.Label("Game GUID · " + fingerprint.BuildGuid +
+                "\nMetadata SHA-256 · " + fingerprint.MetadataSha256 +
+                "\nInterop Game.dll SHA-256 · " + fingerprint.InteropGameSha256 +
+                "\n插件 SHA-256 · " + fingerprint.PluginSha256 +
+                "\n回复捕获目标 · " + fingerprint.CaptureSignature +
+                "\n提示增强目标 · " + fingerprint.PromptEnhancementStatus, _mutedStyle);
+        }
+        GUILayout.Label("钩子状态 · " + diagnostics.RequiredHookStatus + "\n可选钩子状态 · " + diagnostics.OptionalPromptHookStatus, _mutedStyle);
+        if (diagnostics.LastFailure?.StackTrace is { Length: > 0 } stack)
+        {
+            GUILayout.Label("最近异常调用栈", _sectionStyle);
+            GUILayout.TextArea(stack, _bodyStyle, GUILayout.MinHeight(96), GUILayout.ExpandWidth(true));
+        }
+        foreach (var issue in diagnostics.RecentIssues.Reverse().Take(8))
+        {
+            GUILayout.BeginVertical(_cardStyle);
+            GUILayout.Label($"{LocalTime(issue.LastSeenUtc)} · {issue.Stage} · {issue.ExceptionType} · {issue.Occurrences} 次", _mutedStyle);
+            GUILayout.Label(issue.Summary + (string.IsNullOrWhiteSpace(issue.Context) ? "" : "\n" + issue.Context), _bodyStyle);
+            GUILayout.EndVertical();
+        }
     }
 
     private Vector2 _rawReplyScrollPosition;

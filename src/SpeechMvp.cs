@@ -137,6 +137,7 @@ internal static class SpeechMvp
         }
         _endpoint = endpoint;
         _settings = new TtsSettings(_backend, endpoint, _referenceId, _audioCppModelId, _timeoutSeconds, _autoStartAudioCpp, _precision, selectedGpuBackend, gpuDevice.Value);
+        TtsDiagnostics.SetTtsSettingsSummary($"backend={_backend}; endpoint={endpoint.Host}:{endpoint.Port}; model={_audioCppModelId}; reference={_referenceId}; autoStart={_autoStartAudioCpp}");
         _audioDir = Path.Combine(Paths.GameRootPath, "A1IndexTTSMod", ".state", "stage3-audio");
         _emotionMapPath = Path.Combine(Paths.GameRootPath, "A1IndexTTSMod", "config", "emotions.json");
         Directory.CreateDirectory(_audioDir);
@@ -186,6 +187,7 @@ internal static class SpeechMvp
                 if (_audioCpp)
                     await AudioCppLifecycle.EnsureStartedAsync(_log!, settings.Endpoint, settings.Backend, settings.ModelId, settings.AutoStart, settings.Precision, settings.GpuBackend, settings.GpuDevice, token).ConfigureAwait(false);
                 SetTransitionState(transition, FeaturePluginState.Running, _audioCpp ? AudioCppLifecycle.StatusMessage : "TTS feature enabled");
+                TtsDiagnostics.Record("service", "ready", $"backend={settings.Backend}; endpoint={settings.Endpoint.Host}:{settings.Endpoint.Port}; model={settings.ModelId}");
                 _log?.LogInfo("Stage3 MVP state=running: TTS endpoint ready or available.");
             }
             else
@@ -198,8 +200,9 @@ internal static class SpeechMvp
         catch (OperationCanceledException) { }
         catch (Exception e)
         {
-            SetTransitionState(transition, FeaturePluginState.Failed, e.Message);
-            _log?.LogWarning($"Stage3 MVP state=failed: {e.GetType().Name}: {e.Message}");
+            SetTransitionState(transition, FeaturePluginState.Failed, TtsDiagnostics.Sanitize(e.Message, 300));
+            TtsDiagnostics.Record("service", "failed", "TTS 服务或模型启动失败", e);
+            _log?.LogWarning($"Stage3 MVP state=failed: {e.GetType().Name}: {TtsDiagnostics.Sanitize(e.Message, 300)}");
         }
     }
 
@@ -209,7 +212,29 @@ internal static class SpeechMvp
         {
             if (transition != _transition) return;
             _state = state;
-            _statusMessage = message;
+            _statusMessage = TtsDiagnostics.Sanitize(message, 300);
+        }
+    }
+
+    internal static void MarkServiceUnavailable(string message)
+    {
+        lock (Gate)
+        {
+            if (!_enabled) return;
+            ++_transition; // Invalidate a startup transition that could otherwise overwrite the failure as Running.
+            _state = FeaturePluginState.Failed;
+            _statusMessage = TtsDiagnostics.Sanitize(message, 300);
+        }
+    }
+
+    internal static void MarkServiceRecovered(string message)
+    {
+        lock (Gate)
+        {
+            if (!_enabled) return;
+            ++_transition;
+            _state = FeaturePluginState.Running;
+            _statusMessage = TtsDiagnostics.Sanitize(message, 300);
         }
     }
 
@@ -524,8 +549,11 @@ internal static class SpeechMvp
         }
         catch (Exception e)
         {
-            SpeechPanelData.UpdateTtsStatus(request.DisplayIdentity, "合成或播放失败", e.Message);
-            _log?.LogWarning($"Stage3 MVP TTS failed generation={generation}: {e.GetType().Name}: {e.Message}");
+            var requestFailure = _audioCpp && e is HttpRequestException;
+            var failureSummary = requestFailure ? AudioCppLifecycle.DescribeRequestFailure(e) : TtsDiagnostics.Sanitize(e.Message, 300);
+            SpeechPanelData.UpdateTtsStatus(request.DisplayIdentity, "合成或播放失败", failureSummary);
+            TtsDiagnostics.Record("synthesis", "failed", $"generation={generation}; backend={_backend}; NPC={npcKey}; {failureSummary}", e);
+            _log?.LogWarning($"Stage3 MVP TTS failed generation={generation}: {e.GetType().Name}: {failureSummary}");
         }
         finally
         {

@@ -12,7 +12,9 @@ param(
     [int] $Port = 8892,
     [bool] $Prewarm = $true,
     [bool] $Visible = $true,
-    [bool] $UseCurrentConsole = $false
+    [bool] $UseCurrentConsole = $false,
+    [string] $StandardOutputLogPath = '',
+    [string] $StandardErrorLogPath = ''
 )
 
 $ErrorActionPreference = 'Stop'
@@ -61,6 +63,9 @@ $config = [ordered]@{
 }
 $config | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $configPath -Encoding utf8
 $arguments = '--config "' + $configPath + '" --log'
+$stdoutPath = if ([string]::IsNullOrWhiteSpace($StandardOutputLogPath)) { Join-Path $state 'server.stdout.log' } else { [IO.Path]::GetFullPath($StandardOutputLogPath) }
+$stderrPath = if ([string]::IsNullOrWhiteSpace($StandardErrorLogPath)) { Join-Path $state 'server.stderr.log' } else { [IO.Path]::GetFullPath($StandardErrorLogPath) }
+New-Item -ItemType Directory -Path (Split-Path -Parent $stdoutPath), (Split-Path -Parent $stderrPath) -Force | Out-Null
 if ($UseCurrentConsole) {
     $process = Start-Process -FilePath $server -ArgumentList $arguments -WorkingDirectory $runtime `
         -NoNewWindow -PassThru
@@ -145,8 +150,8 @@ namespace A1AudioCpp {
     }
 } else {
     $process = Start-Process -FilePath $server -ArgumentList $arguments -WorkingDirectory $runtime `
-        -RedirectStandardOutput (Join-Path $state 'server.stdout.log') `
-        -RedirectStandardError (Join-Path $state 'server.stderr.log') `
+        -RedirectStandardOutput $stdoutPath `
+        -RedirectStandardError $stderrPath `
         -WindowStyle Hidden -PassThru
 }
 $process.Id | Set-Content -LiteralPath $pidFile
@@ -155,7 +160,7 @@ $health = "http://127.0.0.1:$Port/health"
 $ready = $false
 for ($i = 0; $i -lt 90; $i++) {
     if ($process.HasExited) {
-        throw "audio.cpp exited during startup. Check its visible console or choose an unused local port (current: $Port)."
+        throw "audio.cpp exited during startup (PID=$($process.Id) exit=$($process.ExitCode)). Check the captured service logs or choose an unused local port (current: $Port)."
     }
     try {
         $response = Invoke-RestMethod -Uri $health -TimeoutSec 2
@@ -163,7 +168,7 @@ for ($i = 0; $i -lt 90; $i++) {
     } catch { }
     Start-Sleep -Seconds 1
 }
-if (-not $ready) { throw "audio.cpp did not become ready at $health. See $state\server.stderr.log" }
+if (-not $ready) { throw "audio.cpp did not become ready at $health. See $stderrPath" }
 
 if ($Prewarm) {
     $warmupText = [string]::Concat([char]0x4F60, [char]0x597D, [char]0x3002)

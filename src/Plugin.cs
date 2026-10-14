@@ -19,6 +19,7 @@ public sealed class Plugin : BasePlugin, IManagedFeaturePlugin
 {
     internal static Plugin? Instance { get; private set; }
     private Harmony? _harmony;
+    private TtsGameCompatibilityInspection? _compatibility;
     private ConfigEntry<bool>? _managedEnabled;
     private ConfigEntry<bool>? _autoRead;
     private ConfigEntry<int>? _panelVolume;
@@ -30,8 +31,8 @@ public sealed class Plugin : BasePlugin, IManagedFeaturePlugin
     public string Description => "朗读游戏内 NPC AI 回复";
     public string FeatureVersion => PluginInfo.Version;
     public bool DesiredEnabled => _managedEnabled?.Value ?? false;
-    public FeaturePluginState State => SpeechMvp.State;
-    public string StatusMessage => SpeechMvp.StatusMessage;
+    public FeaturePluginState State => TtsDiagnostics.RequiredHookAvailable ? SpeechMvp.State : FeaturePluginState.Failed;
+    public string StatusMessage => TtsDiagnostics.RequiredHookAvailable ? SpeechMvp.StatusMessage : TtsDiagnostics.RequiredHookStatus;
 
     public void SetEnabled(bool enabled)
     {
@@ -65,6 +66,10 @@ public sealed class Plugin : BasePlugin, IManagedFeaturePlugin
         Instance = this;
         try
         {
+            _compatibility = TtsGameCompatibility.Inspect(Paths.GameRootPath, Assembly.GetExecutingAssembly().Location);
+            TtsDiagnostics.StartSession(Paths.GameRootPath, _compatibility.Status, _compatibility.Fingerprint,
+                message => Log.LogInfo(message), message => Log.LogWarning(message));
+            TtsDiagnostics.Record("compatibility", _compatibility.ReplyHook.IsResolved ? "ready" : "failed", _compatibility.Status);
             var diagnostics = Config.Bind("Stage2A", "Enabled", false,
                 "Opt in to local diagnostic dialogue capture. Leave disabled for normal play.");
             var capture = Config.Bind("Stage2A", "CaptureFullPrompt", false,
@@ -124,8 +129,7 @@ public sealed class Plugin : BasePlugin, IManagedFeaturePlugin
             PatchUiInputGuards();
             PatchExact("Game", "Game.Model.NpcModel", "IsRepeatedChatReply", new[] { "System.String", "System.String" },
                 "OnPreGameReplyNormalization", "OnPreGameReplyNormalizationPostfix");
-            PatchExact("Game", "Game.Model.NpcModel", "AddNpcChatMessage", new[] { "System.String", "System.String" },
-                "OnNpcDisplayPrefix", "OnNpcDisplay", "OnNpcDisplayFinalizer");
+            PatchNpcReplyCapture();
             PatchSingleParameter("Game", "Game.NpcPersuadePanel", "OnReceivePersuadeResponse", "Game.Model.ChatMessage", "OnPersuadeResponsePrefix", "OnPersuadeResponse");
             PatchSingleParameter("Game", "Game.NpcPersuadePanel", "OnReceivePersuadeResponseNpc", "Game.Model.ChatMessage", "OnPersuadeResponsePrefix", "OnPersuadeResponse");
             if (diagnostics.Value)
@@ -135,13 +139,75 @@ public sealed class Plugin : BasePlugin, IManagedFeaturePlugin
             }
             Log.LogInfo("Stage2A diagnostic capture is " + (diagnostics.Value ? (capture.Value ? "ON (full prompt)" : "ON") : "OFF"));
         }
-        catch (Exception e) { Log.LogError("Stage2A initialization failed safely: " + e.GetType().Name + ": " + e.Message); }
+        catch (Exception e)
+        {
+            TtsDiagnostics.Record("plugin", "failed", "插件初始化失败", e);
+            Log.LogError("Plugin initialization failed safely: " + e.GetType().Name + ": " + TtsDiagnostics.Sanitize(e.Message));
+        }
     }
 
     public override bool Unload()
     {
+        TtsDiagnostics.MarkNormalExit();
         StreamingAsr.Shutdown();
         return base.Unload();
+    }
+
+    private void PatchNpcReplyCapture()
+    {
+        const string typeName = "Game.Model.NpcModel";
+        var type = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(assembly => assembly.GetName().Name == "Game")?.GetType(typeName);
+        var methods = type?.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+            ?? Array.Empty<MethodInfo>();
+        var resolution = NpcReplyHookCompatibility.Resolve(methods);
+        if (_compatibility != null)
+            TtsDiagnostics.SetCompatibility(_compatibility.Status, _compatibility.Fingerprint with
+            {
+                CaptureSignature = resolution.IsResolved ? NpcReplyHookCompatibility.FormatSignature(resolution.Target!) : string.Join(";", resolution.ObservedSignatures)
+            });
+        if (!resolution.IsResolved)
+        {
+            var detail = resolution.ObservedSignatures.Count == 0 ? "未发现 AddNpcChatMessage" : string.Join("; ", resolution.ObservedSignatures);
+            var status = resolution.Status == "ambiguous" ? "必要回复捕获不可用：签名歧义" : "必要回复捕获不可用：签名不受支持";
+            TtsDiagnostics.SetRequiredHook(0, status + "；" + detail);
+            Log.LogWarning($"Required NPC reply capture hook not installed: {status}; observed=[{detail}]. TTS reply capture remains degraded; game dialogue is unchanged.");
+            return;
+        }
+
+        var prefixName = resolution.Abi == NpcReplyCaptureAbi.PromptTurnThreeArguments
+            ? nameof(Probe.OnNpcDisplayPrefixWithPromptTurn)
+            : nameof(Probe.OnNpcDisplayPrefixLegacy);
+        var prefix = typeof(Probe).GetMethod(prefixName, BindingFlags.Public | BindingFlags.Static);
+        var postfix = typeof(Probe).GetMethod(nameof(Probe.OnNpcDisplay), BindingFlags.Public | BindingFlags.Static);
+        var finalizer = typeof(Probe).GetMethod(nameof(Probe.OnNpcDisplayFinalizer), BindingFlags.Public | BindingFlags.Static);
+        if (prefix == null || postfix == null || finalizer == null)
+        {
+            TtsDiagnostics.SetRequiredHook(0, "必要回复捕获不可用：插件回调缺失");
+            Log.LogError("Required NPC reply capture hook not installed: a plugin callback is missing.");
+            return;
+        }
+
+        try
+        {
+            _harmony!.Patch(resolution.Target!, prefix: new HarmonyMethod(prefix), postfix: new HarmonyMethod(postfix),
+                finalizer: new HarmonyMethod(finalizer));
+        }
+        catch (Exception exception)
+        {
+            TtsDiagnostics.SetRequiredHook(0, "必要回复捕获不可用：Harmony 安装失败");
+            TtsDiagnostics.Record("capture_hook_install", "failed", "AddNpcChatMessage Harmony patch failed", exception);
+            try { Log.LogWarning("Required NPC reply capture hook installation failed safely: " + TtsDiagnostics.Sanitize(exception.Message)); } catch { }
+            return;
+        }
+        var signature = NpcReplyHookCompatibility.FormatSignature(resolution.Target!);
+        var hookStatus = resolution.Status == "supported_with_unknown_overloads"
+            ? $"已安装已知 ABI {resolution.Abi}; 忽略 {resolution.IgnoredOverloads.Count} 个未知重载"
+            : $"已安装已知 ABI {resolution.Abi}";
+        TtsDiagnostics.SetRequiredHook(1, hookStatus + "；等待真实回复触发");
+        TtsDiagnostics.Record("compatibility", "ready", signature);
+        Log.LogInfo($"Hooked required NPC reply capture ABI={resolution.Abi}: {signature}; installed=1, fired=0.");
+        if (resolution.IgnoredOverloads.Count > 0)
+            Log.LogWarning("NPC reply hook ignored unknown overload(s): " + string.Join("; ", resolution.IgnoredOverloads));
     }
 
     private void Patch(string assembly, string type, string method, string callback, bool prefix=false)
@@ -272,28 +338,42 @@ public sealed class Plugin : BasePlugin, IManagedFeaturePlugin
 
     private void PatchCompleteBudgeted()
     {
-        const string assembly = "Game";
-        const string type = "Game.Model.AinpcRuntime";
-        const string method = "CompleteBudgeted";
-        var targetType = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(a => a.GetName().Name == assembly)?.GetType(type);
-        var target = targetType?.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static)
-            .SingleOrDefault(candidate =>
+        var type = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(assembly => assembly.GetName().Name == "Game")?.GetType("Game.Model.AinpcRuntime");
+        var methods = type?.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+            ?? Array.Empty<MethodInfo>();
+        var resolution = PromptEnhancementHookCompatibility.Resolve(methods);
+        if (!resolution.IsResolved)
+        {
+            var status = resolution.Status switch
             {
-                if (candidate.Name != method) return false;
-                var p = candidate.GetParameters();
-                return p.Length == 10 &&
-                    p[0].ParameterType.FullName == "Game.Model.NpcModel" &&
-                    p[1].ParameterType.FullName == "JNGame.Ainpc.Prompt.ModeParams" &&
-                    p[2].ParameterType == typeof(string) && p[3].ParameterType == typeof(string) && p[4].ParameterType == typeof(string) &&
-                    p[5].ParameterType.IsGenericType && p[5].ParameterType.GetGenericTypeDefinition().FullName == "Il2CppSystem.Collections.Generic.IReadOnlyList`1" &&
-                    p[6].ParameterType == typeof(string) && p[7].ParameterType == typeof(string) &&
-                    p[8].ParameterType.FullName == "JNGame.Ainpc.Llm.LlmCallOptions" &&
-                    p[9].ParameterType.FullName == "JNGame.Ainpc.Prompt.PromptDocument";
-            });
-        if (target == null) { Log.LogWarning("Prompt enhancement hook not found with exact CompleteBudgeted signature; feature remains off for LLM requests."); return; }
-        var prefix = typeof(Probe).GetMethod(nameof(Probe.OnCompleteBudgetedPrefix), BindingFlags.Public | BindingFlags.Static)!;
-        _harmony!.Patch(target, prefix: new HarmonyMethod(prefix));
-        Log.LogInfo("Hooked exact Game.Model.AinpcRuntime.CompleteBudgeted signature for actual-reply prompt/schema extension.");
+                "missing" => "可选提示增强钩子未找到",
+                "ambiguous" => "可选提示增强钩子存在歧义",
+                _ => "可选提示增强钩子签名尚未支持"
+            };
+            TtsDiagnostics.SetOptionalPromptHook(status);
+            Log.LogWarning(status + "; only the optional voice_style prompt extension is off. Observed=[" + string.Join("; ", resolution.ObservedSignatures) + "]");
+            return;
+        }
+        var prefixName = resolution.Abi == PromptEnhancementAbi.ContextElevenArguments
+            ? nameof(Probe.OnCompleteBudgetedContextPrefix)
+            : nameof(Probe.OnCompleteBudgetedLegacyPrefix);
+        var prefix = typeof(Probe).GetMethod(prefixName, BindingFlags.Public | BindingFlags.Static);
+        if (prefix == null)
+        {
+            TtsDiagnostics.SetOptionalPromptHook("可选提示增强钩子回调缺失");
+            Log.LogWarning("Prompt enhancement callback missing; feature remains off for LLM requests.");
+            return;
+        }
+        try { _harmony!.Patch(resolution.Target!, prefix: new HarmonyMethod(prefix)); }
+        catch (Exception exception)
+        {
+            TtsDiagnostics.SetOptionalPromptHook("可选提示增强钩子安装失败；功能保持关闭");
+            TtsDiagnostics.Record("prompt_hook_install", "failed", "CompleteBudgeted Harmony patch failed", exception);
+            Log.LogWarning("Optional prompt enhancement observer failed open: " + TtsDiagnostics.Sanitize(exception.Message));
+            return;
+        }
+        TtsDiagnostics.SetOptionalPromptHook("已安装 " + resolution.Abi);
+        Log.LogInfo($"Hooked optional CompleteBudgeted prompt enhancement ABI={resolution.Abi}: {NpcReplyHookCompatibility.FormatSignature(resolution.Target!)}.");
     }
 }
 
@@ -354,17 +434,38 @@ internal static class Probe
     public static void OnUiEventSystemPostfix(UnityEngine.EventSystems.EventSystem __instance, bool __state)
         => __instance.sendNavigationEvents = __state;
 
-    public static void OnCompleteBudgetedPrefix(object[] __args, ref string __6,
-        ref JNGame.Ainpc.Llm.LlmCallOptions __8, ref PromptDocument __9)
+    public static void OnCompleteBudgetedLegacyPrefix(object[] __args, ref string __6,
+        ref JNGame.Ainpc.Llm.LlmCallOptions __8, ref PromptDocument __9) =>
+        SafeCompleteBudgetedPrefix(__args, ref __6, ref __8, ref __9);
+
+    public static void OnCompleteBudgetedContextPrefix(object[] __args, ref string __7,
+        ref JNGame.Ainpc.Llm.LlmCallOptions __9, ref PromptDocument __10) =>
+        SafeCompleteBudgetedPrefix(__args, ref __7, ref __9, ref __10);
+
+    private static void SafeCompleteBudgetedPrefix(object[] args, ref string tail,
+        ref JNGame.Ainpc.Llm.LlmCallOptions options, ref PromptDocument document)
     {
-        var tail = __6;
-        var options = __8;
-        var sourceDocument = __9;
-        if (__args.Length == 10)
+        try { OnCompleteBudgetedPrefixCore(args, ref tail, ref options, ref document); }
+        catch (Exception exception)
+        {
+            TtsDiagnostics.Record("prompt_enhancement", "failed", "CompleteBudgeted prefix observation failed open", exception);
+            try { _speechLog?.LogWarning("Optional prompt enhancement observer failed open: " + TtsDiagnostics.Sanitize(exception.Message)); } catch { }
+        }
+    }
+
+    private static void OnCompleteBudgetedPrefixCore(object[] __args, ref string tailArgument,
+        ref JNGame.Ainpc.Llm.LlmCallOptions optionsArgument, ref PromptDocument documentArgument)
+    {
+        var tail = tailArgument;
+        var options = optionsArgument;
+        var sourceDocument = documentArgument;
+        var supportedArguments = __args.Length is 10 or 11;
+        var inputIndex = __args.Length == 11 ? 8 : 7;
+        if (supportedArguments)
         {
             var purposeObservation = __args[2]?.ToString() ?? "null";
             var sectionSummary = DescribePromptDocument(sourceDocument);
-            _speechLog?.LogInfo($"Stage3 CompleteBudgeted observed purpose={purposeObservation} tailChars={tail.Length} inputChars={(__args[7] as string)?.Length ?? -1} doc={sectionSummary}");
+            _speechLog?.LogInfo($"Stage3 CompleteBudgeted observed purpose={purposeObservation} tailChars={tail.Length} inputChars={(__args[inputIndex] as string)?.Length ?? -1} doc={sectionSummary}");
             if (_captureEnabled && _full)
             {
                 var formatValue = options.ResponseFormat;
@@ -379,7 +480,7 @@ internal static class Probe
                     responseFormat = Limit(format), responseFormatSha256 = Hash(format), doc = sectionSummary });
             }
         }
-        if (__args.Length == 10 && string.Equals(__args[2] as string, "ActualReply", StringComparison.OrdinalIgnoreCase) &&
+        if (supportedArguments && string.Equals(__args[2] as string, "ActualReply", StringComparison.OrdinalIgnoreCase) &&
             (!SpeechMvp.IsFeatureEnabled || !(_promptEnhancement?.Value ?? false)))
         {
             string? schema = null;
@@ -388,7 +489,7 @@ internal static class Probe
             SpeechPanelData.RecordPromptSnapshot(false, schema, null,
                 !SpeechMvp.IsFeatureEnabled ? "功能总开关关闭，未向本轮请求添加语音字段" : "提示增强已关闭，本轮使用游戏原始提示和 Schema");
         }
-        if (!SpeechMvp.IsFeatureEnabled || !(_promptEnhancement?.Value ?? false) || __args.Length != 10) return;
+        if (!SpeechMvp.IsFeatureEnabled || !(_promptEnhancement?.Value ?? false) || !supportedArguments) return;
         var purpose = __args[2] as string;
         if (!string.Equals(purpose, "ActualReply", StringComparison.OrdinalIgnoreCase))
         {
@@ -454,9 +555,9 @@ internal static class Probe
             // Commit the related prompt, response format, and output-contract document together.
             if (requestOptions is not JNGame.Ainpc.Llm.LlmCallOptions scopedOptions)
                 throw new InvalidOperationException("Request options snapshot has an unexpected runtime type.");
-            __6 = extension.Tail;
-            __8 = scopedOptions;
-            if (hasDocumentContract) __9 = requestDocument!;
+            tailArgument = extension.Tail;
+            optionsArgument = scopedOptions;
+            if (hasDocumentContract) documentArgument = requestDocument!;
             committed = true;
             var hasSchema = !string.IsNullOrEmpty(extension.ResponseFormatJson);
             SpeechPanelData.RecordPromptSnapshot(true, hasSchema ? extension.ResponseFormatJson : null, extension.ContractAddition,
@@ -643,12 +744,15 @@ internal static class Probe
     {
         private int _exited;
         public NpcReplyFields? Reply { get; init; }
+        public string NpcKey { get; init; } = "unknown";
+        public int PromptTurnId { get; init; } = -1;
         public string? GameJson { get; init; }
         public string? RawReplyJson { get; init; }
         public string? PluginRawOutput { get; init; }
         public string VoiceStyleStatus { get; init; } = "unknown";
         public string? VoiceStyleSource { get; init; }
         public string? VoiceStyleFailureReason { get; init; }
+        public bool ParseClassified { get; set; }
         public bool EnteredScope { get; init; }
         public void ExitScope()
         {
@@ -657,24 +761,34 @@ internal static class Probe
         }
     }
 
-    public static void OnNpcDisplayPrefix(object __instance, object[] __args, ref string __0, ref string __1, out NpcDisplayPatchState? __state)
+    public static void OnNpcDisplayPrefixLegacy(object __instance, ref string __0, ref string __1, out NpcDisplayPatchState? __state) =>
+        OnNpcDisplayPrefixCore(__instance, ref __0, ref __1, -1, out __state);
+
+    public static void OnNpcDisplayPrefixWithPromptTurn(object __instance, ref string __0, ref string __1, int __2,
+        out NpcDisplayPatchState? __state) =>
+        OnNpcDisplayPrefixCore(__instance, ref __0, ref __1, __2, out __state);
+
+    private static void OnNpcDisplayPrefixCore(object __instance, ref string messageText, ref string rawReply,
+        int promptTurnId, out NpcDisplayPatchState? __state)
     {
         _npcDisplayScopeDepth++;
-        __state = new NpcDisplayPatchState { EnteredScope = true };
+        var npcKey = NpcId(__instance);
+        __state = new NpcDisplayPatchState { EnteredScope = true, NpcKey = npcKey, PromptTurnId = promptTurnId };
+        TtsDiagnostics.RecordCapture(promptTurnId, npcKey);
         try
         {
-            if (__0 != null)
+            if (messageText != null)
             {
-                var displayEnvelope = StyleEnvelopeCodec.Decode(__0);
-                if (displayEnvelope.Status != "absent") __0 = displayEnvelope.Content;
+                var displayEnvelope = StyleEnvelopeCodec.Decode(messageText);
+                if (displayEnvelope.Status != "absent") messageText = displayEnvelope.Content;
             }
-            var raw = __1;
+            var raw = rawReply;
             if (raw == null) return;
             var separated = NpcReplyPayload.Separate(raw);
             if (separated == null) return;
-            __1 = separated.GameJson;
+            rawReply = separated.GameJson;
             var fields = ExtractNpcReply(separated.GameJson);
-            var pendingStyle = StyleStore.Take(NpcId(__instance), fields?.Content);
+            var pendingStyle = StyleStore.Take(npcKey, fields?.Content);
             var effectiveStyle = separated.VoiceStyle ?? pendingStyle?.Style;
             var originalReply = pendingStyle?.RawReply ?? raw;
             var pluginRawOutput = effectiveStyle == null ? null : NpcReplyPayload.WithVoiceStyle(separated.GameJson, effectiveStyle);
@@ -684,6 +798,8 @@ internal static class Probe
             __state = new NpcDisplayPatchState
             {
                 EnteredScope = true,
+                NpcKey = npcKey,
+                PromptTurnId = promptTurnId,
                 GameJson = separated.GameJson,
                 RawReplyJson = originalReply,
                 PluginRawOutput = pluginRawOutput,
@@ -693,7 +809,11 @@ internal static class Probe
                 Reply = fields == null ? null : fields with { VoiceStyle = effectiveStyle, DisplayIdentity = "" }
             };
         }
-        catch (Exception e) { _speechLog?.LogWarning("Stage3 reply field separation error: " + e.GetType().Name); }
+        catch (Exception e)
+        {
+            TtsDiagnostics.Record("parse", "failed", $"NPC={npcKey} promptTurnId={promptTurnId}", e);
+            _speechLog?.LogWarning("Stage3 reply field separation error: " + e.GetType().Name);
+        }
     }
 
     public static void OnNpcDisplay(object __instance, object[] __args, NpcDisplayPatchState? __state)
@@ -727,7 +847,14 @@ internal static class Probe
             var reply = __state?.Reply ?? ExtractNpcReply(raw ?? "");
             var npcKey = NpcId(__instance);
             var preset = reply?.VoiceStyle == null ? PresetVoiceStyles.Resolve(npcKey, text, ActiveTopicId(__instance)) : null;
-            if (!string.IsNullOrWhiteSpace(text) && (!string.IsNullOrWhiteSpace(reply?.Content) || preset != null))
+            var eligibleReply = !string.IsNullOrWhiteSpace(text) && (!string.IsNullOrWhiteSpace(reply?.Content) || preset != null);
+            if (__state != null && !__state.ParseClassified)
+            {
+                TtsDiagnostics.RecordParse(eligibleReply, __state.PromptTurnId, npcKey,
+                    eligibleReply ? null : "没有结构化 NPC 正文或已验证的离线预设匹配");
+                __state.ParseClassified = true;
+            }
+            if (eligibleReply)
             {
                 var identity = DisplayMessageIdentity(__instance, npcKey);
                 if (identity == null) { _speechLog?.LogWarning("Stage3 display reply has no ChatMessage timestamp identity; TTS skipped to avoid duplicate playback."); return; }
@@ -746,6 +873,13 @@ internal static class Probe
 
     public static Exception? OnNpcDisplayFinalizer(Exception? __exception, NpcDisplayPatchState? __state)
     {
+        if (__exception != null)
+            TtsDiagnostics.Record("game.display", "failed", $"NPC={__state?.NpcKey ?? "unknown"} promptTurnId={__state?.PromptTurnId ?? -1}; 游戏显示方法异常，原因归属未确认", __exception);
+        else if (__state != null && !__state.ParseClassified)
+        {
+            TtsDiagnostics.RecordParse(false, __state.PromptTurnId, __state.NpcKey, "游戏显示回调未完成分类");
+            __state.ParseClassified = true;
+        }
         __state?.ExitScope();
         return __exception;
     }
@@ -1179,5 +1313,5 @@ internal static class PluginInfo
 {
     public const string Guid = "org.a1indextts.mod";
     public const string Name = "A1-TTS-Mod";
-    public const string Version = "0.7.8";
+    public const string Version = "0.7.9";
 }

@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Program.cs" />
+    <Compile Include="../../src/NpcReplyHookCompatibility.cs" Link="NpcReplyHookCompatibility.cs" />
+    <Compile Include="../../src/TtsGameCompatibility.cs" Link="TtsGameCompatibility.cs" />
+    <Compile Include="../../src/TtsDiagnostics.cs" Link="TtsDiagnostics.cs" />
+    <Compile Include="../../src/TtsServiceCrashClassifier.cs" Link="TtsServiceCrashClassifier.cs" />
+    <Compile Include="../../src/VoiceStyle.cs" Link="VoiceStyle.cs" />
+  </ItemGroup>
+</Project>
