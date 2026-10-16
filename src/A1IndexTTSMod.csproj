@@ -101,6 +101,12 @@
       <HintPath>$(BepInExDir)\interop\UnityEngine.ImageConversionModule.dll</HintPath>
       <Private>false</Private>
     </Reference>
+    <!--★ScreenCaptureIntoRenderTexture 抓帧用（见 MjpegServer.CaptureScreenFrame）。
+         这个程序集此前没被引用，导致 ScreenCapture 类型在 interop 里可见却编译不到。-->
+    <Reference Include="UnityEngine.ScreenCaptureModule">
+      <HintPath>$(BepInExDir)\interop\UnityEngine.ScreenCaptureModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
     <Reference Include="UnityEngine.InputLegacyModule">
       <HintPath>$(BepInExDir)\interop\UnityEngine.InputLegacyModule.dll</HintPath>
       <Private>false</Private>

@@ -121,6 +121,77 @@ public sealed class Plugin : BasePlugin, IManagedFeaturePlugin
                 Config.Bind("SpeechInput", "DeviceId", "", "WASAPI capture device ID; blank uses the current Windows default microphone."),
                 Config.Bind("SpeechInput", "ModelProfile", "lightweight14m", "Installed model: lightweight14m or accurate160m. Only one model is loaded."));
             Probe.SetSpeechLog(Log);
+
+            // ---- NPC 视频通话窗口：画面下行（MJPEG over HTTP）----
+            // 全托管、零 native 回调，刻意绕开 Unity.WebRTC（官方不支持 IL2CPP）。
+            //
+            // ★2026-10-14 延迟优化（用户实测「游戏到手机延迟 3~5 秒」）：
+            //   根因是推流码率超手机带宽——游戏跑 1920x1080，原来把**全屏原图**
+            //   直接 EncodeToJPG（每帧 250~600KB × 15fps = 4~9MB/s），手机 Wi-Fi
+            //   撑不住 → TCP 背压 → Write 阻塞数秒 → 手机看到旧画面。
+            //   现在先 GPU 降采样到 StreamWidth 宽（默认 960 = 1080p 的 1/4 像素）
+            //   再编码，帧大小/编码耗时/手机解码同步约 1/4。原来的 Width/Height
+            //   **从未参与缩放**（只写进了日志文案），现标记废弃，仅保留兼容。
+            MjpegServer.Start(Log,
+                Config.Bind("PhoneLink", "Port", 8895, "MJPEG HTTP 监听端口（手机用 http://<电脑IP>:<端口>/phone 访问）。").Value,
+                Config.Bind("PhoneLink", "Width", 640, "【已废弃】旧固定推流宽度，从未生效；实际尺寸由 StreamWidth + 屏幕宽高比决定。").Value,
+                Config.Bind("PhoneLink", "Height", 480, "【已废弃】旧固定推流高度，从未生效；同上。").Value,
+                Config.Bind("PhoneLink", "Fps", 15, "下推帧率；超出编码能力时会丢帧而非累积延迟。").Value,
+                Config.Bind("PhoneLink", "JpegQuality", 60, "JPEG 质量（10-95）；越高越清晰也越占带宽。").Value,
+                Config.Bind("PhoneLink", "StreamWidth", 960,
+                    "推流目标宽度（像素），按屏幕宽高比等比降采样；0 = 原图直推（延迟会回升到秒级）。"
+                    + "960≈1080p的1/4码率；手机卡顿时可试 640，要更清晰可试 1280。").Value);
+            // ---- 游戏内「手机网页」二维码浮窗（IP 变了自动重编码，可关闭）----
+            // ★为什么放游戏内：用户要「打开游戏就能看到，手机直接扫」，
+            //   PC 控制页还得先手动开浏览器。配置 PhoneLink/ShowPhoneQr 可关。
+            var showPhoneQr = Config.Bind("PhoneLink", "ShowPhoneQr", true,
+                "游戏内显示手机网页地址的二维码浮窗（可拖动、可关闭；IP 变化时自动更新）。");
+            if (MjpegServer.IsRunning)
+                MjpegDriver.Register();
+            // ★二维码浮窗**无条件挂载**，不跟着 IsRunning 走（2026-10-15 教训）：
+            //   MJPEG/CTRL 起不来（端口被占等）恰恰是最需要在游戏里看到提示的时候，
+            //   挂在 if (IsRunning) 里 ⇒ 挂了就什么都不显示，用户完全无感知。
+            //   浮窗自己会读 MjpegServer.LastError 把原因显示出来。
+            QrOverlay.Register(showPhoneQr, MjpegServer.Port);
+            // 手机「语音」按钮停止 → 自动发送（2026-10-15：用户要求说完即发，别再回游戏二次点击）。
+            // ★只在远程 /voice?cmd=toggle 路径生效；游戏内麦克风按钮保持「文本留框自己发」。
+            SpeechPanelUi.RemoteMicAutoSend = Config.Bind("PhoneLink", "VoiceStopAutoSend", true,
+                "手机「语音」按钮停止时自动发送识别文本（说完即发；游戏内麦克风按钮不受此项影响）。").Value;
+
+            // ---- NPC 视频通话窗口：声音下行（NPC 语音 + 游戏 BGM/音效 → 手机）----
+            // ★音频**与画面共用 8895 同一个端口**（端点 /audio、/astatus）。
+            //   曾经单独开 8896，踩了两个必然复现的坑：
+            //     ① 跨域 fetch 被浏览器丢弃 → 页面误报「连不上 8896 端口」（其实是 CORS）
+            //     ② audio 元素拿到「还没声音」的错误响应后永不重试 → NPC 开口了也没声
+            //   合并后 CORS 同源、只需一条防火墙规则、且自动继承 MjpegServer.EnsureAlive 自愈。
+            //
+            // ★★AudioSource 选音源（用户实测「有语音但没 BGM/音效」后新增）：
+            //   "loopback"（默认）= WASAPI 抓系统输出**混音** → NPC 语音 + 游戏 BGM + 音效都有。
+            //       为什么必须用它：NPC 语音是本MOD 用 NAudio 播的（能分路抓到），
+            //       但游戏的 BGM/音效走 Unity AudioSource → 系统输出设备，
+            //       **完全不经过 NAudio**，从播放链路分路结构上抓不到。
+            //   "tts" = 只从 TTS 播放链路分路 → 只有 NPC 语音，但不受其他程序声音污染。
+            //   两种模式**互斥**（同时开会把 NPC 语音叠加两遍 → 削波 → 爆音）。
+            AudioForwarder.Start(
+                Config.Bind("PhoneLink", "AudioPort", 8896, "【已废弃】音频曾独立监听此端口；现已并入画面端口的 /audio 端点，此项不再生效。").Value,
+                Config.Bind("PhoneLink", "AudioSource", "loopback",
+                    "声音来源：loopback = 抓系统输出混音（NPC 语音+BGM+音效，推荐）；tts = 只转发 NPC 语音。").Value);
+
+            // ---- NPC 视频通话窗口：控制通道（打字/点击/按钮/面板开关）----
+            //
+            // ★指令走**独立端口 8894**，与画面/声音的 8895 分开 —— 理由与音频合并**相反**：
+            //   浏览器对同源并发连接限 6 条，而 8895 常驻两条**永不释放**的长流
+            //   （MJPEG + audio）。槽位占满后，打字/点击会**排队到页面关闭才被处理**
+            //   （实测：点发送要等几十秒；关掉网页再打开的瞬间才生效）。
+            //   ★注意 sendBeacon **也绕不开** —— 它同受连接池限制，只是优先级更低，
+            //     槽位满时会被压进「页面卸载才 flush」的队列（这个坑踩了两轮）。
+            //   Chrome 的连接池按 (协议, 主机, 端口) 分组 ⇒ **换端口就是换池子**。
+            //   8894 全是短请求，还能用 fetch 立刻读到响应 → 手机上可实时回显成败。
+            ControlServer.Start(
+                Log,
+                Config.Bind("PhoneLink", "ControlPort", 8894,
+                    "控制指令 HTTP 端口（打字/点击/按钮/面板开关）。★必须与画面端口不同：同端口会被长流占满连接池，指令会延迟到页面关闭才生效。").Value);
+
             _harmony = new Harmony(PluginInfo.Guid);
             PatchCompleteBudgeted();
             PatchDialogueLifecycle("Game.NpcDialoguePanel", "OnShow", nameof(Probe.OnDialogueShowPrefix));
