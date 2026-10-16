@@ -58,6 +58,12 @@ internal sealed class SpeechPanelUi : MonoBehaviour
     private NpcVoiceResolver.ReferenceChoice[] _matchingReferences = Array.Empty<NpcVoiceResolver.ReferenceChoice>();
     private bool _referenceDropdownVisible;
     private string _uiMessage = "";
+    private string? _lastMicFault;   // 最近一次 ToggleMic 被拒绝的原因（远程 /voice 读取）
+    /// <summary>
+    /// 手机「语音」按钮停止时是否自动发送（2026-10-15，配置 PhoneLink/VoiceStopAutoSend）。
+    /// ★只影响远程路径；游戏内麦克风按钮保持「文本留在输入框」的原行为。
+    /// </summary>
+    internal static bool RemoteMicAutoSend = true;
     private SpeechPanelTurn? _selectedTurn;
     private int _dataLayer;
     private bool _showRawReply;
@@ -430,14 +436,31 @@ internal sealed class SpeechPanelUi : MonoBehaviour
         }
         _asrInput = null; _asrOriginal = _asrExpected = ""; _asrCaret = _asrSelectionStart = _asrSelectionEnd = _asrExpectedCaret = 0;
     }
-    private void ToggleMic()
+    /// <summary>游戏内麦克风按钮：停止后文本留在输入框，由用户自己点发送（原行为）。</summary>
+    private void ToggleMic() => ToggleMic(false);
+
+    private void ToggleMic(bool autoSendOnStop)
     {
-        if (StreamingAsr.TestMode && StreamingAsr.IsActive) return;
-        if (StreamingAsr.State == "收尾中") return;
-        if (StreamingAsr.State == "准备中") { StreamingAsr.Cancel(); RestoreAsrDraft(true); return; }
-        if (StreamingAsr.IsActive) { StreamingAsr.Stop(); return; }
-        if (_asrEnabled?.Value != true || _dialoguePanel == null) return;
-        _asrInput = FindDialogueInput(); if (_asrInput == null) { _uiMessage = "找不到对话输入框"; _log?.LogWarning("ASR microphone: dialogue input binding unavailable."); return; }
+        // ★2026-10-14：手机「语音」按钮（/voice?cmd=toggle）与游戏内麦克风按钮
+        //   走的是**同一个方法**。拒绝原因记进 _lastMicFault 供远程调用方读，
+        //   游戏内按钮忽略它（按钮本就不可见时无需解释）。
+        _lastMicFault = null;
+        if (StreamingAsr.TestMode && StreamingAsr.IsActive) { _lastMicFault = "test-mode"; return; }
+        if (StreamingAsr.State == "收尾中") { _lastMicFault = "finalizing"; return; }
+        if (StreamingAsr.State == "准备中") { StreamingAsr.Cancel(); RestoreAsrDraft(true); _lastMicFault = "canceled-warmup"; return; }
+        if (StreamingAsr.IsActive)
+        {
+            // ★2026-10-15：手机端停止 = 自动发送，省掉「回游戏再点一次发送」。
+            //   这里**只登记意图**，真正发送等 Update 里的 Poll：必须等收尾完成、
+            //   最终识别文本上屏之后再发（立刻发会漏掉最后一段话）。
+            if (autoSendOnStop) RequestAutoSend();
+            StreamingAsr.Stop();
+            return;
+        }
+        // ★拆开原来的合并判断：远程调用需要区分「ASR 被配置关掉」和「对话面板没打开」
+        if (_asrEnabled?.Value != true) { _lastMicFault = "asr-disabled"; return; }
+        if (_dialoguePanel == null) { _lastMicFault = "dialogue-not-open"; return; }
+        _asrInput = FindDialogueInput(); if (_asrInput == null) { _uiMessage = "找不到对话输入框"; _lastMicFault = "input-not-found"; _log?.LogWarning("ASR microphone: dialogue input binding unavailable."); return; }
         _open = false;
         _asrOriginal = _asrExpected = ReadInputText(_asrInput);
         if (_asrInput is TMPro.TMP_InputField field)
@@ -450,6 +473,95 @@ internal sealed class SpeechPanelUi : MonoBehaviour
         _asrExpectedCaret = _asrCaret;
         _log?.LogInfo($"ASR dialogue recording requested: input={_asrInput.GetInstanceID()}.");
         StreamingAsr.Start(false);
+    }
+
+    /// <summary>
+    /// 登记「停止识别后自动发送」意图（与 <see cref="SubmitOrFinalize"/> 用的是同一个闸门）。
+    /// ★条件刻意与 SubmitOrFinalize 对齐：当前输入框必须还是开录那一刻绑定的那个，
+    ///   否则说明玩家已经切走/改动，发错了比不发更糟 → 直接放弃。
+    /// ★只登记，不发送：AsrSendGate.Poll 会在会话收尾完成（State="就绪"）后才触发一次发送。
+    /// </summary>
+    private void RequestAutoSend()
+    {
+        try
+        {
+            var snapshot = StreamingAsr.Snapshot;
+            var input = FindDialogueInput();
+            if (input == null || _asrInput == null || input.GetInstanceID() != _asrInput.GetInstanceID())
+            {
+                _log?.LogInfo("ASR auto-send skipped: dialogue input no longer matches the recorded session.");
+                return;
+            }
+            if (_asrSend.Request(snapshot, input.GetInstanceID()))
+                _log?.LogInfo($"ASR auto-send requested by remote toggle: session={snapshot.SessionId}, input={input.GetInstanceID()}.");
+            else
+                _log?.LogInfo($"ASR auto-send not requested: session={snapshot.SessionId}, active={snapshot.IsActive}, pending={_asrSend.Pending}.");
+        }
+        catch (Exception e) { _log?.LogWarning($"ASR auto-send request failed: {e.Message}"); }
+    }
+
+    // ---------------------------------------------------------------- 手机端远程麦克风开关
+
+    /// <summary>
+    /// 手机「语音」按钮 = 游戏内麦克风按钮的远程映射（2026-10-14）。
+    /// 与 <see cref="ToggleMic"/> 完全同一条逻辑：PC 麦克风 + 同一条 ASR 流水线，
+    /// 识别结果由 AsrSendGate 自动上屏发送——游戏侧零改动。
+    /// 【IL2CPP 约束】ToggleMic 碰 Unity 对象，只能在主线程跑；
+    ///   HTTP 线程只入队 + 等主线程执行完（ManualResetEventSlim，默认 2s 超时）。
+    /// </summary>
+    private static readonly object _micToggleLock = new();
+    private static bool _micTogglePending;
+    private static string? _micToggleResult;
+    private static ManualResetEventSlim? _micToggleDone;
+
+    /// <summary>HTTP 线程调用：请求切换麦克风，返回 started/stopped/canceled-warmup 或拒绝原因。</summary>
+    internal static string RequestMicToggle(int timeoutMs)
+    {
+        ManualResetEventSlim done;
+        lock (_micToggleLock)
+        {
+            if (_micTogglePending) return "busy";
+            _micTogglePending = true;
+            _micToggleResult = null;
+            done = _micToggleDone ??= new ManualResetEventSlim(false);
+            done.Reset();
+        }
+        bool signaled;
+        try { signaled = done.Wait(timeoutMs); }
+        catch { signaled = false; }
+        lock (_micToggleLock)
+        {
+            _micTogglePending = false;
+            return signaled ? (_micToggleResult ?? "no-result") : "main-thread-busy";
+        }
+    }
+
+    /// <summary>主线程 Update 调用（MjpegDriver）：执行入队的麦克风切换。</summary>
+    internal static void PumpMicToggleOnMainThread()
+    {
+        lock (_micToggleLock) { if (!_micTogglePending) return; }
+        string result;
+        try
+        {
+            var inst = _instance;
+            // ★ASR 没装好时最明确的原因必须在这里给——ToggleMic 内部的 Start 对
+            //  不可用状态是静默 no-op，远程调用方看不出所以然（用户报过的
+            //  「MOD 拒绝开始语音」就是缺这句）。
+            if (!StreamingAsr.Available)
+                result = "asr-unavailable:" + StreamingAsr.UnavailableReason;
+            else if (inst == null || !inst.gameObject.activeInHierarchy)
+                result = "panel-not-ready";
+            else
+            {
+                bool wasActive = StreamingAsr.IsActive;
+                // ★手机路径：停止时自动发送（受 PhoneLink/VoiceStopAutoSend 控制）
+                inst.ToggleMic(RemoteMicAutoSend);
+                result = inst._lastMicFault ?? (wasActive ? "stopped" : "started");
+            }
+        }
+        catch (Exception e) { result = "error:" + e.Message; }
+        lock (_micToggleLock) { _micToggleResult = result; }
+        _micToggleDone?.Set();
     }
 
     private void SubmitOrFinalize()

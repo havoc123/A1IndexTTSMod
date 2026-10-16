@@ -1,4 +1,4 @@
-[CmdletBinding()]
+﻿[CmdletBinding()]
 param([string] $OutputDirectory = (Join-Path $PSScriptRoot '../../.state/asr-quality/accuracy-sweep'))
 $ErrorActionPreference = 'Stop'
 $OutputDirectory = [IO.Path]::GetFullPath($OutputDirectory)

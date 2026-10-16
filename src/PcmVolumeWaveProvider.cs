@@ -25,6 +25,19 @@ internal sealed class PcmVolumeWaveProvider : IWaveProvider
     public int Read(byte[] buffer, int offset, int count)
     {
         var bytesRead = _source.Read(buffer, offset, count);
+
+        // ★把 PCM 分一路推给手机（NPC 通话窗口的声音下行）。
+        //   ★位置说明：这里在音量缩放**之前**分一路，是有意为之——
+        //     音量是 PC 端的听感控制，手机端不应受它影响（否则玩家调PC 音量会把
+        //     手机也一起调小声）。若要"完全一致"可挪到 return 之前，但那样
+        //     玩家一调音量，手机音量就跟着变，体验反而更差。
+        //     整段用 try 包住：转发任何异常都绝不能影响 PC 本地播放。
+        if (bytesRead > 0)
+        {
+            try { AudioForwarder.OnPcmAvailable(buffer, offset, bytesRead, WaveFormat); }
+            catch { /* 转发失败绝不能影响 PC 本地播放 */ }
+        }
+
         var volume = VolumePercent / 100f;
         if (bytesRead <= 0 || volume == 1f) return bytesRead;
 

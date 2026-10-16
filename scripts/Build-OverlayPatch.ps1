@@ -138,7 +138,16 @@ $asrText
 回退：退出游戏，将安装器报告的备份文件复制回原位置。补丁经离线安装验证，未启动游戏测试。
 "@
 [IO.File]::WriteAllText((Join-Path $stage '覆盖安装说明.txt'),$readme,[Text.UTF8Encoding]::new($true))
-& 'C:/Program Files/7-Zip/7z.exe' a -t7z -mx=3 $archive ($stage+'\*')
+# ★7z 解析顺序：$env:A1_7Z → PATH → 常规安装目录。不写死某台机器的路径。
+$sevenZip = $env:A1_7Z
+if (-not $sevenZip) {
+    $cmd = Get-Command 7z.exe -ErrorAction SilentlyContinue
+    if ($cmd) { $sevenZip = $cmd.Source }
+    elseif (Test-Path -LiteralPath "$env:ProgramFiles\7-Zip\7z.exe") { $sevenZip = "$env:ProgramFiles\7-Zip\7z.exe" }
+    elseif (Test-Path -LiteralPath "${env:ProgramFiles(x86)}\7-Zip\7z.exe") { $sevenZip = "${env:ProgramFiles(x86)}\7-Zip\7z.exe" }
+    else { throw '找不到 7z.exe：请安装 7-Zip，或设置 A1_7Z 指向 7z.exe。' }
+}
+& $sevenZip a -t7z -mx=3 $archive ($stage+'\*')
 if ($LASTEXITCODE) { throw 'Archive creation failed.' }
 $hash = (Get-FileHash -LiteralPath $archive -Algorithm SHA256).Hash.ToLowerInvariant()
 [IO.File]::WriteAllText(($archive+'.sha256'),$hash+'  '+[IO.Path]::GetFileName($archive)+"`n",[Text.UTF8Encoding]::new($false))

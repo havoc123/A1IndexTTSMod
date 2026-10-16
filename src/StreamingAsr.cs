@@ -19,26 +19,56 @@ internal static class StreamingAsr
     {
         internal readonly object Gate = new();
         internal readonly long Id;
-        internal readonly WasapiCapture Capture;
+        internal readonly WasapiCapture? Capture;   // ★外部（手机上行）会话为 null
         internal readonly MMDevice? Device;
-        internal readonly BufferedWaveProvider Buffer;
-        internal readonly ISampleProvider Samples;
+        // ★Buffer/Samples/Format/External 不加 readonly：CreateExternal 是静态
+        //   工厂（无 this 访问权），只读字段在构造函数外赋值编译不过。
+        internal BufferedWaveProvider Buffer = null!;
+        internal ISampleProvider Samples = null!;
+        internal WaveFormat Format = null!;
+        internal bool External;
         internal long DeliveredBytes, QueuedSamples, ProcessedSamples;
         internal DateTime Started = DateTime.UtcNow;
         internal bool Stopping;
         internal readonly Stopwatch StopTimer = new();
+
+        /// <summary>真实麦克风会话（PC 端语音输入，原路径不变）。</summary>
         internal CaptureSession(long id, string deviceId)
         {
             Id = id;
             if (deviceId.Length == 0) Capture = new WasapiCapture();
             else { using var devices = new MMDeviceEnumerator(); Device = devices.GetDevice(deviceId); Capture = new WasapiCapture(Device); }
-            Buffer = new BufferedWaveProvider(Capture.WaveFormat) { DiscardOnBufferOverflow = false, ReadFully = false };
+            Format = Capture.WaveFormat;
+            Buffer = new BufferedWaveProvider(Format) { DiscardOnBufferOverflow = false, ReadFully = false };
             ISampleProvider samples = Buffer.ToSampleProvider();
             if (samples.WaveFormat.Channels == 2) samples = new StereoToMonoSampleProvider(samples);
             if (samples.WaveFormat.Channels != 1) throw new NotSupportedException("麦克风需要单声道或双声道格式。");
             if (samples.WaveFormat.SampleRate != 16000) samples = new WdlResamplingSampleProvider(samples, 16000);
             Samples = samples;
         }
+
+        /// <summary>
+        /// 外部 PCM 会话（手机网页端麦克风上行，2026-10-14 新增）。
+        /// ★不建 WasapiCapture——手机音频经 /voice 端点直接灌进 Buffer，
+        ///   之后与真实麦克风**完全同一条路**（DrainSamples→Audio 队列→
+        ///   decoder.Accept），SpeechPanelUi 的草稿/自动发送逻辑零改动。
+        /// </summary>
+        internal static CaptureSession CreateExternal(long id, WaveFormat format)
+        {
+            var s = new CaptureSession(id);
+            s.Format = format;
+            s.Buffer = new BufferedWaveProvider(format) { DiscardOnBufferOverflow = false, ReadFully = false };
+            ISampleProvider samples = s.Buffer.ToSampleProvider();
+            if (samples.WaveFormat.Channels == 2) samples = new StereoToMonoSampleProvider(samples);
+            if (samples.WaveFormat.Channels != 1) throw new NotSupportedException("外部音频需要单声道或双声道格式。");
+            if (samples.WaveFormat.SampleRate != 16000) samples = new WdlResamplingSampleProvider(samples, 16000);
+            s.Samples = samples;
+            s.External = true;
+            return s;
+        }
+
+        // 仅给 CreateExternal 用的最小构造（字段全部只读，外部补齐）。
+        private CaptureSession(long id) { Id = id; }
     }
 
     private static readonly object Control = new();
@@ -188,6 +218,118 @@ internal static class StreamingAsr
             });
         }
     }
+
+    // ------------------------------------------------------------
+    // 外部 PCM 会话（手机网页端麦克风上行，2026-10-14 新增）
+    //
+    // 与真实麦克风共用一条 ASR 流水线：外部 PCM → CaptureSession.Buffer
+    // → DrainSamples → Audio 队列 → decoder.Accept → Snapshot。
+    // 因此 SpeechPanelUi 的「草稿上屏 + AsrSendGate 自动发送」逻辑
+    // 完全不用改——它对两种会话一视同仁（都看 Snapshot）。
+    // ------------------------------------------------------------
+
+    /// <summary>手机上行会话是否正在进行。</summary>
+    internal static bool ExternalActive
+    {
+        get { var c = _capture; return c != null && c.External && !c.Stopping; }
+    }
+
+    /// <summary>
+    /// 开始外部会话（手机点麦克风按钮时调用）。
+    /// 若真实麦克风会话正在跑，先取消它（两种音源互斥，与 loopback/tts 同哲学）。
+    /// </summary>
+    internal static void StartExternal(WaveFormat inputFormat)
+    {
+        lock (Control)
+        {
+            if (!_enabled || !Available) return;
+            if (Snapshot.IsActive) Cancel();
+            var id = Interlocked.Increment(ref _session);
+            Volatile.Write(ref _snapshot, new(id, "准备中", "", 0, false));
+            Work.Add(() => StartExternalOnWorker(id, Profile, inputFormat));
+        }
+    }
+
+    private static void StartExternalOnWorker(long id, AsrModelProfile profile, WaveFormat inputFormat)
+    {
+        if (id != Interlocked.Read(ref _session)) return;
+        _workerId = id;
+        AbortCapture();
+        EnsureDecoder(profile);
+        if (id != Interlocked.Read(ref _session)) return;
+        _decoder!.Begin();
+        _punctuation?.Begin(id);
+        var capture = CaptureSession.CreateExternal(id, inputFormat);
+        _capture = capture;
+        if (Snapshot.State == "收尾中") FinishExternalCapture(capture);
+        else Publish(id, "录音中", "");
+    }
+
+    /// <summary>
+    /// 推送一块外部 PCM（手机 /voice 端点收到字节时调用，可在任意线程）。
+    /// ★与 OnData 走同一条 Buffer.AddSamples → DrainSamples 路径。
+    /// </summary>
+    internal static bool PushExternal(byte[] pcm, int count)
+    {
+        var capture = _capture;
+        if (capture == null || !capture.External || capture.Stopping) return false;
+        try
+        {
+            lock (capture.Gate)
+            {
+                capture.DeliveredBytes += count;
+                capture.Buffer.AddSamples(pcm, 0, count);
+                DrainSamples(capture);
+            }
+            return true;
+        }
+        catch (Exception exception) { Work.Add(() => Fail(capture.Id, exception)); return false; }
+    }
+
+    /// <summary>停止外部会话并收尾（手机松开麦克风按钮时调用）。</summary>
+    internal static void StopExternal()
+    {
+        lock (Control)
+        {
+            var snapshot = Snapshot;
+            var capture = _capture;
+            if (capture == null || !capture.External || !snapshot.IsActive
+                || snapshot.State == "收尾中") return;
+            Volatile.Write(ref _snapshot, snapshot with { State = "收尾中" });
+            Work.Add(() => FinishExternalCapture(capture));
+        }
+    }
+
+    /// <summary>
+    /// 外部会话收尾：与 <see cref="FinishStoppedCapture"/> 同一套动作
+    /// （补右上下文静音 → 排空队列 → decoder.Finish → 标点 → 发布「就绪」），
+    /// 只是没有 RecordingStopped 事件，直接由 StopExternal/60 秒超时触发。
+    /// </summary>
+    private static void FinishExternalCapture(CaptureSession capture)
+    {
+        if (!ReferenceEquals(_capture, capture) || capture.Id != _session) return;
+        if (!capture.Stopping)
+        {
+            capture.Stopping = true;
+            capture.StopTimer.Start();
+        }
+        lock (capture.Gate)
+        {
+            var padding = new byte[Math.Max(capture.Format.BlockAlign, capture.Format.AverageBytesPerSecond / 25)];
+            capture.Buffer.AddSamples(padding, 0, padding.Length);
+            DrainSamples(capture);
+        }
+        while (Audio.TryTake(out var frame)) Process(frame);
+        if (capture.ProcessedSamples != capture.QueuedSamples)
+            throw new InvalidOperationException("音频收尾样本不完整。");
+        var final = _decoder!.Finish();
+        _log?.Invoke($"ASR finalized(external): session={capture.Id}, deliveredBytes={capture.DeliveredBytes}, "
+            + $"queuedSamples={capture.QueuedSamples}, processedSamples={capture.ProcessedSamples}, "
+            + $"stopMs={capture.StopTimer.ElapsedMilliseconds}.");
+        DisposeCapture(capture); _capture = null;
+        if (_punctuation == null) Publish(capture.Id, "就绪", final, 0);
+        else _ = FinishPunctuation(capture.Id, final, _punctuation);
+    }
     internal static void Shutdown() { lock (Control) _enabled = false; Cancel(true); }
 
     private static void WorkerLoop()
@@ -286,7 +428,9 @@ internal static class StreamingAsr
         var capture = _capture;
         if (id != _session || capture?.Id != id || capture.Stopping) return;
         capture.Stopping = true; capture.StopTimer.Start();
-        capture.Capture.StopRecording(); // RecordingStopped queues finalization; worker keeps draining frames.
+        // ★外部（手机）会话没有 WasapiCapture 事件，直接走收尾。
+        if (capture.External) { FinishExternalCapture(capture); return; }
+        capture.Capture!.StopRecording(); // RecordingStopped queues finalization; worker keeps draining frames.
     }
 
     private static void FinishStoppedCapture(CaptureSession capture, Exception? error)
@@ -298,7 +442,7 @@ internal static class StreamingAsr
         // short right context after all real bytes have been delivered.
         lock (capture.Gate)
         {
-            var format = capture.Capture.WaveFormat;
+            var format = capture.Format;   // ★不再读 capture.Capture.WaveFormat（外部会话 Capture 为 null）
             var padding = new byte[Math.Max(format.BlockAlign, format.AverageBytesPerSecond / 25)];
             capture.Buffer.AddSamples(padding, 0, padding.Length); DrainSamples(capture);
         }
@@ -337,8 +481,13 @@ internal static class StreamingAsr
     }
     private static void DisposeCapture(CaptureSession capture)
     {
-        try { capture.Capture.StopRecording(); } catch { }
-        capture.Capture.Dispose(); capture.Device?.Dispose();
+        // ★外部会话没有 WasapiCapture（Capture 为 null），只释放 Device。
+        if (capture.Capture != null)
+        {
+            try { capture.Capture.StopRecording(); } catch { }
+            capture.Capture.Dispose();
+        }
+        capture.Device?.Dispose();
     }
     private static void DisposeDecoder() { _decoder?.Dispose(); _decoder = null; _loadedProfile = ""; }
 }

@@ -1,6 +1,6 @@
-[CmdletBinding()]
+﻿[CmdletBinding()]
 param(
-    [string] $SevenZip = 'C:\Program Files\7-Zip\7z.exe',
+    [string] $SevenZip = '',
     [string] $OutputRoot = '',
     [string] $SevenZipVolumeSize = '1540m',
     [switch] $SplitModel,
@@ -22,7 +22,16 @@ $payload = Join-Path $stage 'A1'
 $loaderZip = Join-Path $project '.cache\6.0.0-be.788+5b766a3\BepInEx-Unity.IL2CPP-win-x64-6.0.0-be.788+5b766a3.zip'
 $runtime = Join-Path $project '.cache\audiocpp\runtime'
 $cosyModel = Join-Path $project '.cache\audiocpp\models\CosyVoice3-GGUF\cosyvoice3-q8_0.gguf'
-$game = 'E:\Program Files (x86)\Steam\steamapps\common\A1'
+$game = $(if ($env:A1_GAME_ROOT) { $env:A1_GAME_ROOT } else { $null })
+if (-not $game) { throw '请设置环境变量 A1_GAME_ROOT 指向游戏根目录（WorldApart.exe 所在目录，本脚本要从游戏目录取 dotnet\coreclr.dll）。' }
+# ★7z 解析顺序：$env:A1_7Z → PATH → 常规安装目录。不写死某台机器的路径。
+if (-not $SevenZip) {
+    $cmd = Get-Command 7z.exe -ErrorAction SilentlyContinue
+    if ($cmd) { $SevenZip = $cmd.Source }
+    elseif (Test-Path -LiteralPath "$env:ProgramFiles\7-Zip\7z.exe") { $SevenZip = "$env:ProgramFiles\7-Zip\7z.exe" }
+    elseif (Test-Path -LiteralPath "${env:ProgramFiles(x86)}\7-Zip\7z.exe") { $SevenZip = "${env:ProgramFiles(x86)}\7-Zip\7z.exe" }
+    else { throw '找不到 7z.exe：请安装 7-Zip，或设置 A1_7Z 指向 7z.exe。' }
+}
 if ([Reflection.AssemblyName]::GetAssemblyName((Join-Path $project 'src\bin\Release\net6.0\A1IndexTTSMod.dll')).Version.ToString() -ne "$version.0") { throw 'Built plugin does not match source version.' }
 if ($SplitModel) { $archive = Join-Path $output "A1IndexTTSMod-v$version-cosy-program-win64.7z" }
 if ($ReuseModelArchive) {

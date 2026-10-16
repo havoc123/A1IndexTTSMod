@@ -1,4 +1,4 @@
-[CmdletBinding()]
+﻿[CmdletBinding()]
 param([string] $OutputRoot = (Join-Path $PSScriptRoot '../dist'))
 $ErrorActionPreference = 'Stop'
 $project = Split-Path -Parent $PSScriptRoot
@@ -16,7 +16,16 @@ foreach ($path in $required) {
 }
 $oldArchive = Join-Path $project 'dist/A1IndexTTSMod-v0.7.6-cosy-split-win64(语音mod)/(语音mod-程序包)A1IndexTTSMod-v0.7.6-cosy-program-win64.7z'
 $pluginDirectory = Join-Path $game 'BepInEx/plugins/A1IndexTTSMod'
-& 'C:/Program Files/7-Zip/7z.exe' e $oldArchive 'A1/BepInEx/plugins/A1IndexTTSMod/A1IndexTTSMod.dll' "-o$pluginDirectory" -y | Out-Null
+# ★7z 解析顺序：$env:A1_7Z → PATH → 常规安装目录。不写死某台机器的路径。
+$sevenZip = $env:A1_7Z
+if (-not $sevenZip) {
+    $cmd = Get-Command 7z.exe -ErrorAction SilentlyContinue
+    if ($cmd) { $sevenZip = $cmd.Source }
+    elseif (Test-Path -LiteralPath "$env:ProgramFiles\7-Zip\7z.exe") { $sevenZip = "$env:ProgramFiles\7-Zip\7z.exe" }
+    elseif (Test-Path -LiteralPath "${env:ProgramFiles(x86)}\7-Zip\7z.exe") { $sevenZip = "${env:ProgramFiles(x86)}\7-Zip\7z.exe" }
+    else { throw '找不到 7z.exe：请安装 7-Zip，或设置 A1_7Z 指向 7z.exe。' }
+}
+& $sevenZip e $oldArchive 'A1/BepInEx/plugins/A1IndexTTSMod/A1IndexTTSMod.dll' "-o$pluginDirectory" -y | Out-Null
 if ($LASTEXITCODE) { throw 'Cannot extract the original 0.7.6 plugin fixture.' }
 $config = Join-Path $game 'A1IndexTTSMod/config/asr-hotwords.zh-CN.txt'
 New-Item -ItemType Directory -Path (Split-Path -Parent $config) -Force | Out-Null
