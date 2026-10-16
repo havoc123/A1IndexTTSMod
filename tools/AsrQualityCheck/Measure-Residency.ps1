@@ -1,12 +1,15 @@
-[CmdletBinding()]
+﻿[CmdletBinding()]
 param(
-    [string] $GameRoot = 'E:\Program Files (x86)\Steam\steamapps\common\A1',
+    # ★公开仓库纪律：不写死任何本机路径。游戏根目录取 $env:A1_GAME_ROOT，
+    #   未设置时给出明确错误（而不是悄悄用一个只在我机器上成立的路径）。
+    [string] $GameRoot = $(if ($env:A1_GAME_ROOT) { $env:A1_GAME_ROOT } else { $null }),
     [string] $RuntimeDirectory,
     [ValidateSet('lightweight14m','accurate160m')][string] $Profile = 'lightweight14m',
     [ValidateSet('cuda','directml')][string] $Provider = 'cuda',
     [ValidateRange(0,15)][int] $Device = 0
 )
 $ErrorActionPreference = 'Stop'
+if (-not $GameRoot) { throw '请设置环境变量 A1_GAME_ROOT 指向游戏根目录（WorldApart.exe 所在目录），或用 -GameRoot 传入。' }
 $projectRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 $outputRoot = Join-Path $projectRoot '.state/asr-quality'
 New-Item -ItemType Directory -Path $outputRoot -Force | Out-Null

@@ -1,10 +1,13 @@
-[CmdletBinding()]
+﻿[CmdletBinding()]
 param(
     [ValidateSet('CUDA','DirectML')][string] $Provider = 'DirectML',
-    [string] $GameRoot = 'E:\Program Files (x86)\Steam\steamapps\common\A1',
+    # ★公开仓库纪律：不写死任何本机路径。游戏根目录取 $env:A1_GAME_ROOT，
+    #   未设置时给出明确错误（而不是悄悄用一个只在我机器上成立的路径）。
+    [string] $GameRoot = $(if ($env:A1_GAME_ROOT) { $env:A1_GAME_ROOT } else { $null }),
     [string] $OutputRoot = (Join-Path $PSScriptRoot '../dist')
 )
 $ErrorActionPreference = 'Stop'
+if (-not $GameRoot) { throw '请设置环境变量 A1_GAME_ROOT 指向游戏根目录（WorldApart.exe 所在目录），或用 -GameRoot 传入。' }
 $project = Split-Path -Parent $PSScriptRoot
 $version = ([xml](Get-Content (Join-Path $project 'src/A1IndexTTSMod.csproj') -Raw)).Project.PropertyGroup.Version | Where-Object { $_ } | Select-Object -First 1
 $suffix = if ($Provider -eq 'DirectML') { '-directml' } else { '' }
@@ -102,7 +105,15 @@ if ($Provider -eq 'CUDA') {
     Copy-Item -LiteralPath (Join-Path $project 'licenses/asr-punctuation') -Destination (Join-Path $stage 'licenses') -Recurse
     [IO.File]::WriteAllText((Join-Path $stage '下载160M模型.bat'), "@echo off`r`nset /p game=请输入游戏文件夹路径: `r`npowershell -NoProfile -ExecutionPolicy Bypass -File `"%~dp0Download-AsrModel.ps1`" -GameRoot `"%game%`" -Profile accurate160m -Provider CUDA`r`npause`r`n", [Text.Encoding]::GetEncoding(936))
 }
-$sevenZip = 'C:\Program Files\7-Zip\7z.exe'
+# ★7z 解析顺序：$env:A1_7Z → PATH → 常规安装目录。不写死某台机器的路径。
+$sevenZip = $env:A1_7Z
+if (-not $sevenZip) {
+    $cmd = Get-Command 7z.exe -ErrorAction SilentlyContinue
+    if ($cmd) { $sevenZip = $cmd.Source }
+    elseif (Test-Path -LiteralPath "$env:ProgramFiles\7-Zip\7z.exe") { $sevenZip = "$env:ProgramFiles\7-Zip\7z.exe" }
+    elseif (Test-Path -LiteralPath "${env:ProgramFiles(x86)}\7-Zip\7z.exe") { $sevenZip = "${env:ProgramFiles(x86)}\7-Zip\7z.exe" }
+    else { throw '找不到 7z.exe：请安装 7-Zip，或设置 A1_7Z 指向 7z.exe。' }
+}
 & $sevenZip a -t7z -mx=3 (Join-Path ([IO.Path]::GetFullPath($OutputRoot)) ($name+'.7z')) ($stage+'\*')
 if ($LASTEXITCODE -ne 0) { throw 'ASR archive creation failed.' }
 Write-Host "Built optional ASR package: $stage"

@@ -1,7 +1,8 @@
-[CmdletBinding()]
-param([string] $GameRoot = 'E:\Program Files (x86)\Steam\steamapps\common\A1',
+﻿[CmdletBinding()]
+param([string] $GameRoot = $(if ($env:A1_GAME_ROOT) { $env:A1_GAME_ROOT } else { $null }),
     [string] $ArtifactDirectory = (Join-Path $PSScriptRoot '../.state/asr-native'))
 $ErrorActionPreference = 'Stop'
+if (-not $GameRoot) { throw '请设置环境变量 A1_GAME_ROOT 指向游戏根目录（WorldApart.exe 所在目录），或用 -GameRoot 传入。' }
 $GameRoot = [IO.Path]::GetFullPath($GameRoot)
 $ArtifactDirectory = [IO.Path]::GetFullPath($ArtifactDirectory)
 if (Get-Process WorldApart -ErrorAction SilentlyContinue) { throw 'Close WorldApart before installing the ASR native runtime.' }

@@ -1,15 +1,27 @@
-[CmdletBinding()]
-param()
+﻿[CmdletBinding()]
+param(
+    # ★公开仓库纪律：公开版文档目录取 $env:A1_PUBLIC_DOCS，不写死本机路径。
+    [string] $PublicRoot = $(if ($env:A1_PUBLIC_DOCS) { $env:A1_PUBLIC_DOCS } else { $null })
+)
 
 $ErrorActionPreference = 'Stop'
 $project = [IO.Path]::GetFullPath((Split-Path -Parent $PSScriptRoot))
 $dist = Join-Path $project 'dist'
-$sevenZip = 'C:\Program Files\7-Zip\7z.exe'
+# ★7z 解析顺序：$env:A1_7Z → PATH → 常规安装目录。不写死某台机器的路径。
+$sevenZip = $env:A1_7Z
+if (-not $sevenZip) {
+    $cmd = Get-Command 7z.exe -ErrorAction SilentlyContinue
+    if ($cmd) { $sevenZip = $cmd.Source }
+    elseif (Test-Path -LiteralPath "$env:ProgramFiles\7-Zip\7z.exe") { $sevenZip = "$env:ProgramFiles\7-Zip\7z.exe" }
+    elseif (Test-Path -LiteralPath "${env:ProgramFiles(x86)}\7-Zip\7z.exe") { $sevenZip = "${env:ProgramFiles(x86)}\7-Zip\7z.exe" }
+    else { throw '找不到 7z.exe：请安装 7-Zip，或设置 A1_7Z 指向 7z.exe。' }
+}
 $baseRoot = Join-Path $dist 'A1IndexTTSMod-v0.5.8-r3-base'
 $stage = Join-Path $dist 'A1IndexTTSMod-v0.5.8-r3-github-staging'
 $archive = Join-Path $dist 'A1IndexTTSMod-v0.5.8-r3-win64.zip'
 $patch = Join-Path $dist 'A1IndexTTSMod-v0.5.8-portable-doorstop-patch.zip'
-$public = 'D:\project\A1IndexTTSMod-public'
+$public = $PublicRoot
+if (-not $public) { throw '请设置环境变量 A1_PUBLIC_DOCS 指向公开版文档目录（含 README/INSTALL/THIRD_PARTY_NOTICES/RELEASE-NOTES）。' }
 foreach ($path in @($sevenZip,$patch,$public)) {
     if (-not (Test-Path -LiteralPath $path)) { throw "Missing: $path" }
 }

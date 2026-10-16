@@ -1,4 +1,4 @@
-[CmdletBinding()]
+﻿[CmdletBinding()]
 param(
     [string] $OutputRoot = (Join-Path (Split-Path -Parent $PSScriptRoot) 'dist'),
     [string] $FromVersion = 'v0.7.0',

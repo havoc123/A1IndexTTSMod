@@ -14,7 +14,16 @@ foreach ($relative in @('BepInEx/core/BepInEx.Unity.IL2CPP.dll','A1IndexTTSMod/.
 }
 $preserved = @{}
 foreach ($path in @('BepInEx/config/org.a1indextts.mod.cfg','A1IndexTTSMod/config/asr-hotwords.zh-CN.txt','A1IndexTTSMod/references/npcs/fixture.wav','A1IndexTTSMod/asr/sherpa-onnx-streaming-zipformer-zh-fp16-2025-06-30/fixture.onnx')) { $preserved[$path] = (Get-FileHash -LiteralPath (Join-Path $game $path)).Hash }
-& 'C:/Program Files/7-Zip/7z.exe' e (Join-Path $OutputRoot 'A1IndexTTSMod-v0.7.0-cosy-complete-win64-to-v0.7.5-patch-win64.zip') 'A1/BepInEx/plugins/A1IndexTTSMod/A1IndexTTSMod.dll' ('-o'+$pluginDir) -y | Out-Null
+# ★7z 解析顺序：$env:A1_7Z → PATH → 常规安装目录。不写死某台机器的路径。
+$sevenZip = $env:A1_7Z
+if (-not $sevenZip) {
+    $cmd = Get-Command 7z.exe -ErrorAction SilentlyContinue
+    if ($cmd) { $sevenZip = $cmd.Source }
+    elseif (Test-Path -LiteralPath "$env:ProgramFiles\7-Zip\7z.exe") { $sevenZip = "$env:ProgramFiles\7-Zip\7z.exe" }
+    elseif (Test-Path -LiteralPath "${env:ProgramFiles(x86)}\7-Zip\7z.exe") { $sevenZip = "${env:ProgramFiles(x86)}\7-Zip\7z.exe" }
+    else { throw '找不到 7z.exe：请安装 7-Zip，或设置 A1_7Z 指向 7z.exe。' }
+}
+& $sevenZip e (Join-Path $OutputRoot 'A1IndexTTSMod-v0.7.0-cosy-complete-win64-to-v0.7.5-patch-win64.zip') 'A1/BepInEx/plugins/A1IndexTTSMod/A1IndexTTSMod.dll' ('-o'+$pluginDir) -y | Out-Null
 if ($LASTEXITCODE) { throw 'Cannot extract real 0.7.5 assembly fixture.' }
 $oldHash = (Get-FileHash -LiteralPath (Join-Path $pluginDir 'A1IndexTTSMod.dll')).Hash
 foreach ($edition in @('program','with-ASR')) {

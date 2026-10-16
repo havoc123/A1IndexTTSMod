@@ -1,10 +1,23 @@
-[CmdletBinding()]
+﻿[CmdletBinding()]
 param(
     [string] $OutputRoot = (Join-Path (Split-Path -Parent $PSScriptRoot) 'dist'),
     [string] $Version = 'v0.5.8',
     [string] $PackageRevision = 'r3',
-    [string] $SevenZip = 'C:\Program Files\7-Zip\7z.exe'
+    [string] $SevenZip = '',
+    # ★IndexTTS 许可证文件路径（本脚本只用于历史 v0.5.8 整合包）：
+    #   取 $env:A1_INDEXTTS_LICENSE，指向你本地 index-tts 源码树里的 LICENSE。
+    [string] $ModelLicense = $(if ($env:A1_INDEXTTS_LICENSE) { $env:A1_INDEXTTS_LICENSE } else { $null })
 )
+
+$ErrorActionPreference = 'Stop'
+# ★7z 解析顺序：$env:A1_7Z → PATH → 常规安装目录。不写死某台机器的路径。
+if (-not $SevenZip) {
+    $cmd = Get-Command 7z.exe -ErrorAction SilentlyContinue
+    if ($cmd) { $SevenZip = $cmd.Source }
+    elseif (Test-Path -LiteralPath "$env:ProgramFiles\7-Zip\7z.exe") { $SevenZip = "$env:ProgramFiles\7-Zip\7z.exe" }
+    elseif (Test-Path -LiteralPath "${env:ProgramFiles(x86)}\7-Zip\7z.exe") { $SevenZip = "${env:ProgramFiles(x86)}\7-Zip\7z.exe" }
+    else { throw '找不到 7z.exe：请安装 7-Zip，或设置 A1_7Z 指向 7z.exe。' }
+}
 
 $ErrorActionPreference = 'Stop'
 $project = [IO.Path]::GetFullPath((Split-Path -Parent $PSScriptRoot))
@@ -15,7 +28,8 @@ $unityBaseZip = Join-Path $project '.cache\bepinex\2022.3.43.zip'
 $bepinexArchive = Join-Path $project '.cache\6.0.0-be.788+5b766a3\BepInEx-Unity.IL2CPP-win-x64-6.0.0-be.788+5b766a3.zip'
 $proxy = Join-Path $project '.cache\doorstop\winhttp.dll'
 $doorstopSource = Join-Path $project '.state\unitydoorstop-v4.5.0-src\UnityDoorstop-4.5.0'
-$modelLicense = 'D:\project\fishs2\indextts25\index-tts\LICENSE'
+$modelLicense = $ModelLicense
+if (-not $modelLicense) { throw '请设置环境变量 A1_INDEXTTS_LICENSE 指向本地 index-tts 源码树中的 LICENSE 文件，或用 -ModelLicense 传入。' }
 $stageRoot = Join-Path $OutputRoot "A1IndexTTSMod-$Version-complete-$PackageRevision-staging"
 $stage = Join-Path $stageRoot 'game-root'
 $archive = Join-Path $OutputRoot "A1IndexTTSMod-$Version-complete-$PackageRevision-win64.7z"

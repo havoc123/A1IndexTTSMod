@@ -6,7 +6,15 @@ await Task.Delay(150);
 if (StreamingAsr.Available || StreamingAsr.ShowMicrophone || AsrDecoderSession.Created != 0) throw new Exception("Missing ASR package started decoder warm-up");
 StreamingAsr.SetEnabled(false);
 await Task.Delay(100);
-StreamingAsr.ConfigureRoot(@"E:\Program Files (x86)\Steam\steamapps\common\A1");
+// ★这是**开发机集成测试**，不是可在任意机器上运行的单元测试：
+//   需要 A1_GAME_ROOT 指向一个真实安装的游戏目录（里面已装好 accurate160m
+//   档 ASR 包），并且机器上有 NVIDIA 显卡（下方 TTS 路由断言要真实枚举）。
+//   公开仓库纪律：游戏路径走环境变量，不写死某台机器的目录。
+var gameRoot = Environment.GetEnvironmentVariable("A1_GAME_ROOT");
+if (string.IsNullOrEmpty(gameRoot)) {
+    throw new Exception("AsrLifecycle 是需要真实游戏安装的集成测试：请设置环境变量 A1_GAME_ROOT 指向游戏根目录。");
+}
+StreamingAsr.ConfigureRoot(gameRoot);
 StreamingAsr.SetLog(Console.WriteLine);
 async Task Until(Func<bool> ready)
 {
